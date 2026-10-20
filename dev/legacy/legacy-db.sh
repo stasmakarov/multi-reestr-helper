@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Legacy-БД MultiReestr (PostgreSQL 9.6) для разработки.
-# Использование: dev/legacy/legacy-db.sh [up|down|status|reset]
+# Использование: dev/legacy/legacy-db.sh [up|down|status|reset|grant]
+# grant — заново выдать reestr_ro права по dev/legacy/grant-readonly.sql (после изменения списка таблиц).
 set -euo pipefail
 
 NAME=reestr-pg96
@@ -33,11 +34,9 @@ restore() {
   docker exec -i "$NAME" psql -U postgres -d "$DB" -v ON_ERROR_STOP=1 -q <<SQL
 CREATE ROLE $RO_USER LOGIN PASSWORD '$RO_PASS';
 GRANT CONNECT ON DATABASE $DB TO $RO_USER;
-GRANT USAGE ON SCHEMA public TO $RO_USER;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO $RO_USER;
-GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO $RO_USER;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO $RO_USER;
 SQL
+  # SELECT только на таблицы, которые читает приложение (список в grant-readonly.sql).
+  PSQL="docker exec -i $NAME psql -U postgres -d $DB" "$DIR/grant-readonly.sh"
 }
 
 up() {
@@ -78,5 +77,6 @@ status() {
 
 case "${1:-up}" in
   up) up ;; down) down ;; status) status ;; reset) reset ;;
-  *) echo "Использование: $0 [up|down|status|reset]" >&2; exit 1 ;;
+  grant) PSQL="docker exec -i $NAME psql -U postgres -d $DB" "$DIR/grant-readonly.sh" ;;
+  *) echo "Использование: $0 [up|down|status|reset|grant]" >&2; exit 1 ;;
 esac

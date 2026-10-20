@@ -3,6 +3,23 @@
 > Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md). Docker-стенд legacy: [../LEGACY_DOCKER.md](../LEGACY_DOCKER.md).
 > Тег в конце урока: `lesson-01`.
 
+## О чём этот курс
+
+**Исходная ситуация.** Заказчик ведёт закупки по 44-ФЗ. Данные из ЕИС давно собираются программой MultiReestr: она по ИНН и периоду загружает извещения, протоколы, контракты и сведения об исполнении и складывает всё в собственную базу на PostgreSQL 9.6. С базой работает только сама программа. Найти закупку, увидеть её целиком (извещение, протоколы, контракт, оплаты) и проверить, всё ли сделано вовремя, по-прежнему приходится вручную.
+
+**Проблема.** При проверках у заказчика находят одни и те же нарушения: пропущенные сроки, ошибки в извещениях, незакрытые этапы исполнения. Правила, по которым эти нарушения можно поймать заранее, в головах у специалистов есть, а в системе их нет.
+
+**Что мы строим.** Мы делаем приложение multi-reestr на Jmix 3.0.3. Оно:
+
+- **читает** базу MultiReestr и ничего в неё не пишет. Старая программа остаётся главной, мы к ней надстраиваемся;
+- даёт **поиск и карточку закупки**: по номеру или по дате и названию, с выбором настоящего оригинала среди дублей и копий, со всеми блоками от извещения до оплат, с выгрузкой в Excel;
+- считает **сроки по ГК РФ** (ст. 191–193) с учётом производственного календаря;
+- проверяет закупки по **правилам, которые пишут сами пользователи**, и складывает нарушения в реестр. Так проблему видно до прихода проверки.
+
+**Как устроен курс.** Курс состоит из десяти уроков, каждый заканчивается рабочим состоянием проекта и git-тегом `lesson-NN`. Первые три урока закладывают фундамент: доступ к старой базе, поиск и карточку закупки. Дальше идут календарь, сроки, правила и роли.
+
+**Этот урок.** Здесь мы решаем первую задачу: как безопасно подключиться к чужой базе на PostgreSQL 9.6, с которой Jmix работать не умеет. Мы подключаемся так, чтобы данные нельзя было испортить даже по ошибке и чтобы приложение не падало, если эта база недоступна.
+
 ## Содержание
 
 1. [Цель урока](#1-цель-урока)
@@ -73,15 +90,23 @@ dev/legacy/legacy-db.sh reset    # удалить контейнер и том, 
 
 Скрипт идемпотентен: повторный запуск ничего не ломает. Благодаря политике перезапуска контейнер поднимается вместе с Docker после перезагрузки компьютера (если в Docker Desktop включён автозапуск при входе). Ручные команды, которые выполняет скрипт, разобраны в [LEGACY_DOCKER.md](../LEGACY_DOCKER.md).
 
-Роль только для чтения создаёт `legacy-db.sh` (те же команды есть в `LEGACY_DOCKER.md`, раздел 3). В продуктиве используется [`docs/sql/legacy_readonly_user.sql`](../sql/legacy_readonly_user.sql) с другим паролем. Ключевые строки скрипта:
+Роль только для чтения создаёт `legacy-db.sh` (те же команды есть в `LEGACY_DOCKER.md`, раздел 3). В продуктиве используется [`docs/sql/legacy_readonly_user.sql`](../sql/legacy_readonly_user.sql) с другим паролем. Оба скрипта создают роль и выдают `CONNECT`, а права на таблицы берут из одного общего файла [`dev/legacy/grant-readonly.sql`](../../dev/legacy/grant-readonly.sql):
 
 ```sql
 CREATE ROLE reestr_ro LOGIN PASSWORD 'CHANGE_ME';
 GRANT CONNECT ON DATABASE reestrdb TO reestr_ro;
+-- dev/legacy/grant-readonly.sql:
 GRANT USAGE ON SCHEMA public TO reestr_ro;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO reestr_ro;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO reestr_ro;
+GRANT SELECT ON TABLE
+    notices, owners, spdogovortypes, noticeprocedureinfo, noticelots,
+    noticecustomerrequirements, noticepurchaseprefs, sppurchasepreferences,
+    noticeextdocs, noticespec, noticektruharacts, noticektruharactvalues,
+    noticefinances, protocols, protocol_types,
+    reestr, reestrspec, reestrprocedures, reestrprocexecutions
+TO reestr_ro;
 ```
+
+> **Правило (решение проекта).** `reestr_ro` получает `CONNECT`, `USAGE` и `SELECT` **только на таблицы, которые читают наши SQL-файлы** `src/main/resources/sql/legacy/**`. `GRANT SELECT ON ALL TABLES` и `ALTER DEFAULT PRIVILEGES` не используются. Остальные таблицы дампа, в том числе `userinfo` с учётными данными, роли не видны. В списке 19 таблиц: столько читают запросы уроков 1–3 (поиск и карточка извещения). Список задан сразу целиком, чтобы не перевыдавать права в каждом уроке. Если в следующих уроках появится запрос к новой таблице, её нужно добавить в `grant-readonly.sql` и выполнить `dev/legacy/legacy-db.sh grant` (на продуктиве — `psql -f dev/legacy/grant-readonly.sql` под владельцем базы). Скрипт сначала снимает с роли все табличные права, поэтому его можно запускать повторно, лишнего не останется.
 
 Проверьте, что всё на месте: должно быть 335 таблиц, в `notices` — 40 строк, в `reestr` — 28. Команда приведена в `LEGACY_DOCKER.md`, раздел 5.
 
@@ -299,7 +324,7 @@ public void onCheckButtonClick(final ClickEvent<JmixButton> event) {
 statement.execute("CREATE ROLE " + RO_USER + " LOGIN PASSWORD '" + RO_PASSWORD + "'");
 ...
 statement.execute("CREATE TABLE legacy_probe(id int)");
-statement.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO " + RO_USER);
+statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
 ```
 
 > Обратите внимание: `LegacyOptionalStartupTest` и `LegacyConnectionViewUiTest` рассчитаны на запуск **без** legacy. Если `legacy.datasource.url` прописан в основном `application.properties`, профиль `test` должен его переопределить пустым значением, иначе бины legacy создадутся и тесты упадут.
@@ -312,7 +337,7 @@ statement.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO " + RO_USER);
 | На экране «Ошибка: Legacy DataSource is not configured» | `legacy.datasource.url` пуст, и бины не создались (`@ConditionalOnExpression`) | Проверьте `application.properties` и активный профиль, который мог переопределить URL пустым значением |
 | `Connection refused` / timeout | Контейнер не запущен или ещё стартует | `dev/legacy/legacy-db.sh status`, затем `dev/legacy/legacy-db.sh up` |
 | `password authentication failed for user "reestr_ro"` | Роль не создана или у неё другой пароль | Выполните раздел 3 `LEGACY_DOCKER.md` |
-| `permission denied for relation ...` при **чтении** | Таблицы созданы после `GRANT` и не попали в default privileges (их создал другой владелец) | Повторите `GRANT SELECT ON ALL TABLES IN SCHEMA public TO reestr_ro` |
+| `permission denied for relation ...` при **чтении** | Новый SQL читает таблицу, которой нет в `dev/legacy/grant-readonly.sql` (`SELECT` выдаётся только на таблицы из `sql/legacy/**`) | Добавьте таблицу в `grant-readonly.sql` и выполните `dev/legacy/legacy-db.sh grant`. `GRANT SELECT ON ALL TABLES` не используйте |
 | `permission denied` при **записи** | Так и должно быть: сработал уровень 3 | — |
 | «Только чтение: нет» | `transaction_read_only` в сессии выключен: Hikari read-only или `readOnlyMode` не применились (например, `legacy.datasource.hikari.read-only=false`), либо проверочный запрос выполнился вне READ ONLY-транзакции | Проверьте свойство `hikari.read-only`. Попробуйте `INSERT` через `legacyJdbc`: если он проходит до уровня роли и падает с `permission denied`, а не `read-only transaction`, значит уровни 1–2 не работают. Уровень 3 всё равно защищает |
 | `pg_restore`: ошибки про `uuid-ossp` | Нестандартный образ без расширения | Используйте официальный `postgres:9.6` |
@@ -331,6 +356,7 @@ statement.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO " + RO_USER);
 
 - [ ] Контейнер `reestr-pg96` работает на `localhost:5435`, `reestrdb` восстановлена (335 таблиц).
 - [ ] Роль `reestr_ro` создана, `DELETE` под ней даёт `permission denied`.
+- [ ] Права роли выданы через `dev/legacy/grant-readonly.sql`: `SELECT` только на 19 таблиц, `SELECT count(*) FROM userinfo` под `reestr_ro` даёт `permission denied`.
 - [ ] `application.properties`: main на HSQLDB, legacy на `localhost:5435/reestrdb`.
 - [ ] Бины `legacy` и `legacyJdbc` создаются только при непустом URL; `@Primary` остался у main.
 - [ ] Драйвер получает `readOnly=true` и `readOnlyMode=always` из Java; Hikari `read-only=true`.

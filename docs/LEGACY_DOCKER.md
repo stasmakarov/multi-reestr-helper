@@ -55,15 +55,11 @@ docker exec reestr-pg96 rm /tmp/reestrdb.dump
 docker exec -i reestr-pg96 psql -U postgres -d reestrdb <<'SQL'
 CREATE ROLE reestr_ro LOGIN PASSWORD 'reestr_ro';
 GRANT CONNECT ON DATABASE reestrdb TO reestr_ro;
-GRANT USAGE ON SCHEMA public TO reestr_ro;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO reestr_ro;
-GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO reestr_ro;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO reestr_ro;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO reestr_ro;
 SQL
+dev/legacy/grant-readonly.sh
 ```
 
-(Default privileges действуют для объектов, которые в будущем создаст `postgres`.)
+`grant-readonly.sh` выполняет `dev/legacy/grant-readonly.sql`: `USAGE` на схему `public` и `SELECT` **только** на 19 таблиц, которые читают SQL-файлы приложения (`src/main/resources/sql/legacy/**`). `GRANT SELECT ON ALL TABLES` и `ALTER DEFAULT PRIVILEGES` не используются: остальные таблицы дампа, в том числе `userinfo`, роли не видны. Новый запрос читает ещё одну таблицу — добавьте её в `grant-readonly.sql` и выполните `dev/legacy/legacy-db.sh grant`.
 
 ## 4. Переменные окружения приложения
 

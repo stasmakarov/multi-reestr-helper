@@ -83,10 +83,8 @@ class LegacyDataSourceIntegrationTest {
             statement.execute("GRANT USAGE ON SCHEMA public TO " + RO_USER);
             statement.execute("CREATE TABLE legacy_probe(id int)");
             statement.execute("INSERT INTO legacy_probe(id) VALUES (1)");
-            statement.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO " + RO_USER);
-            statement.execute("GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO " + RO_USER);
-            statement.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO " + RO_USER);
-            statement.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO " + RO_USER);
+            // Как в dev/legacy/grant-readonly.sql: SELECT только на нужные таблицы, без ON ALL TABLES.
+            statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to prepare reestr_ro on Testcontainers PostgreSQL", e);
         }
