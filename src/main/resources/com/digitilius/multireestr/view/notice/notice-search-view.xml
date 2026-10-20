@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://noticeSearchView.title"
+      focusComponent="numberField">
+    <data readOnly="true">
+        <collection id="candidatesDc"
+                    class="com.digitilius.multireestr.entity.legacy.NoticeCandidateDto"/>
+    </data>
+    <layout>
+        <hbox id="searchForm" width="100%" alignItems="END" classNames="buttons-panel">
+            <textField id="numberField"
+                       label="msg://numberField.label"
+                       placeholder="msg://numberField.placeholder"
+                       datatype="string"
+                       width="22em"/>
+            <datePicker id="dateField"
+                        label="msg://dateField.label"
+                        datatype="localDate"/>
+            <textField id="subjectField"
+                       label="msg://subjectField.label"
+                       datatype="string"
+                       width="22em"/>
+            <button id="searchBtn" text="msg://searchBtn.text" themeNames="primary" clickShortcut="Enter"/>
+            <button id="clearBtn" text="msg://clearBtn.text"/>
+        </hbox>
+        <hbox id="buttonsPanel" classNames="buttons-panel" width="100%">
+            <button id="openBtn" text="msg://openBtn.text" enabled="false"/>
+        </hbox>
+        <dataGrid id="candidatesGrid"
+                  width="100%"
+                  minHeight="20em"
+                  dataContainer="candidatesDc"
+                  columnReorderingAllowed="true">
+            <columns resizable="true">
+                <column property="number" header="msg://column.number" autoWidth="true"/>
+                <column property="publishedAt" header="msg://column.publishedAt" autoWidth="true">
+                    <localDateTimeRenderer format="dd.MM.yyyy HH:mm"/>
+                </column>
+                <column property="subject" header="msg://column.subject" flexGrow="1"/>
+                <column property="modifVersion" header="msg://column.modifVersion" autoWidth="true"/>
+                <column property="deleted" header="msg://column.deleted" autoWidth="true"/>
+                <column property="canceled" header="msg://column.canceled" autoWidth="true"/>
+                <column property="localCopy" header="msg://column.localCopy" autoWidth="true"/>
+                <column property="chosen" header="msg://column.chosen" autoWidth="true"/>
+                <column property="reason" header="msg://column.reason" autoWidth="true"/>
+            </columns>
+        </dataGrid>
+    </layout>
+</view>
