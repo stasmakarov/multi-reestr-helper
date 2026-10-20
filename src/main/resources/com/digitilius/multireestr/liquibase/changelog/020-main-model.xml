@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/020-main-model.xml">
+
+    <changeSet id="1" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_CALENDAR_DAY">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="DATE_" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="YEAR_" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DAY_TYPE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SOURCE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MARK" type="varchar(255)"/>
+        </createTable>
+        <createIndex indexName="IDX_MTR_CALENDAR_DAY_UNQ" tableName="MTR_CALENDAR_DAY" unique="true">
+            <column name="DATE_"/>
+        </createIndex>
+        <createIndex indexName="IDX_MTR_CALENDAR_DAY_YEAR" tableName="MTR_CALENDAR_DAY">
+            <column name="YEAR_"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_REFERENCE_LIST">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="CODE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NAME" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="KIND" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LEGAL_REF" type="varchar(1000)"/>
+            <column name="DESCRIPTION" type="clob"/>
+        </createTable>
+        <createIndex indexName="IDX_MTR_REFERENCE_LIST_UNQ" tableName="MTR_REFERENCE_LIST" unique="true">
+            <column name="CODE"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="3" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_REFERENCE_LIST_ITEM">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="LIST_ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALUE_" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PREFIX_MATCH" type="boolean"/>
+            <column name="EXCLUDED" type="boolean"/>
+            <column name="GROUP_CODE" type="varchar(20)"/>
+            <column name="CAPTION" type="varchar(2000)"/>
+            <column name="VALID_FROM" type="date"/>
+            <column name="VALID_TO" type="date"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="MTR_REFERENCE_LIST_ITEM" baseColumnNames="LIST_ID"
+                                 referencedTableName="MTR_REFERENCE_LIST" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_REF_LIST_ITEM_ON_LIST"/>
+        <createIndex indexName="IDX_MTR_REF_LIST_ITEM_LIST_VALUE" tableName="MTR_REFERENCE_LIST_ITEM">
+            <column name="LIST_ID"/>
+            <column name="VALUE_"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="4" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_RULE">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="CODE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NAME" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TEMPLATE_TYPE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="OBJECT_TYPE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SEVERITY" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LEGAL_REF" type="varchar(1000)"/>
+            <column name="EXPLANATION_TEMPLATE" type="clob"/>
+            <column name="ENABLED" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DESCRIPTION" type="clob"/>
+        </createTable>
+        <createIndex indexName="IDX_MTR_RULE_UNQ" tableName="MTR_RULE" unique="true">
+            <column name="CODE"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="5" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_RULE_VERSION">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="RULE_ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION_NUMBER" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STATUS" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALID_FROM" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALID_TO" type="date"/>
+            <column name="DEADLINE_ANCHOR" type="varchar(50)"/>
+            <column name="DEADLINE_OFFSET_VALUE" type="int"/>
+            <column name="DEADLINE_UNIT" type="varchar(50)"/>
+            <column name="DEADLINE_START_NEXT_DAY" type="boolean"/>
+            <column name="DEADLINE_SHIFT_RULE" type="varchar(50)"/>
+            <column name="DEADLINE_TARGET" type="varchar(50)"/>
+            <column name="DEADLINE_COMPARE_OPERATOR" type="varchar(50)"/>
+            <column name="DEADLINE_WARN_BEFORE_DAYS" type="int"/>
+            <column name="CHANGE_NOTE" type="clob"/>
+            <column name="APPROVED_BY" type="varchar(255)"/>
+            <column name="APPROVED_AT" type="timestamp with time zone"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="MTR_RULE_VERSION" baseColumnNames="RULE_ID"
+                                 referencedTableName="MTR_RULE" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_RULE_VERSION_ON_RULE"/>
+        <createIndex indexName="IDX_MTR_RULE_VERSION_UNQ" tableName="MTR_RULE_VERSION" unique="true">
+            <column name="RULE_ID"/>
+            <column name="VERSION_NUMBER"/>
+        </createIndex>
+        <createIndex indexName="IDX_MTR_RULE_VERSION_RULE_STATUS" tableName="MTR_RULE_VERSION">
+            <column name="RULE_ID"/>
+            <column name="STATUS"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="6" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_RULE_PARAMETER">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="RULE_VERSION_ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CODE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PARAM_TYPE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALUE_" type="varchar(4000)"/>
+            <column name="REFERENCE_LIST_ID" type="${uuid.type}"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="MTR_RULE_PARAMETER" baseColumnNames="RULE_VERSION_ID"
+                                 referencedTableName="MTR_RULE_VERSION" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_RULE_PARAMETER_ON_RULE_VERSION"/>
+        <addForeignKeyConstraint baseTableName="MTR_RULE_PARAMETER" baseColumnNames="REFERENCE_LIST_ID"
+                                 referencedTableName="MTR_REFERENCE_LIST" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_RULE_PARAMETER_ON_REFERENCE_LIST"/>
+        <createIndex indexName="IDX_MTR_RULE_PARAMETER_UNQ" tableName="MTR_RULE_PARAMETER" unique="true">
+            <column name="RULE_VERSION_ID"/>
+            <column name="CODE"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="7" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_CHECK_RUN">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="MODE_" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STATUS" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STARTED_AT" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FINISHED_AT" type="timestamp with time zone"/>
+            <column name="OBJECT_TYPE" type="varchar(50)"/>
+            <column name="OBJECT_KEY" type="varchar(50)"/>
+            <column name="PERIOD_FROM" type="date"/>
+            <column name="PERIOD_TO" type="date"/>
+            <column name="RULE_VERSION_ID" type="${uuid.type}"/>
+            <column name="OBJECTS_CHECKED" type="int"/>
+            <column name="VIOLATIONS_FOUND" type="int"/>
+            <column name="ERROR_MESSAGE" type="clob"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="MTR_CHECK_RUN" baseColumnNames="RULE_VERSION_ID"
+                                 referencedTableName="MTR_RULE_VERSION" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_CHECK_RUN_ON_RULE_VERSION"/>
+        <createIndex indexName="IDX_MTR_CHECK_RUN_STARTED" tableName="MTR_CHECK_RUN">
+            <column name="STARTED_AT"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="8" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_VIOLATION">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="RULE_ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RULE_VERSION_ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LAST_CHECK_RUN_ID" type="${uuid.type}"/>
+            <column name="OBJECT_TYPE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="OBJECT_KEY" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LEGACY_ID" type="int"/>
+            <column name="OBJECT_CAPTION" type="varchar(255)"/>
+            <column name="DETAIL" type="varchar(255)"/>
+            <column name="FINGERPRINT" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SEVERITY" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MESSAGE" type="clob">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LEGAL_REF" type="varchar(1000)"/>
+            <column name="DUE_DATE" type="date"/>
+            <column name="FACT_DATE" type="date"/>
+            <column name="DEVIATION_DAYS" type="int"/>
+            <column name="STATUS" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FIRST_DETECTED_AT" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LAST_DETECTED_AT" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RESOLVED_AT" type="timestamp with time zone"/>
+            <column name="ACKNOWLEDGED_BY" type="varchar(255)"/>
+            <column name="ACKNOWLEDGED_AT" type="timestamp with time zone"/>
+            <column name="COMMENT_" type="clob"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="MTR_VIOLATION" baseColumnNames="RULE_ID"
+                                 referencedTableName="MTR_RULE" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_VIOLATION_ON_RULE"/>
+        <addForeignKeyConstraint baseTableName="MTR_VIOLATION" baseColumnNames="RULE_VERSION_ID"
+                                 referencedTableName="MTR_RULE_VERSION" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_VIOLATION_ON_RULE_VERSION"/>
+        <addForeignKeyConstraint baseTableName="MTR_VIOLATION" baseColumnNames="LAST_CHECK_RUN_ID"
+                                 referencedTableName="MTR_CHECK_RUN" referencedColumnNames="ID"
+                                 constraintName="FK_MTR_VIOLATION_ON_LAST_CHECK_RUN"/>
+        <createIndex indexName="IDX_MTR_VIOLATION_UNQ" tableName="MTR_VIOLATION" unique="true">
+            <column name="FINGERPRINT"/>
+        </createIndex>
+        <createIndex indexName="IDX_MTR_VIOLATION_OBJECT" tableName="MTR_VIOLATION">
+            <column name="OBJECT_TYPE"/>
+            <column name="OBJECT_KEY"/>
+        </createIndex>
+        <createIndex indexName="IDX_MTR_VIOLATION_STATUS" tableName="MTR_VIOLATION">
+            <column name="STATUS"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="9" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_CONTRACT_TERM">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="CONTRACT_LEGACY_ID" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CONTRACT_NUMBER" type="varchar(100)"/>
+            <column name="PURCHASE_NUMBER" type="varchar(19)"/>
+            <column name="TERM_TYPE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TERM_ANCHOR" type="varchar(50)"/>
+            <column name="TERM_OFFSET_VALUE" type="int"/>
+            <column name="TERM_UNIT" type="varchar(50)"/>
+            <column name="TERM_START_NEXT_DAY" type="boolean"/>
+            <column name="TERM_SHIFT_RULE" type="varchar(50)"/>
+            <column name="TERM_TARGET" type="varchar(50)"/>
+            <column name="TERM_COMPARE_OPERATOR" type="varchar(50)"/>
+            <column name="TERM_WARN_BEFORE_DAYS" type="int"/>
+            <column name="FIXED_DATE" type="date"/>
+            <column name="SOURCE_CLAUSE" type="varchar(255)"/>
+            <column name="NOTE" type="clob"/>
+        </createTable>
+        <createIndex indexName="IDX_MTR_CONTRACT_TERM_UNQ" tableName="MTR_CONTRACT_TERM" unique="true">
+            <column name="CONTRACT_LEGACY_ID"/>
+            <column name="TERM_TYPE"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="10" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_PLAN_SCHEDULE_EVENT">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="FIN_YEAR" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PLAN_VERSION" type="int"/>
+            <column name="LEGACY_PLAN_ID" type="int"/>
+            <column name="LBO_DATE" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="APPROVAL_DATE" type="date"/>
+            <column name="BASIS_DOCUMENT" type="varchar(255)"/>
+            <column name="NOTE" type="clob"/>
+        </createTable>
+        <createIndex indexName="IDX_MTR_PLAN_SCHEDULE_EVENT_UNQ" tableName="MTR_PLAN_SCHEDULE_EVENT" unique="true">
+            <column name="FIN_YEAR"/>
+            <column name="PLAN_VERSION"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
