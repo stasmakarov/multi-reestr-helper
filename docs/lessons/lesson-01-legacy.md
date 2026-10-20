@@ -55,25 +55,25 @@ flowchart LR
 
 **Порты на машине автора:** 5432 занят локальным Postgres, 5433 и 5434 тоже заняты, поэтому контейнер legacy пробрасывается на **5435**. Если у вас порт свободен, можно выбрать другой, но тогда поправьте URL (шаг 4.4).
 
-Подробная инструкция — в [LEGACY_DOCKER.md](../LEGACY_DOCKER.md), здесь только основные команды.
+Всё окружение поднимается одним скриптом из репозитория, [`dev/legacy/legacy-db.sh`](../../dev/legacy/legacy-db.sh). Дамп `reestrdb.dump` нужно заранее положить в `dev/legacy/`.
 
 ```bash
-# 1. Контейнер PostgreSQL 9.6
-docker run -d --name reestr-pg96 \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5435:5432 \
-  -v reestr-pg96:/var/lib/postgresql/data \
-  postgres:9.6
-until docker exec reestr-pg96 pg_isready -U postgres; do sleep 1; done
-
-# 2. База и восстановление дампа (дамп лежит в dev/legacy/, в git не попадает)
-docker exec reestr-pg96 createdb -U postgres reestrdb
-docker cp dev/legacy/reestrdb.dump reestr-pg96:/tmp/reestrdb.dump
-docker exec reestr-pg96 pg_restore -U postgres -O -x --no-owner -d reestrdb /tmp/reestrdb.dump
-docker exec reestr-pg96 rm /tmp/reestrdb.dump
+dev/legacy/legacy-db.sh          # то же, что up: поднять контейнер (при первом запуске — создать и восстановить дамп)
+dev/legacy/legacy-db.sh status   # URL подключения и число извещений
+dev/legacy/legacy-db.sh down     # остановить
+dev/legacy/legacy-db.sh reset    # удалить контейнер и том, развернуть заново из дампа
 ```
 
-Роль только для чтения создаётся скриптом из `LEGACY_DOCKER.md`, раздел 3. В продуктиве используется [`docs/sql/legacy_readonly_user.sql`](../sql/legacy_readonly_user.sql) с другим паролем. Ключевые строки скрипта:
+При первом запуске `up` делает следующее:
+
+1. создаёт контейнер `reestr-pg96` (`postgres:9.6`, порт `5435:5432`, том `reestr-pg96`) с политикой `--restart unless-stopped`;
+2. ждёт `pg_isready`;
+3. если базы `reestrdb` нет, создаёт её, восстанавливает дамп и заводит роль `reestr_ro` только для чтения;
+4. выводит URL подключения и число строк в `notices`.
+
+Скрипт идемпотентен: повторный запуск ничего не ломает. Благодаря политике перезапуска контейнер поднимается вместе с Docker после перезагрузки компьютера (если в Docker Desktop включён автозапуск при входе). Ручные команды, которые выполняет скрипт, разобраны в [LEGACY_DOCKER.md](../LEGACY_DOCKER.md).
+
+Роль только для чтения создаёт `legacy-db.sh` (те же команды есть в `LEGACY_DOCKER.md`, раздел 3). В продуктиве используется [`docs/sql/legacy_readonly_user.sql`](../sql/legacy_readonly_user.sql) с другим паролем. Ключевые строки скрипта:
 
 ```sql
 CREATE ROLE reestr_ro LOGIN PASSWORD 'CHANGE_ME';
@@ -310,7 +310,7 @@ statement.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO " + RO_USER);
 |---|---|---|
 | `docker: ... port is already allocated` / `bind: address already in use` | Порт занят локальным Postgres или другим контейнером | `lsof -i :5435`; выберите свободный порт в `-p` и поправьте `legacy.datasource.url` |
 | На экране «Ошибка: Legacy DataSource is not configured» | `legacy.datasource.url` пуст, и бины не создались (`@ConditionalOnExpression`) | Проверьте `application.properties` и активный профиль, который мог переопределить URL пустым значением |
-| `Connection refused` / timeout | Контейнер не запущен или ещё стартует | `docker ps`, `docker start reestr-pg96`, `pg_isready` |
+| `Connection refused` / timeout | Контейнер не запущен или ещё стартует | `dev/legacy/legacy-db.sh status`, затем `dev/legacy/legacy-db.sh up` |
 | `password authentication failed for user "reestr_ro"` | Роль не создана или у неё другой пароль | Выполните раздел 3 `LEGACY_DOCKER.md` |
 | `permission denied for relation ...` при **чтении** | Таблицы созданы после `GRANT` и не попали в default privileges (их создал другой владелец) | Повторите `GRANT SELECT ON ALL TABLES IN SCHEMA public TO reestr_ro` |
 | `permission denied` при **записи** | Так и должно быть: сработал уровень 3 | — |

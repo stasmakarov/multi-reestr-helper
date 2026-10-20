@@ -3,6 +3,16 @@
 Файл дампа: `reestrdb.dump` (custom-формат `pg_dump -Fc -O -x`, без владельцев и прав, ~4.5 МБ).
 SHA-256: `25f12e8fd12bce77c02cecd72d3b7467fb7b94098785397d0da7bbcb2986ffc3`
 
+## Быстрый старт: скрипт
+
+Всё, что описано ниже, автоматизировано в `dev/legacy/legacy-db.sh` (команды `up` по умолчанию, `down`, `status`, `reset`):
+
+```bash
+dev/legacy/legacy-db.sh
+```
+
+Скрипт создаёт контейнер с `--restart unless-stopped`, восстанавливает `dev/legacy/reestrdb.dump` и заводит `reestr_ro`. Ручные шаги ниже оставлены для понимания и отладки.
+
 ## 1. Запуск контейнера
 
 ```bash
@@ -86,6 +96,7 @@ docker exec -e PGPASSWORD=reestr_ro reestr-pg96 psql -h localhost -U reestr_ro -
 
 ```bash
 docker rm -f reestr-pg96 && docker volume rm reestr-pg96
+# или: dev/legacy/legacy-db.sh reset
 ```
 
 ## Примечание о происхождении дампа
