@@ -29,3 +29,6 @@ vite.generated.ts
 webpack.generated.js
 
 .DS_Store
+
+# Legacy DB dump (dev only)
+dev/legacy/*.dump
