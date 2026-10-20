@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://checkRunDetailView.title"
+      focusComponent="form">
+    <data>
+        <instance id="checkRunDc" class="com.digitilius.multireestr.entity.CheckRun">
+            <fetchPlan extends="_base">
+                <property name="ruleVersion" fetchPlan="_instance_name"/>
+            </fetchPlan>
+            <loader id="checkRunDl"/>
+        </instance>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <actions>
+        <action id="closeAction" type="detail_close"/>
+    </actions>
+    <layout>
+        <formLayout id="form" dataContainer="checkRunDc">
+            <comboBox id="modeField" property="mode" readOnly="true"/>
+            <comboBox id="statusField" property="status" readOnly="true"/>
+            <dateTimePicker id="startedAtField" property="startedAt" readOnly="true"/>
+            <dateTimePicker id="finishedAtField" property="finishedAt" readOnly="true"/>
+            <comboBox id="objectTypeField" property="objectType" readOnly="true"/>
+            <textField id="objectKeyField" property="objectKey" readOnly="true"/>
+            <datePicker id="periodFromField" property="periodFrom" readOnly="true"/>
+            <datePicker id="periodToField" property="periodTo" readOnly="true"/>
+            <entityPicker id="ruleVersionField" property="ruleVersion" readOnly="true"/>
+            <integerField id="objectsCheckedField" property="objectsChecked" readOnly="true"/>
+            <integerField id="violationsFoundField" property="violationsFound" readOnly="true"/>
+            <textArea id="errorMessageField" property="errorMessage" readOnly="true" colspan="2" height="6em"/>
+        </formLayout>
+        <hbox id="detailActions">
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://ruleParameterDetailView.title"
+      focusComponent="form">
+    <data>
+        <instance id="ruleParameterDc" class="com.digitilius.multireestr.entity.RuleParameter">
+            <fetchPlan extends="_base">
+                <property name="ruleVersion" fetchPlan="_instance_name"/>
+                <property name="referenceList" fetchPlan="_instance_name"/>
+            </fetchPlan>
+            <loader id="ruleParameterDl"/>
+        </instance>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <actions>
+        <action id="saveCloseAction" type="detail_saveClose"/>
+        <action id="closeAction" type="detail_close"/>
+    </actions>
+    <layout>
+        <formLayout id="form" dataContainer="ruleParameterDc">
+            <textField id="codeField" property="code"/>
+            <comboBox id="paramTypeField" property="paramType"/>
+            <textField id="valueField" property="value"/>
+            <entityComboBox id="referenceListField" property="referenceList">
+                <itemsQuery class="com.digitilius.multireestr.entity.ReferenceList">
+                    <query>
+                        <![CDATA[
+                        select e from mtr_ReferenceList e
+                        where e.name like :searchString or e.code like :searchString
+                        order by e.name
+                        ]]>
+                    </query>
+                </itemsQuery>
+            </entityComboBox>
+        </formLayout>
+        <hbox id="detailActions">
+            <button id="saveAndCloseButton" action="saveCloseAction"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://ruleVersionDetailView.title"
+      focusComponent="form">
+    <data>
+        <instance id="ruleVersionDc" class="com.digitilius.multireestr.entity.RuleVersion">
+            <fetchPlan extends="_base">
+                <property name="rule" fetchPlan="_instance_name"/>
+                <property name="parameters" fetchPlan="_base">
+                    <property name="referenceList" fetchPlan="_instance_name"/>
+                </property>
+            </fetchPlan>
+            <loader id="ruleVersionDl"/>
+            <collection id="parametersDc" property="parameters"/>
+        </instance>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <actions>
+        <action id="saveCloseAction" type="detail_saveClose"/>
+        <action id="closeAction" type="detail_close"/>
+    </actions>
+    <layout>
+        <formLayout id="form" dataContainer="ruleVersionDc">
+            <integerField id="versionNumberField" property="versionNumber"/>
+            <comboBox id="statusField" property="status"/>
+            <datePicker id="validFromField" property="validFrom"/>
+            <datePicker id="validToField" property="validTo"/>
+            <textField id="approvedByField" property="approvedBy"/>
+            <dateTimePicker id="approvedAtField" property="approvedAt"/>
+            <textArea id="changeNoteField" property="changeNote" colspan="2" height="6em"/>
+            <comboBox id="deadlineAnchorField" property="deadline.anchor"/>
+            <integerField id="deadlineOffsetValueField" property="deadline.offsetValue"/>
+            <comboBox id="deadlineUnitField" property="deadline.unit"/>
+            <checkbox id="deadlineStartNextDayField" property="deadline.startNextDay"/>
+            <comboBox id="deadlineShiftRuleField" property="deadline.shiftRule"/>
+            <comboBox id="deadlineTargetField" property="deadline.target"/>
+            <comboBox id="deadlineCompareOperatorField" property="deadline.compareOperator"/>
+            <integerField id="deadlineWarnBeforeDaysField" property="deadline.warnBeforeDays"/>
+        </formLayout>
+        <hbox id="parametersButtonsPanel" classNames="buttons-panel">
+            <button id="createParameterButton" action="parametersDataGrid.createAction"/>
+            <button id="editParameterButton" action="parametersDataGrid.editAction"/>
+            <button id="removeParameterButton" action="parametersDataGrid.removeAction"/>
+        </hbox>
+        <dataGrid id="parametersDataGrid" dataContainer="parametersDc" width="100%" minHeight="12em">
+            <actions>
+                <action id="createAction" type="list_create">
+                    <properties>
+                        <property name="openMode" value="DIALOG"/>
+                    </properties>
+                </action>
+                <action id="editAction" type="list_edit">
+                    <properties>
+                        <property name="openMode" value="DIALOG"/>
+                    </properties>
+                </action>
+                <action id="removeAction" type="list_remove"/>
+            </actions>
+            <columns resizable="true">
+                <column property="code"/>
+                <column property="paramType"/>
+                <column property="value"/>
+                <column property="referenceList"/>
+            </columns>
+        </dataGrid>
+        <hbox id="detailActions">
+            <button id="saveAndCloseButton" action="saveCloseAction"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

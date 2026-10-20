@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://violationDetailView.title"
+      focusComponent="form">
+    <data>
+        <instance id="violationDc" class="com.digitilius.multireestr.entity.Violation">
+            <fetchPlan extends="_base">
+                <property name="rule" fetchPlan="_instance_name"/>
+                <property name="ruleVersion" fetchPlan="_instance_name"/>
+                <property name="lastCheckRun" fetchPlan="_instance_name"/>
+            </fetchPlan>
+            <loader id="violationDl"/>
+        </instance>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <actions>
+        <action id="saveCloseAction" type="detail_saveClose"/>
+        <action id="closeAction" type="detail_close"/>
+    </actions>
+    <layout>
+        <formLayout id="form" dataContainer="violationDc">
+            <comboBox id="statusField" property="status"/>
+            <textField id="acknowledgedByField" property="acknowledgedBy"
+                       label="msg://acknowledgedMark.label"/>
+            <dateTimePicker id="acknowledgedAtField" property="acknowledgedAt"/>
+            <textArea id="commentField" property="comment" colspan="2" height="6em"/>
+            <entityPicker id="ruleField" property="rule" readOnly="true"/>
+            <entityPicker id="ruleVersionField" property="ruleVersion" readOnly="true"/>
+            <entityPicker id="lastCheckRunField" property="lastCheckRun" readOnly="true"/>
+            <comboBox id="objectTypeField" property="objectType" readOnly="true"/>
+            <textField id="objectKeyField" property="objectKey" readOnly="true"/>
+            <integerField id="legacyIdField" property="legacyId" readOnly="true"/>
+            <textField id="objectCaptionField" property="objectCaption" readOnly="true"/>
+            <textField id="detailField" property="detail" readOnly="true"/>
+            <textField id="fingerprintField" property="fingerprint" readOnly="true"/>
+            <comboBox id="severityField" property="severity" readOnly="true"/>
+            <textArea id="messageField" property="message" readOnly="true" colspan="2" height="6em"/>
+            <textField id="legalRefField" property="legalRef" readOnly="true" colspan="2"/>
+            <datePicker id="dueDateField" property="dueDate" readOnly="true"/>
+            <datePicker id="factDateField" property="factDate" readOnly="true"/>
+            <integerField id="deviationDaysField" property="deviationDays" readOnly="true"/>
+            <dateTimePicker id="firstDetectedAtField" property="firstDetectedAt" readOnly="true"/>
+            <dateTimePicker id="lastDetectedAtField" property="lastDetectedAt" readOnly="true"/>
+            <dateTimePicker id="resolvedAtField" property="resolvedAt" readOnly="true"/>
+        </formLayout>
+        <hbox id="detailActions">
+            <button id="saveAndCloseButton" action="saveCloseAction"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

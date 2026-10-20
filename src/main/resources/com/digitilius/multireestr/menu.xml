@@ -5,4 +5,27 @@
         <item view="mtr_User.list" title="msg://com.digitilius.multireestr.view.user/UserListView.title"/>
     </menu>
 
+    <menu id="rules" title="msg://com.digitilius.multireestr/menu.rules.title" opened="true">
+        <item view="mtr_Rule.list"
+              title="msg://com.digitilius.multireestr.view.rule/ruleListView.title"/>
+        <item view="mtr_ReferenceList.list"
+              title="msg://com.digitilius.multireestr.view.referencelist/referenceListListView.title"/>
+    </menu>
+
+    <menu id="control" title="msg://com.digitilius.multireestr/menu.control.title" opened="true">
+        <item view="mtr_Violation.list"
+              title="msg://com.digitilius.multireestr.view.violation/violationListView.title"/>
+        <item view="mtr_CheckRun.list"
+              title="msg://com.digitilius.multireestr.view.checkrun/checkRunListView.title"/>
+    </menu>
+
+    <menu id="catalogs" title="msg://com.digitilius.multireestr/menu.catalogs.title" opened="true">
+        <item view="mtr_CalendarDay.list"
+              title="msg://com.digitilius.multireestr.view.calendarday/calendarDayListView.title"/>
+        <item view="mtr_ContractTerm.list"
+              title="msg://com.digitilius.multireestr.view.contractterm/contractTermListView.title"/>
+        <item view="mtr_PlanScheduleEvent.list"
+              title="msg://com.digitilius.multireestr.view.planscheduleevent/planScheduleEventListView.title"/>
+    </menu>
+
 </menu-config>

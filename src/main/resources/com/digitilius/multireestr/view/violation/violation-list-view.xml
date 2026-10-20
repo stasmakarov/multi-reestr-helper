@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://violationListView.title"
+      focusComponent="violationsDataGrid">
+    <data>
+        <collection id="violationsDc" class="com.digitilius.multireestr.entity.Violation">
+            <fetchPlan extends="_base">
+                <property name="rule" fetchPlan="_instance_name"/>
+            </fetchPlan>
+            <loader id="violationsDl" readOnly="true">
+                <query>
+                    <![CDATA[select e from mtr_Violation e order by e.firstDetectedAt desc]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <actions>
+        <action id="selectAction" type="lookup_select"/>
+        <action id="discardAction" type="lookup_discard"/>
+    </actions>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+        <urlQueryParameters>
+            <genericFilter component="genericFilter"/>
+            <pagination component="pagination"/>
+        </urlQueryParameters>
+    </facets>
+    <layout>
+        <genericFilter id="genericFilter" dataLoader="violationsDl">
+            <properties include=".*"/>
+            <configurations>
+                <configuration id="statusSeverityConfiguration" default="true"
+                               name="msg://statusSeverityFilter.name">
+                    <groupFilter id="statusSeverityGroup" operation="AND">
+                        <propertyFilter id="statusFilter" property="status" operation="EQUAL"/>
+                        <propertyFilter id="severityFilter" property="severity" operation="EQUAL"/>
+                    </groupFilter>
+                </configuration>
+            </configurations>
+        </genericFilter>
+        <hbox id="buttonsPanel" wrap="true" width="100%">
+            <startSlot>
+                <button id="editButton" action="violationsDataGrid.editAction"/>
+            </startSlot>
+            <endSlot>
+                <simplePagination id="pagination" dataLoader="violationsDl"/>
+            </endSlot>
+        </hbox>
+        <dataGrid id="violationsDataGrid"
+                  width="100%"
+                  minHeight="20em"
+                  dataContainer="violationsDc"
+                  columnReorderingAllowed="true">
+            <actions>
+                <action id="editAction" type="list_edit"/>
+            </actions>
+            <columns resizable="true">
+                <column property="firstDetectedAt"/>
+                <column property="status"/>
+                <column property="severity"/>
+                <column property="rule"/>
+                <column property="objectType"/>
+                <column property="objectKey"/>
+                <column property="objectCaption"/>
+                <column property="message"/>
+            </columns>
+        </dataGrid>
+        <hbox id="lookupActions" visible="false">
+            <button id="selectButton" action="selectAction"/>
+            <button id="discardButton" action="discardAction"/>
+        </hbox>
+    </layout>
+</view>

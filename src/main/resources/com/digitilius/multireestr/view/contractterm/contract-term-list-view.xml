@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://contractTermListView.title"
+      focusComponent="contractTermsDataGrid">
+    <data>
+        <collection id="contractTermsDc" class="com.digitilius.multireestr.entity.ContractTerm">
+            <fetchPlan extends="_base"/>
+            <loader id="contractTermsDl" readOnly="true">
+                <query>
+                    <![CDATA[select e from mtr_ContractTerm e order by e.contractNumber, e.termType]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <actions>
+        <action id="selectAction" type="lookup_select"/>
+        <action id="discardAction" type="lookup_discard"/>
+    </actions>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+        <urlQueryParameters>
+            <genericFilter component="genericFilter"/>
+            <pagination component="pagination"/>
+        </urlQueryParameters>
+    </facets>
+    <layout>
+        <genericFilter id="genericFilter" dataLoader="contractTermsDl">
+            <properties include=".*"/>
+        </genericFilter>
+        <hbox id="buttonsPanel" wrap="true" width="100%">
+            <startSlot>
+                <button id="createButton" action="contractTermsDataGrid.createAction"/>
+                <button id="editButton" action="contractTermsDataGrid.editAction"/>
+                <button id="removeButton" action="contractTermsDataGrid.removeAction"/>
+            </startSlot>
+            <endSlot>
+                <simplePagination id="pagination" dataLoader="contractTermsDl"/>
+            </endSlot>
+        </hbox>
+        <dataGrid id="contractTermsDataGrid"
+                  width="100%"
+                  minHeight="20em"
+                  dataContainer="contractTermsDc"
+                  columnReorderingAllowed="true">
+            <actions>
+                <action id="createAction" type="list_create"/>
+                <action id="editAction" type="list_edit"/>
+                <action id="removeAction" type="list_remove"/>
+            </actions>
+            <columns resizable="true">
+                <column property="contractLegacyId"/>
+                <column property="contractNumber"/>
+                <column property="purchaseNumber"/>
+                <column property="termType"/>
+                <column property="fixedDate"/>
+                <column property="sourceClause"/>
+            </columns>
+        </dataGrid>
+        <hbox id="lookupActions" visible="false">
+            <button id="selectButton" action="selectAction"/>
+            <button id="discardButton" action="discardAction"/>
+        </hbox>
+    </layout>
+</view>

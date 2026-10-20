@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://contractTermDetailView.title"
+      focusComponent="form">
+    <data>
+        <instance id="contractTermDc" class="com.digitilius.multireestr.entity.ContractTerm">
+            <fetchPlan extends="_base"/>
+            <loader id="contractTermDl"/>
+        </instance>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <actions>
+        <action id="saveCloseAction" type="detail_saveClose"/>
+        <action id="closeAction" type="detail_close"/>
+    </actions>
+    <layout>
+        <formLayout id="form" dataContainer="contractTermDc">
+            <integerField id="contractLegacyIdField" property="contractLegacyId"/>
+            <textField id="contractNumberField" property="contractNumber"/>
+            <textField id="purchaseNumberField" property="purchaseNumber"/>
+            <comboBox id="termTypeField" property="termType"/>
+            <datePicker id="fixedDateField" property="fixedDate"/>
+            <textField id="sourceClauseField" property="sourceClause"/>
+            <textArea id="noteField" property="note" colspan="2" height="6em"/>
+            <comboBox id="termAnchorField" property="term.anchor"/>
+            <integerField id="termOffsetValueField" property="term.offsetValue"/>
+            <comboBox id="termUnitField" property="term.unit"/>
+            <checkbox id="termStartNextDayField" property="term.startNextDay"/>
+            <comboBox id="termShiftRuleField" property="term.shiftRule"/>
+            <comboBox id="termTargetField" property="term.target"/>
+            <comboBox id="termCompareOperatorField" property="term.compareOperator"/>
+            <integerField id="termWarnBeforeDaysField" property="term.warnBeforeDays"/>
+        </formLayout>
+        <hbox id="detailActions">
+            <button id="saveAndCloseButton" action="saveCloseAction"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

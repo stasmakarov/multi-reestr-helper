@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://ruleDetailView.title"
+      focusComponent="form">
+    <data>
+        <instance id="ruleDc" class="com.digitilius.multireestr.entity.Rule">
+            <fetchPlan extends="_base">
+                <property name="versions" fetchPlan="_base">
+                    <property name="parameters" fetchPlan="_base">
+                        <property name="referenceList" fetchPlan="_instance_name"/>
+                    </property>
+                </property>
+            </fetchPlan>
+            <loader id="ruleDl"/>
+            <collection id="versionsDc" property="versions"/>
+        </instance>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <actions>
+        <action id="saveCloseAction" type="detail_saveClose"/>
+        <action id="closeAction" type="detail_close"/>
+    </actions>
+    <layout>
+        <tabSheet id="contentTabSheet" width="100%">
+            <tab id="generalTab" label="msg://generalTab.label">
+                <formLayout id="form" dataContainer="ruleDc">
+                    <textField id="codeField" property="code"/>
+                    <textField id="nameField" property="name"/>
+                    <comboBox id="templateTypeField" property="templateType"/>
+                    <comboBox id="objectTypeField" property="objectType"/>
+                    <comboBox id="severityField" property="severity"/>
+                    <checkbox id="enabledField" property="enabled"/>
+                    <textField id="legalRefField" property="legalRef" colspan="2"/>
+                    <textArea id="explanationTemplateField" property="explanationTemplate" colspan="2"
+                              height="8em"/>
+                    <textArea id="descriptionField" property="description" colspan="2" height="6em"/>
+                </formLayout>
+            </tab>
+            <tab id="versionsTab" label="msg://versionsTab.label">
+                <vbox id="versionsBox" width="100%">
+                    <hbox id="versionsButtonsPanel" classNames="buttons-panel">
+                        <button id="createVersionButton" action="versionsDataGrid.createAction"/>
+                        <button id="editVersionButton" action="versionsDataGrid.editAction"/>
+                        <button id="removeVersionButton" action="versionsDataGrid.removeAction"/>
+                    </hbox>
+                    <dataGrid id="versionsDataGrid" dataContainer="versionsDc" width="100%" minHeight="16em">
+                        <actions>
+                            <action id="createAction" type="list_create">
+                                <properties>
+                                    <property name="openMode" value="DIALOG"/>
+                                </properties>
+                            </action>
+                            <action id="editAction" type="list_edit">
+                                <properties>
+                                    <property name="openMode" value="DIALOG"/>
+                                </properties>
+                            </action>
+                            <action id="removeAction" type="list_remove"/>
+                        </actions>
+                        <columns resizable="true">
+                            <column property="versionNumber"/>
+                            <column property="status"/>
+                            <column property="validFrom"/>
+                            <column property="validTo"/>
+                            <column property="approvedBy"/>
+                            <column property="approvedAt"/>
+                        </columns>
+                    </dataGrid>
+                </vbox>
+            </tab>
+        </tabSheet>
+        <hbox id="detailActions">
+            <button id="saveAndCloseButton" action="saveCloseAction"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

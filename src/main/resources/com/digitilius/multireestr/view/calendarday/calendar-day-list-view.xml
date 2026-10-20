@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://calendarDayListView.title"
+      focusComponent="calendarDaysDataGrid">
+    <data>
+        <collection id="calendarDaysDc"
+                    class="com.digitilius.multireestr.entity.CalendarDay">
+            <fetchPlan extends="_base"/>
+            <loader id="calendarDaysDl" readOnly="true">
+                <query>
+                    <![CDATA[select e from mtr_CalendarDay e order by e.date desc]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <actions>
+        <action id="selectAction" type="lookup_select"/>
+        <action id="discardAction" type="lookup_discard"/>
+    </actions>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+        <urlQueryParameters>
+            <genericFilter component="genericFilter"/>
+            <pagination component="pagination"/>
+        </urlQueryParameters>
+    </facets>
+    <layout>
+        <genericFilter id="genericFilter" dataLoader="calendarDaysDl">
+            <properties include=".*"/>
+            <configurations>
+                <configuration id="yearConfiguration" default="true" name="msg://yearFilter.name">
+                    <propertyFilter id="yearFilter" property="year" operation="EQUAL"/>
+                </configuration>
+            </configurations>
+        </genericFilter>
+        <hbox id="buttonsPanel" wrap="true" width="100%">
+            <startSlot>
+                <button id="createButton" action="calendarDaysDataGrid.createAction"/>
+                <button id="editButton" action="calendarDaysDataGrid.editAction"/>
+                <button id="removeButton" action="calendarDaysDataGrid.removeAction"/>
+            </startSlot>
+            <endSlot>
+                <simplePagination id="pagination" dataLoader="calendarDaysDl"/>
+            </endSlot>
+        </hbox>
+        <dataGrid id="calendarDaysDataGrid"
+                  width="100%"
+                  minHeight="20em"
+                  dataContainer="calendarDaysDc"
+                  columnReorderingAllowed="true">
+            <actions>
+                <action id="createAction" type="list_create"/>
+                <action id="editAction" type="list_edit"/>
+                <action id="removeAction" type="list_remove"/>
+            </actions>
+            <columns resizable="true">
+                <column property="date"/>
+                <column property="year"/>
+                <column property="dayType"/>
+                <column property="source"/>
+                <column property="mark"/>
+            </columns>
+        </dataGrid>
+        <hbox id="lookupActions" visible="false">
+            <button id="selectButton" action="selectAction"/>
+            <button id="discardButton" action="discardAction"/>
+        </hbox>
+    </layout>
+</view>

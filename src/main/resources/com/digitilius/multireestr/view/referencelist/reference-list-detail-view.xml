@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://referenceListDetailView.title"
+      focusComponent="form">
+    <data>
+        <instance id="referenceListDc" class="com.digitilius.multireestr.entity.ReferenceList">
+            <fetchPlan extends="_base">
+                <property name="items" fetchPlan="_base"/>
+            </fetchPlan>
+            <loader id="referenceListDl"/>
+            <collection id="itemsDc" property="items"/>
+        </instance>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <actions>
+        <action id="saveCloseAction" type="detail_saveClose"/>
+        <action id="closeAction" type="detail_close"/>
+    </actions>
+    <layout>
+        <formLayout id="form" dataContainer="referenceListDc">
+            <textField id="codeField" property="code"/>
+            <textField id="nameField" property="name"/>
+            <comboBox id="kindField" property="kind"/>
+            <textField id="legalRefField" property="legalRef" colspan="2"/>
+            <textArea id="descriptionField" property="description" colspan="2" height="6em"/>
+        </formLayout>
+        <hbox id="itemsButtonsPanel" classNames="buttons-panel">
+            <button id="createItemButton" action="itemsDataGrid.createAction"/>
+            <button id="editItemButton" action="itemsDataGrid.editAction"/>
+            <button id="removeItemButton" action="itemsDataGrid.removeAction"/>
+        </hbox>
+        <dataGrid id="itemsDataGrid" dataContainer="itemsDc" width="100%" minHeight="16em">
+            <actions>
+                <action id="createAction" type="list_create">
+                    <properties>
+                        <property name="openMode" value="DIALOG"/>
+                    </properties>
+                </action>
+                <action id="editAction" type="list_edit">
+                    <properties>
+                        <property name="openMode" value="DIALOG"/>
+                    </properties>
+                </action>
+                <action id="removeAction" type="list_remove"/>
+            </actions>
+            <columns resizable="true">
+                <column property="value"/>
+                <column property="prefixMatch"/>
+                <column property="excluded"/>
+                <column property="groupCode"/>
+                <column property="caption"/>
+                <column property="validFrom"/>
+                <column property="validTo"/>
+            </columns>
+        </dataGrid>
+        <hbox id="detailActions">
+            <button id="saveAndCloseButton" action="saveCloseAction"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

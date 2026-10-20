@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://checkRunListView.title"
+      focusComponent="checkRunsDataGrid">
+    <data>
+        <collection id="checkRunsDc" class="com.digitilius.multireestr.entity.CheckRun">
+            <fetchPlan extends="_base">
+                <property name="ruleVersion" fetchPlan="_instance_name"/>
+            </fetchPlan>
+            <loader id="checkRunsDl" readOnly="true">
+                <query>
+                    <![CDATA[select e from mtr_CheckRun e order by e.startedAt desc]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <actions>
+        <action id="selectAction" type="lookup_select"/>
+        <action id="discardAction" type="lookup_discard"/>
+    </actions>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+        <urlQueryParameters>
+            <genericFilter component="genericFilter"/>
+            <pagination component="pagination"/>
+        </urlQueryParameters>
+    </facets>
+    <layout>
+        <genericFilter id="genericFilter" dataLoader="checkRunsDl">
+            <properties include=".*"/>
+        </genericFilter>
+        <hbox id="buttonsPanel" wrap="true" width="100%">
+            <startSlot>
+                <button id="readButton" action="checkRunsDataGrid.readAction"/>
+            </startSlot>
+            <endSlot>
+                <simplePagination id="pagination" dataLoader="checkRunsDl"/>
+            </endSlot>
+        </hbox>
+        <dataGrid id="checkRunsDataGrid"
+                  width="100%"
+                  minHeight="20em"
+                  dataContainer="checkRunsDc"
+                  columnReorderingAllowed="true">
+            <actions>
+                <action id="readAction" type="list_read"/>
+            </actions>
+            <columns resizable="true">
+                <column property="startedAt"/>
+                <column property="finishedAt"/>
+                <column property="mode"/>
+                <column property="status"/>
+                <column property="objectType"/>
+                <column property="objectKey"/>
+                <column property="objectsChecked"/>
+                <column property="violationsFound"/>
+            </columns>
+        </dataGrid>
+        <hbox id="lookupActions" visible="false">
+            <button id="selectButton" action="selectAction"/>
+            <button id="discardButton" action="discardAction"/>
+        </hbox>
+    </layout>
+</view>

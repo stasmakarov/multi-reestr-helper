@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://planScheduleEventListView.title"
+      focusComponent="planScheduleEventsDataGrid">
+    <data>
+        <collection id="planScheduleEventsDc" class="com.digitilius.multireestr.entity.PlanScheduleEvent">
+            <fetchPlan extends="_base"/>
+            <loader id="planScheduleEventsDl" readOnly="true">
+                <query>
+                    <![CDATA[select e from mtr_PlanScheduleEvent e order by e.finYear desc, e.planVersion desc]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <actions>
+        <action id="selectAction" type="lookup_select"/>
+        <action id="discardAction" type="lookup_discard"/>
+    </actions>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+        <urlQueryParameters>
+            <genericFilter component="genericFilter"/>
+            <pagination component="pagination"/>
+        </urlQueryParameters>
+    </facets>
+    <layout>
+        <genericFilter id="genericFilter" dataLoader="planScheduleEventsDl">
+            <properties include=".*"/>
+        </genericFilter>
+        <hbox id="buttonsPanel" wrap="true" width="100%">
+            <startSlot>
+                <button id="createButton" action="planScheduleEventsDataGrid.createAction"/>
+                <button id="editButton" action="planScheduleEventsDataGrid.editAction"/>
+                <button id="removeButton" action="planScheduleEventsDataGrid.removeAction"/>
+            </startSlot>
+            <endSlot>
+                <simplePagination id="pagination" dataLoader="planScheduleEventsDl"/>
+            </endSlot>
+        </hbox>
+        <dataGrid id="planScheduleEventsDataGrid"
+                  width="100%"
+                  minHeight="20em"
+                  dataContainer="planScheduleEventsDc"
+                  columnReorderingAllowed="true">
+            <actions>
+                <action id="createAction" type="list_create"/>
+                <action id="editAction" type="list_edit"/>
+                <action id="removeAction" type="list_remove"/>
+            </actions>
+            <columns resizable="true">
+                <column property="finYear"/>
+                <column property="planVersion"/>
+                <column property="legacyPlanId"/>
+                <column property="lboDate"/>
+                <column property="approvalDate"/>
+                <column property="basisDocument"/>
+            </columns>
+        </dataGrid>
+        <hbox id="lookupActions" visible="false">
+            <button id="selectButton" action="selectAction"/>
+            <button id="discardButton" action="discardAction"/>
+        </hbox>
+    </layout>
+</view>
