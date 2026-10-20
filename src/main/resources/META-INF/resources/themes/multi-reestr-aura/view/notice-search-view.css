@@ -1,0 +1,7 @@
+vaadin-grid::part(chosen-row) {
+    font-weight: var(--aura-font-weight-semibold);
+}
+
+vaadin-grid::part(subject-cell) {
+    white-space: normal;
+}
