@@ -33,7 +33,7 @@
 | `dueDate` | LocalDate | `LocalDate` |  |  |  |  |  | Рассчитанный срок | `DUE_DATE` |
 | `factDate` | LocalDate | `LocalDate` |  |  |  |  |  | Фактическая дата | `FACT_DATE` |
 | `deviationDays` | Integer | `Integer` |  |  |  |  |  | Отклонение, дней | `DEVIATION_DAYS` |
-| `status` | Enum | `ViolationStatus` | да |  |  |  | [ViolationStatus](../enums/ViolationStatus.md) | Статус | `STATUS` |
+| `status` | Enum | `ViolationStatus` | да |  |  |  | [ViolationStatus](../enums/ViolationStatus.md) | Статус; поле хранится как `Integer` (id 10/20/30…), геттер/сеттер — enum через `fromId` | `STATUS` |
 | `firstDetectedAt` | DateTime | `OffsetDateTime` | да |  |  |  |  | Впервые найдено | `FIRST_DETECTED_AT` |
 | `lastDetectedAt` | DateTime | `OffsetDateTime` | да |  |  |  |  | Последний раз найдено | `LAST_DETECTED_AT` |
 | `resolvedAt` | DateTime | `OffsetDateTime` |  |  |  |  |  | Устранено | `RESOLVED_AT` |

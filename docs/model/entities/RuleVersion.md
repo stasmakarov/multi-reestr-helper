@@ -20,7 +20,7 @@
 | *(трейты)* | | | | | | | | `version`, `createdBy/Date`, `lastModifiedBy/Date` | VERSION, CREATED_BY, … |
 | `rule` | Association | [Rule](Rule.md) | да |  |  | many-to-one (owner: Rule.versions) |  | Правило | `RULE_ID` |
 | `versionNumber` | Integer | `Integer` | да |  |  |  |  | Номер версии | `VERSION_NUMBER` |
-| `status` | Enum | `RuleVersionStatus` | да |  |  |  | [RuleVersionStatus](../enums/RuleVersionStatus.md) | Статус | `STATUS` |
+| `status` | Enum | `RuleVersionStatus` | да |  |  |  | [RuleVersionStatus](../enums/RuleVersionStatus.md) | Статус; поле хранится как `Integer` (id 10/20/30…), геттер/сеттер — enum через `fromId` | `STATUS` |
 | `validFrom` | LocalDate | `LocalDate` | да |  |  |  |  | Действует с (по дате размещения/заключения) | `VALID_FROM` |
 | `validTo` | LocalDate | `LocalDate` |  |  |  |  |  | Действует по (null — бессрочно) | `VALID_TO` |
 | `deadline` | Embedded | [DeadlineSpec](DeadlineSpec.md) |  |  |  | embedded |  | Срок (для DEADLINE, LATE_DELIVERY_PENALTY) | `DEADLINE_*` |

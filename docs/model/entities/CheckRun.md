@@ -19,7 +19,7 @@
 |---|---|---|---|---|---|---|---|---|---|
 | *(трейты)* | | | | | | | | `createdBy/Date`, `lastModifiedBy/Date` | CREATED_BY, … |
 | `mode` | Enum | `CheckRunMode` | да |  |  |  | [CheckRunMode](../enums/CheckRunMode.md) | Режим | `MODE_` |
-| `status` | Enum | `CheckRunStatus` | да |  |  |  | [CheckRunStatus](../enums/CheckRunStatus.md) | Статус | `STATUS` |
+| `status` | Enum | `CheckRunStatus` | да |  |  |  | [CheckRunStatus](../enums/CheckRunStatus.md) | Статус; поле хранится как `Integer` (id 10/20/30…), геттер/сеттер — enum через `fromId` | `STATUS` |
 | `startedAt` | DateTime | `OffsetDateTime` | да |  |  |  |  | Начало | `STARTED_AT` |
 | `finishedAt` | DateTime | `OffsetDateTime` |  |  |  |  |  | Окончание | `FINISHED_AT` |
 | `objectType` | Enum | `RuleObjectType` |  |  |  |  | [RuleObjectType](../enums/RuleObjectType.md) | Тип объектов (null — все) | `OBJECT_TYPE` |

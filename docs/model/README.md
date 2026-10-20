@@ -14,33 +14,34 @@
 | Id JPA | UUID, `@JmixGeneratedValue` (по умолчанию в мастере) |
 | Id DTO | legacy-ключ `Integer` с `@JmixId` (вместо UUID из мастера); исключение — CheckResultDto (UUID) |
 | Трейты JPA | по умолчанию **Versioned + Audit of creation + Audit of modification** — это трейты ядра Jmix (`@CreatedBy`/`@LastModifiedBy` и т.п.), **не** add-on Jmix Audit (entity log), который в проекте не используется; **Soft delete не используем** (уникальные коды, история нарушений; отключение — флаг `enabled`/статус) |
-| Перечисления | `EnumClass<String>`, id = имя константы (UPPER_SNAKE), заголовки на русском в `messages_ru.properties`; в БД хранится id строкой |
+| Перечисления | Большинство — `EnumClass<String>`, id = имя константы (UPPER_SNAKE), в БД строка. **Исключение — три статуса с `EnumClass<Integer>`**: [ViolationStatus](enums/ViolationStatus.md) (NEW=10, ACKNOWLEDGED=20, FALSE_POSITIVE=30, FIXED=40), [CheckRunStatus](enums/CheckRunStatus.md) (RUNNING=10, SUCCESS=20, PARTIAL=30, FAILED=40), [RuleVersionStatus](enums/RuleVersionStatus.md) (DRAFT=10, ACTIVE=20, ARCHIVED=30); в БД число. Заголовки на русском — в `messages_ru.properties` |
 | Даты | дата без времени — `LocalDate`; момент события в приложении — `OffsetDateTime` (тип Studio *DateTime*); legacy timestamp без зоны (МСК) — `LocalDateTime` |
 | Деньги/количества | `BigDecimal` с точностью legacy (18,2; 21,2; 29,11) |
-| Legacy-БД | **не моделируется JPA** и не является data store: DTO заполняются из `NamedParameterJdbcTemplate` (read-only). Ссылки из JPA на legacy — только по значению (`contractLegacyId`, `objectKey`), без FK |
+| Main-БД | Jmix 3 не работает с PostgreSQL 9.6 → в продуктиве отдельный инстанс **PostgreSQL 16+** на той же машине, другой порт (например, `localhost:5433`, БД `multireestr`); в разработке — HSQLDB или `postgres:16`. Liquibase и JPA — только здесь. См. [OVERVIEW §8](OVERVIEW.md#8-развёртывание-и-базы-данных) |
+| Legacy-БД | `reestrdb` на PostgreSQL 9.6 (`localhost:5432`), обычный JDBC (`legacyJdbc`), read-only на трёх уровнях (драйвер, Hikari, роль `reestr_ro`); приложение стартует и без неё (предупреждение). **Не моделируется JPA** и не является data store: DTO заполняются из `NamedParameterJdbcTemplate` (read-only). Ссылки из JPA на legacy — только по значению (`contractLegacyId`, `objectKey`), без FK |
 | Строки без длины | «unlimited» = тип *String* с пустой длиной → `@Lob` / `text` |
 | Связи | composition — для подчинённых (versions, parameters, items); association many-to-one — для остальных |
 
-> Отличие от `tech_solution_jmix.md`: там использовались префикс `rz_` и пакет `com.company.reestr` — заменены на `mtr_` / `com.digitilius.multireestr`; `SupplierDto` переименован в `OrganizationDto`.
+> `OrganizationDto` в ранних версиях проектных документов назывался `SupplierDto`: переименован, т.к. используется и для заказчика.
 
-> Отдельного файла учебного плана в репозитории нет; разбивка по урокам ниже составлена из этапов двух проектных документов — при расхождении с вашим планом поправьте колонку «Урок».
+> План уроков — [../LESSONS.md](../LESSONS.md) (10 уроков, нумерация совпадает с колонкой «Урок» ниже).
 
 ## Уроки
 
 | № | Урок | Сущности | Перечисления |
 |---|---|---|---|
 | 1 | Проект и подключение legacy-БД (read-only) | — | — |
-| 2 | DTO-модель извещения и поиск | [OrganizationDto](entities/OrganizationDto.md), [NoticeCandidateDto](entities/NoticeCandidateDto.md), [NoticeDto](entities/NoticeDto.md), [LotDto](entities/LotDto.md), [SpecPositionDto](entities/SpecPositionDto.md), [KtruCharacteristicDto](entities/KtruCharacteristicDto.md), [NoticeDocumentDto](entities/NoticeDocumentDto.md) | — |
-| 3 | DTO протоколов, контракта и исполнения | [ProtocolDto](entities/ProtocolDto.md), [ContractDto](entities/ContractDto.md), [ContractItemDto](entities/ContractItemDto.md), [ExecutionDto](entities/ExecutionDto.md) | [ExecutionKind](enums/ExecutionKind.md) |
+| 2 | DTO-модель извещения, поиск и экран поиска | [OrganizationDto](entities/OrganizationDto.md), [NoticeCandidateDto](entities/NoticeCandidateDto.md), [NoticeDto](entities/NoticeDto.md), [LotDto](entities/LotDto.md), [SpecPositionDto](entities/SpecPositionDto.md), [KtruCharacteristicDto](entities/KtruCharacteristicDto.md), [NoticeDocumentDto](entities/NoticeDocumentDto.md) | — |
+| 3 | DTO протоколов, контракта и исполнения; карточка извещения и Excel | [ProtocolDto](entities/ProtocolDto.md), [ContractDto](entities/ContractDto.md), [ContractItemDto](entities/ContractItemDto.md), [ExecutionDto](entities/ExecutionDto.md) | [ExecutionKind](enums/ExecutionKind.md) |
 | 4 | Производственный календарь | [CalendarDay](entities/CalendarDay.md) | [DayType](enums/DayType.md), [CalendarSource](enums/CalendarSource.md) |
 | 5 | Движок сроков (ст.191–193 ГК) | [DeadlineSpec](entities/DeadlineSpec.md) | [DayCountUnit](enums/DayCountUnit.md), [ShiftRule](enums/ShiftRule.md), [DeadlineAnchor](enums/DeadlineAnchor.md), [CompareOperator](enums/CompareOperator.md) |
-| 6 | Справочники и правила (шаблоны, версии, параметры) | [ReferenceList](entities/ReferenceList.md), [ReferenceListItem](entities/ReferenceListItem.md), [Rule](entities/Rule.md), [RuleVersion](entities/RuleVersion.md), [RuleParameter](entities/RuleParameter.md) | [ReferenceListKind](enums/ReferenceListKind.md), [RuleTemplateType](enums/RuleTemplateType.md), [RuleObjectType](enums/RuleObjectType.md), [RuleVersionStatus](enums/RuleVersionStatus.md), [ParameterType](enums/ParameterType.md), [Severity](enums/Severity.md) |
+| 6 | Справочники и правила (шаблоны, версии, параметры), редактор правил, роли | [ReferenceList](entities/ReferenceList.md), [ReferenceListItem](entities/ReferenceListItem.md), [Rule](entities/Rule.md), [RuleVersion](entities/RuleVersion.md), [RuleParameter](entities/RuleParameter.md) | [ReferenceListKind](enums/ReferenceListKind.md), [RuleTemplateType](enums/RuleTemplateType.md), [RuleObjectType](enums/RuleObjectType.md), [RuleVersionStatus](enums/RuleVersionStatus.md), [ParameterType](enums/ParameterType.md), [Severity](enums/Severity.md) |
 | 7 | Проверка по запросу и реестр нарушений | [CheckResultDto](entities/CheckResultDto.md), [CheckRun](entities/CheckRun.md), [Violation](entities/Violation.md) | [CheckRunMode](enums/CheckRunMode.md), [CheckRunStatus](enums/CheckRunStatus.md), [ViolationStatus](enums/ViolationStatus.md) |
 | 8 | Ручные данные: условия контрактов, даты ЛБО/ПГ | [PlanScheduleDto](entities/PlanScheduleDto.md), [ContractTerm](entities/ContractTerm.md), [PlanScheduleEvent](entities/PlanScheduleEvent.md) | [ContractTermType](enums/ContractTermType.md) |
 | 9 | Плановое сканирование (Quartz); оповещение в приложении — реестр нарушений + счётчик NEW в меню | — | — |
 | 10 | Dry-run правил на исторических данных | — | [DryRunDiff](enums/DryRunDiff.md) |
 
-Урок 1 — только конфигурация (legacy DataSource, read-only). Урок 9 добавляет Quartz add-on со своими таблицами; новых сущностей не требует. Email-уведомления **не реализуем, только рассказываем** (возможное расширение — Email Sending add-on `io.jmix.email`). Add-on'ы Jmix Notifications (платный) и Jmix Audit не используются: история правил — RuleVersion, жизненный цикл нарушения — Violation.status, «кто/когда» — трейты аудита ядра. Урок 10 новых сущностей не требует (CheckRun с режимом DRY_RUN, CheckResultDto, RuleVersion в статусе DRAFT).
+Урок 1 — только конфигурация: main на HSQLDB / PostgreSQL 16+, legacy DataSource read-only. Урок 9 добавляет Quartz add-on со своими таблицами; новых сущностей не требует. Email-уведомления **не реализуем, только рассказываем** (возможное расширение — Email Sending add-on `io.jmix.email`). Add-on'ы Jmix Notifications (платный) и Jmix Audit не используются: история правил — RuleVersion, жизненный цикл нарушения — Violation.status, «кто/когда» — трейты аудита ядра. Урок 10 новых сущностей не требует (CheckRun с режимом DRY_RUN, CheckResultDto, RuleVersion в статусе DRAFT).
 
 ## Сущности
 
