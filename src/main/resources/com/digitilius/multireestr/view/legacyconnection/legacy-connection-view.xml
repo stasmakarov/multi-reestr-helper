@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://legacyConnectionView.title"
+      focusComponent="checkButton">
+    <layout>
+        <hbox id="buttonsPanel" classNames="buttons-panel">
+            <button id="checkButton" text="msg://checkButton.text"/>
+        </hbox>
+        <formLayout id="form">
+            <textField id="statusField" label="msg://statusField.label" readOnly="true" datatype="string"/>
+            <textField id="serverVersionField" label="msg://serverVersionField.label" readOnly="true" datatype="string"/>
+            <textField id="currentUserField" label="msg://currentUserField.label" readOnly="true" datatype="string"/>
+            <textField id="databaseField" label="msg://databaseField.label" readOnly="true" datatype="string"/>
+            <textField id="hostPortField" label="msg://hostPortField.label" readOnly="true" datatype="string"/>
+            <textField id="readOnlyField" label="msg://readOnlyField.label" readOnly="true" datatype="string"/>
+            <textField id="responseMsField" label="msg://responseMsField.label" readOnly="true" datatype="string"/>
+            <textField id="errorField" label="msg://errorField.label" readOnly="true" datatype="string"/>
+        </formLayout>
+    </layout>
+</view>

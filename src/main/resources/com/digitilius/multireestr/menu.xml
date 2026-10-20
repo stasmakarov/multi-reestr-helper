@@ -28,4 +28,9 @@
               title="msg://com.digitilius.multireestr.view.planscheduleevent/planScheduleEventListView.title"/>
     </menu>
 
+    <menu id="administration" title="msg://com.digitilius.multireestr/menu.administration.title" opened="true">
+        <item view="mtr_LegacyConnectionView"
+              title="msg://com.digitilius.multireestr.view.legacyconnection/legacyConnectionView.title"/>
+    </menu>
+
 </menu-config>

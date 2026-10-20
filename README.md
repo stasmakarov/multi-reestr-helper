@@ -32,3 +32,30 @@ The default user credentials are:
 * Password: `admin`
 
 **WARNING**: Change admin password and remove `ui.login.defaultUsername` and `ui.login.defaultPassword` application properties when deploying the application to production.
+
+## Подключение к MultiReestr
+
+Приложение читает извещения и связанные данные из унаследованной базы MultiReestr (`reestrdb` на PostgreSQL 9.6) через отдельный JDBC DataSource `legacy`. Это не хранилище Jmix: без JPA и Liquibase, только `NamedParameterJdbcTemplate` с квалификатором `legacyJdbc`.
+
+Основная база приложения (Jmix store `main`) в продуктиве — **отдельный PostgreSQL 16+** на другом порту (например `localhost:5433`, БД `multireestr`). В разработке main остаётся на HSQLDB. Jmix 3 не работает с PostgreSQL 9.6, поэтому main нельзя размещать на сервере MultiReestr.
+
+Параметры `legacy.datasource.*` задаются в `application.properties`. В разработке: `jdbc:postgresql://localhost:5435/reestrdb`, пользователь `reestr_ro`. В продуктиве URL — `jdbc:postgresql://localhost:5432/reestrdb`.
+
+Параметры драйвера `readOnly=true` и `readOnlyMode=always` задаёт приложение при сборке пула Hikari. В URL их писать не нужно.
+
+Если URL пустой или БД недоступна, приложение всё равно стартует: в лог пишется предупреждение, экраны main работают.
+
+### Роль `reestr_ro`
+
+На сервере MultiReestr выполните скрипт [docs/sql/legacy_readonly_user.sql](docs/sql/legacy_readonly_user.sql) от суперпользователя или владельца `reestrdb`. Скрипт создаёт роль `reestr_ro` (LOGIN) с `CONNECT` и `SELECT` на таблицы схемы `public` и `ALTER DEFAULT PRIVILEGES` для будущих таблиц. Прав на запись нет. Смените пароль в скрипте до выполнения.
+
+### Тесты
+
+Нужен Docker (Testcontainers поднимает `postgres:9.6`). Локальный PostgreSQL не требуется.
+
+```bash
+./gradlew test
+./gradlew build
+```
+
+Проверяется подключение и `version()` с «9.6», запрет `INSERT`/`CREATE TABLE` через `legacyJdbc`, и старт контекста Jmix без legacy DataSource. Параметры legacy-тестов задаёт Testcontainers, а не локальная БД.
