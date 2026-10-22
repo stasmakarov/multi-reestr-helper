@@ -1,6 +1,7 @@
 package com.digitilius.multireestr;
 
 import com.google.common.base.Strings;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
@@ -22,6 +23,7 @@ import org.springframework.core.env.Environment;
 import javax.sql.DataSource;
 
 @Push
+@JsModule("./src/theme/color-scheme-switching-support.js")
 @StyleSheet(Aura.STYLESHEET)
 @StyleSheet(JmixAura.STYLESHEET)
 @StyleSheet("themes/multi-reestr-aura/styles.css")
