@@ -1,7 +1,9 @@
 package com.digitilius.multireestr.legacy.notice;
 
+import com.digitilius.multireestr.entity.ExecutionKind;
 import com.digitilius.multireestr.entity.legacy.ContractDto;
 import com.digitilius.multireestr.entity.legacy.ContractItemDto;
+import com.digitilius.multireestr.entity.legacy.ExecutionDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
 import com.digitilius.multireestr.entity.legacy.ProtocolDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
@@ -70,8 +72,8 @@ class NoticeCardServiceTest {
         assertThat(contract.getRegistryNumber()).isEqualTo("1771484194026000013");
         assertThat(contract.getSupplier()).isNotNull();
         assertThat(contract.getSupplier().getInn()).isEqualTo("332711778952");
-        assertThat(contract.getPaidTotal()).isNull();
-        assertThat(contract.getExecutions()).isNull();
+        assertThat(contract.getPaidTotal()).isEqualByComparingTo("16000");
+        assertThat(contract.getExecutions()).hasSize(2);
         assertThat(contract.getItems()).hasSize(1);
         ContractItemDto folder = contract.getItems().get(0);
         assertThat(folder.getName()).isEqualTo("Папка картонная. Товарный знак: отсутствует");
@@ -166,6 +168,96 @@ class NoticeCardServiceTest {
         assertThat(contract.getSupplier()).isNotNull();
         assertThat(contract.getSupplier().getInn()).isEqualTo(supplierInn);
         assertThat(contract.getItems()).hasSize(itemCount);
+    }
+
+    @ParameterizedTest(name = "notice {0} -> {1} acceptances, paid {2}")
+    @CsvSource(nullValues = "-", value = {
+            "40, 12, 1744800",
+            "38, -, -",
+            "37, 1, 445200",
+            "41, -, -",
+            "21, 1, 252700",
+            "18, 1, 800000",
+            "17, 2, 347200",
+            "10, 1, 93050",
+            "4, 1, 33000",
+            "3, 1, 16000"
+    })
+    void executionsByNoticeId(int noticeId, Integer acceptanceCount, String paidTotal) {
+        NoticeDto notice = noticeCardService.loadNotice(noticeId).orElseThrow();
+        if (acceptanceCount == null) {
+            assertThat(notice.getContract()).isNull();
+            return;
+        }
+        ContractDto contract = notice.getContract();
+        assertThat(contract).isNotNull();
+        assertThat(contract.getExecutions()).isNotNull();
+        assertThat(contract.getExecutions())
+                .filteredOn(execution -> execution.getKind() == ExecutionKind.ACCEPTANCE)
+                .hasSize(acceptanceCount);
+        assertThat(contract.getPaidTotal()).isEqualByComparingTo(paidTotal);
+    }
+
+    @Test
+    void executionsOfNotice3HaveAcceptanceAndPayment() {
+        NoticeDto notice = noticeCardService.loadNotice(3).orElseThrow();
+        ContractDto contract = notice.getContract();
+        assertThat(contract.getPaidTotal()).isEqualByComparingTo("16000");
+        assertThat(contract.getExecutions()).hasSize(2);
+
+        ExecutionDto acceptance = contract.getExecutions().get(0);
+        assertThat(acceptance.getId()).isEqualTo(98);
+        assertThat(acceptance.getKind()).isEqualTo(ExecutionKind.ACCEPTANCE);
+        assertThat(acceptance.getDocNumber()).isEqualTo("ЯЕ26089");
+        assertThat(acceptance.getDocDate()).isEqualTo(LocalDate.of(2026, 5, 8));
+        assertThat(acceptance.getAcceptDate()).isEqualTo(LocalDate.of(2026, 5, 12));
+        assertThat(acceptance.getAmount()).isEqualByComparingTo("16000");
+        assertThat(acceptance.getStageNumber()).isEqualTo(1);
+
+        ExecutionDto payment = contract.getExecutions().get(1);
+        assertThat(payment.getId()).isEqualTo(97);
+        assertThat(payment.getKind()).isEqualTo(ExecutionKind.PAYMENT);
+        assertThat(payment.getDocName()).isEqualTo("Платежное поручение");
+        assertThat(payment.getDocNumber()).isEqualTo("8202");
+        assertThat(payment.getDocDate()).isEqualTo(LocalDate.of(2026, 5, 13));
+        assertThat(payment.getAmount()).isEqualByComparingTo("16000");
+        assertThat(payment.getStageNumber()).isEqualTo(2);
+    }
+
+    @Test
+    void executionsOfNotice17KeepZeroAcceptanceAndPaidTotal() {
+        NoticeDto notice = noticeCardService.loadNotice(17).orElseThrow();
+        ContractDto contract = notice.getContract();
+        assertThat(contract.getPaidTotal()).isEqualByComparingTo("347200");
+        assertThat(contract.getExecutions()).hasSize(3);
+        assertThat(contract.getExecutions())
+                .filteredOn(execution -> execution.getKind() == ExecutionKind.ACCEPTANCE)
+                .hasSize(2);
+
+        ExecutionDto zeroAcceptance = contract.getExecutions().get(0);
+        assertThat(zeroAcceptance.getId()).isEqualTo(76);
+        assertThat(zeroAcceptance.getKind()).isEqualTo(ExecutionKind.ACCEPTANCE);
+        assertThat(zeroAcceptance.getDocNumber()).isEqualTo("945/ОМТО-6713/26");
+        assertThat(zeroAcceptance.getAmount()).isEqualByComparingTo("0.00");
+        assertThat(zeroAcceptance.getImproperExecution()).contains("пени");
+    }
+
+    @Test
+    void executionsOfNotice40SeparateAcceptancesFromPayments() {
+        NoticeDto notice = noticeCardService.loadNotice(40).orElseThrow();
+        ContractDto contract = notice.getContract();
+        assertThat(contract.getPaidTotal()).isEqualByComparingTo("1744800");
+        assertThat(contract.getExecutions()).hasSize(25);
+        assertThat(contract.getExecutions())
+                .filteredOn(execution -> execution.getKind() == ExecutionKind.ACCEPTANCE)
+                .hasSize(12)
+                .anySatisfy(execution -> {
+                    assertThat(execution.getDocNumber()).isEqualTo("945/ОМТО-18605/25");
+                    assertThat(execution.getAmount()).isEqualByComparingTo("0.00");
+                });
+        assertThat(contract.getExecutions())
+                .filteredOn(execution -> execution.getKind() == ExecutionKind.PAYMENT)
+                .hasSize(13);
     }
 
     @Test
