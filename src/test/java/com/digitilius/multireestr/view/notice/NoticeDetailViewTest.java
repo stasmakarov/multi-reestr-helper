@@ -101,6 +101,7 @@ class NoticeDetailViewTest {
     private NoticeDetailView openDetail(String number) {
         viewNavigators.view(UiTestUtils.getCurrentView(), NoticeDetailView.class)
                 .withRouteParameters(new RouteParameters("number", number))
+                .withAfterNavigationHandler(event -> event.getView().showNumber(number))
                 .navigate();
         return UiTestUtils.getCurrentView();
     }
