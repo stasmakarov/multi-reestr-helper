@@ -2,6 +2,7 @@
 <mainView xmlns="http://jmix.io/schema/flowui/main-view"
           title="msg://MainView.title">
     <actions>
+        <action id="aboutAction" text="msg://aboutAction.text"/>
         <action id="logoutAction" text="msg:///actions.logout.text" type="logout"/>
     </actions>
     <appLayout classNames="jmix-main-view-app-layout">
@@ -15,6 +16,8 @@
                 <userMenu id="userMenu"
                           themeNames="tertiary" classNames="jmix-main-view-user-menu">
                     <items>
+                        <actionItem id="aboutMenuItem" ref="aboutAction"
+                                    themeNames="non-checkable"/>
                         <separator/>
                         <actionItem id="substituteUserMenuItem"
                                     themeNames="non-checkable">
