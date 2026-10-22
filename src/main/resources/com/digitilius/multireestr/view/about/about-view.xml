@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://aboutView.title"
+      messagesGroup="com.digitilius.multireestr.view.about">
+    <layout justifyContent="CENTER" alignItems="CENTER" classNames="about-page">
+        <image resource="public/images/logo.png" classNames="about-logo"/>
+        <h1 id="productName" text="msg://productName" classNames="about-product-name"/>
+        <span text="msg://tagline" classNames="about-tagline"/>
+        <span id="versionLabel" classNames="about-meta"/>
+        <span id="buildLabel" classNames="about-meta"/>
+        <span id="branchLabel" classNames="about-meta"/>
+        <span id="dateLabel" classNames="about-meta"/>
+        <span id="copyrightLabel" text="msg://copyright" classNames="about-copyright"/>
+    </layout>
+</view>

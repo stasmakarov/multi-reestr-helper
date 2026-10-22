@@ -1,6 +1,7 @@
 package com.digitilius.multireestr.view.main;
 
 import com.digitilius.multireestr.entity.User;
+import com.digitilius.multireestr.view.about.AboutView;
 import com.google.common.base.Strings;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -10,9 +11,12 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import io.jmix.core.Messages;
 import io.jmix.core.usersubstitution.CurrentUserSubstitution;
+import io.jmix.flowui.DialogWindows;
 import io.jmix.flowui.UiComponents;
 import io.jmix.flowui.app.main.StandardMainView;
+import io.jmix.flowui.kit.action.ActionPerformedEvent;
 import io.jmix.flowui.view.Install;
+import io.jmix.flowui.view.Subscribe;
 import io.jmix.flowui.view.ViewController;
 import io.jmix.flowui.view.ViewDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,13 @@ public class MainView extends StandardMainView {
     private UiComponents uiComponents;
     @Autowired
     private CurrentUserSubstitution currentUserSubstitution;
+    @Autowired
+    private DialogWindows dialogWindows;
+
+    @Subscribe("aboutAction")
+    public void onAboutAction(final ActionPerformedEvent event) {
+        dialogWindows.view(this, AboutView.class).open();
+    }
 
     @Install(to = "userMenu", subject = "buttonRenderer")
     private Component userMenuButtonRenderer(final UserDetails userDetails) {

@@ -14,6 +14,9 @@ public interface UiMinimalRole extends UiMinimalPolicies {
     @ViewPolicy(viewIds = "mtr_MainView")
     void main();
 
+    @ViewPolicy(viewIds = "mtr_AboutView")
+    void about();
+
     @ViewPolicy(viewIds = "mtr_LoginView")
     @SpecificPolicy(resources = "ui.loginToUi")
     void login();
