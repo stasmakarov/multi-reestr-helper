@@ -1,32 +1,104 @@
 package com.digitilius.multireestr.view.notice;
 
+import com.digitilius.multireestr.entity.legacy.ContractDto;
+import com.digitilius.multireestr.entity.legacy.ContractItemDto;
+import com.digitilius.multireestr.entity.legacy.ExecutionDto;
+import com.digitilius.multireestr.entity.legacy.KtruCharacteristicDto;
+import com.digitilius.multireestr.entity.legacy.LotDto;
+import com.digitilius.multireestr.entity.legacy.NoticeDocumentDto;
+import com.digitilius.multireestr.entity.legacy.NoticeDto;
+import com.digitilius.multireestr.entity.legacy.NoticeFinanceDto;
+import com.digitilius.multireestr.entity.legacy.OrganizationDto;
+import com.digitilius.multireestr.entity.legacy.ProtocolDto;
+import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
+import com.digitilius.multireestr.legacy.notice.NoticeCardService;
+import com.digitilius.multireestr.legacy.notice.NoticeNumber;
 import com.digitilius.multireestr.view.main.MainView;
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import io.jmix.flowui.ViewNavigators;
+import io.jmix.flowui.component.grid.DataGrid;
 import io.jmix.flowui.kit.component.button.JmixButton;
+import io.jmix.flowui.model.CollectionContainer;
+import io.jmix.flowui.model.InstanceContainer;
 import io.jmix.flowui.view.MessageBundle;
 import io.jmix.flowui.view.StandardView;
 import io.jmix.flowui.view.Subscribe;
+import io.jmix.flowui.view.Supply;
 import io.jmix.flowui.view.ViewComponent;
 import io.jmix.flowui.view.ViewController;
 import io.jmix.flowui.view.ViewDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 @Route(value = "notices/:number", layout = MainView.class)
 @ViewController(id = "mtr_NoticeDetailView")
 @ViewDescriptor(path = "notice-detail-view.xml")
 public class NoticeDetailView extends StandardView {
 
+    private static final Logger log = LoggerFactory.getLogger(NoticeDetailView.class);
+
     @ViewComponent
     private MessageBundle messageBundle;
     @ViewComponent
-    private Span numberSpan;
+    private InstanceContainer<NoticeDto> noticeDc;
+    @ViewComponent
+    private InstanceContainer<OrganizationDto> customerDc;
+    @ViewComponent
+    private CollectionContainer<LotDto> lotsDc;
+    @ViewComponent
+    private CollectionContainer<NoticeFinanceDto> financesDc;
+    @ViewComponent
+    private CollectionContainer<NoticeDocumentDto> documentsDc;
+    @ViewComponent
+    private CollectionContainer<SpecPositionDto> itemsDc;
+    @ViewComponent
+    private CollectionContainer<KtruCharacteristicDto> characteristicsDc;
+    @ViewComponent
+    private CollectionContainer<ProtocolDto> protocolsDc;
+    @ViewComponent
+    private InstanceContainer<ContractDto> contractDc;
+    @ViewComponent
+    private InstanceContainer<OrganizationDto> supplierDc;
+    @ViewComponent
+    private CollectionContainer<ContractItemDto> contractItemsDc;
+    @ViewComponent
+    private CollectionContainer<ExecutionDto> executionsDc;
+    @ViewComponent
+    private DataGrid<SpecPositionDto> itemsGrid;
+    @ViewComponent
+    private VerticalLayout warningsBox;
+    @ViewComponent
+    private Span notFoundSpan;
+    @ViewComponent
+    private VerticalLayout notFoundBox;
+    @ViewComponent
+    private VerticalLayout cardBox;
+    @ViewComponent
+    private VerticalLayout noContractBox;
+    @ViewComponent
+    private VerticalLayout contractBox;
+    @ViewComponent
+    private Anchor eisUrlAnchor;
+    @ViewComponent
+    private Span paidTotalValue;
 
     @Autowired
     private ViewNavigators viewNavigators;
+    @Autowired
+    private NoticeCardService noticeCardService;
 
     private String number = "";
 
@@ -39,11 +111,132 @@ public class NoticeDetailView extends StandardView {
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
         setPageTitle(messageBundle.formatMessage("noticeDetailView.title", number));
-        numberSpan.setText(number);
+        loadCard();
     }
 
     @Subscribe("backBtn")
     public void onBackBtnClick(final ClickEvent<JmixButton> event) {
         viewNavigators.view(this, NoticeSearchView.class).navigate();
+    }
+
+    @Supply(to = "documentsGrid.url", subject = "renderer")
+    private Renderer<NoticeDocumentDto> documentUrlRenderer() {
+        return new ComponentRenderer<>(document -> {
+            String url = document == null ? null : document.getUrl();
+            if (url == null || url.isBlank()) {
+                return new Span();
+            }
+            Anchor anchor = new Anchor(url, url);
+            anchor.setTarget("_blank");
+            return anchor;
+        });
+    }
+
+    private void loadCard() {
+        Optional<NoticeNumber> parsed = NoticeNumber.tryParse(number);
+        if (parsed.isEmpty()) {
+            showNotFound(messageBundle.getMessage("noticeNumberInvalid"));
+            return;
+        }
+        try {
+            Optional<NoticeDto> found = noticeCardService.loadOriginal(parsed.get());
+            if (found.isEmpty()) {
+                showNotFound(messageBundle.getMessage("noticeNotFound"));
+                return;
+            }
+            showNotice(found.get());
+        } catch (DataAccessException e) {
+            log.error("Legacy MultiReestr is not available", e);
+            showNotFound(messageBundle.getMessage("legacyConnectionError"));
+        }
+    }
+
+    private void showNotFound(String message) {
+        notFoundSpan.setText(message);
+        notFoundBox.setVisible(true);
+        cardBox.setVisible(false);
+    }
+
+    private void showNotice(NoticeDto notice) {
+        notFoundBox.setVisible(false);
+        cardBox.setVisible(true);
+        noticeDc.setItem(notice);
+        customerDc.setItem(notice.getCustomer());
+        lotsDc.setItems(orEmpty(notice.getLots()));
+        financesDc.setItems(orEmpty(notice.getFinances()));
+        documentsDc.setItems(orEmpty(notice.getDocuments()));
+        itemsDc.setItems(orEmpty(notice.getItems()));
+        protocolsDc.setItems(orEmpty(notice.getProtocols()));
+        showWarnings(notice.getWarnings());
+        showEisUrl(notice.getEisUrl());
+
+        ContractDto contract = notice.getContract();
+        if (contract == null) {
+            contractBox.setVisible(false);
+            noContractBox.setVisible(true);
+            contractDc.setItem(null);
+            supplierDc.setItem(null);
+            contractItemsDc.setItems(List.of());
+            executionsDc.setItems(List.of());
+            paidTotalValue.setText("");
+            selectFirstItem();
+            return;
+        }
+        noContractBox.setVisible(false);
+        contractBox.setVisible(true);
+        contractDc.setItem(contract);
+        supplierDc.setItem(contract.getSupplier());
+        contractItemsDc.setItems(orEmpty(contract.getItems()));
+        executionsDc.setItems(orEmpty(contract.getExecutions()));
+        paidTotalValue.setText(formatAmount(contract.getPaidTotal()));
+        selectFirstItem();
+    }
+
+    private void selectFirstItem() {
+        List<SpecPositionDto> items = List.copyOf(itemsDc.getItems());
+        if (items.isEmpty()) {
+            characteristicsDc.setItems(List.of());
+            return;
+        }
+        SpecPositionDto first = items.get(0);
+        itemsGrid.select(first);
+        if (characteristicsDc.getItems().isEmpty()) {
+            characteristicsDc.setItems(orEmpty(first.getCharacteristics()));
+        }
+    }
+
+    private void showWarnings(List<String> warnings) {
+        warningsBox.removeAll();
+        if (warnings == null || warnings.isEmpty()) {
+            warningsBox.setVisible(false);
+            return;
+        }
+        for (String warning : warnings) {
+            warningsBox.add(new Span(warning));
+        }
+        warningsBox.setVisible(true);
+    }
+
+    private void showEisUrl(String url) {
+        if (url == null || url.isBlank()) {
+            eisUrlAnchor.setText("");
+            eisUrlAnchor.setHref("");
+            eisUrlAnchor.setVisible(false);
+            return;
+        }
+        eisUrlAnchor.setHref(url);
+        eisUrlAnchor.setText(url);
+        eisUrlAnchor.setVisible(true);
+    }
+
+    private static String formatAmount(BigDecimal amount) {
+        if (amount == null) {
+            return "";
+        }
+        return amount.stripTrailingZeros().toPlainString();
+    }
+
+    private static <T> List<T> orEmpty(List<T> values) {
+        return values == null ? List.of() : values;
     }
 }
