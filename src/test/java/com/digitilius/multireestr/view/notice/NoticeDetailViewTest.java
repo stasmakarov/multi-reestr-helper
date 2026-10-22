@@ -1,8 +1,11 @@
 package com.digitilius.multireestr.view.notice;
 
 import com.digitilius.multireestr.MultiReestrApplication;
+import com.digitilius.multireestr.entity.legacy.ContractItemDto;
 import com.digitilius.multireestr.entity.legacy.ExecutionDto;
+import com.digitilius.multireestr.entity.legacy.LotDto;
 import com.digitilius.multireestr.entity.legacy.ProtocolDto;
+import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -47,10 +50,22 @@ class NoticeDetailViewTest {
         TypedTextField<String> numberField = UiTestUtils.getComponent(view, "numberField");
         assertThat(numberField.getValue()).isEqualTo("0173100017026000015");
 
+        TypedTextField<String> customerInnField = UiTestUtils.getComponent(view, "customerInnField");
+        assertThat(customerInnField.getValue()).isEqualTo("7714841940");
+
         VerticalLayout cardBox = UiTestUtils.getComponent(view, "cardBox");
         VerticalLayout notFoundBox = UiTestUtils.getComponent(view, "notFoundBox");
         assertThat(cardBox.isVisible()).isTrue();
         assertThat(notFoundBox.isVisible()).isFalse();
+
+        DataGrid<LotDto> lotsGrid = UiTestUtils.getComponent(view, "lotsGrid");
+        assertThat(gridItems(lotsGrid)).isNotEmpty();
+
+        DataGrid<SpecPositionDto> itemsGrid = UiTestUtils.getComponent(view, "itemsGrid");
+        assertThat(gridItems(itemsGrid)).isNotEmpty();
+
+        DataGrid<ContractItemDto> contractItemsGrid = UiTestUtils.getComponent(view, "contractItemsGrid");
+        assertThat(gridItems(contractItemsGrid)).isNotEmpty();
 
         DataGrid<ProtocolDto> protocolsGrid = UiTestUtils.getComponent(view, "protocolsGrid");
         assertThat(gridItems(protocolsGrid)).hasSize(2);
@@ -98,13 +113,24 @@ class NoticeDetailViewTest {
         assertThat(notFoundSpan.getText()).isNotBlank();
     }
 
+    @Test
+    void showsMessageForInvalidNumber() {
+        NoticeDetailView view = openDetail("123");
+
+        VerticalLayout notFoundBox = UiTestUtils.getComponent(view, "notFoundBox");
+        VerticalLayout cardBox = UiTestUtils.getComponent(view, "cardBox");
+        Span notFoundSpan = UiTestUtils.getComponent(view, "notFoundSpan");
+
+        assertThat(notFoundBox.isVisible()).isTrue();
+        assertThat(cardBox.isVisible()).isFalse();
+        assertThat(notFoundSpan.getText()).isNotBlank();
+    }
+
     private NoticeDetailView openDetail(String number) {
         viewNavigators.view(UiTestUtils.getCurrentView(), NoticeDetailView.class)
                 .withRouteParameters(new RouteParameters("number", number))
                 .navigate();
-        NoticeDetailView view = UiTestUtils.getCurrentView();
-        view.showNumber(number);
-        return view;
+        return UiTestUtils.getCurrentView();
     }
 
     private static <T> List<T> gridItems(DataGrid<T> grid) {

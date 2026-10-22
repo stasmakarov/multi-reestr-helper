@@ -194,10 +194,8 @@ public class NoticeSearchView extends StandardView {
         if (candidate == null || isBlank(candidate.getNumber())) {
             return;
         }
-        String noticeNumber = candidate.getNumber();
         viewNavigators.view(this, NoticeDetailView.class)
-                .withRouteParameters(new RouteParameters("number", noticeNumber))
-                .withAfterNavigationHandler(event -> event.getView().showNumber(noticeNumber))
+                .withRouteParameters(new RouteParameters("number", candidate.getNumber()))
                 .navigate();
     }
 
