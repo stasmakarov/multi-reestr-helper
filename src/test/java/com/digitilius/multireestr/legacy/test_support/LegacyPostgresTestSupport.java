@@ -1,6 +1,7 @@
 package com.digitilius.multireestr.legacy.test_support;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -17,6 +18,8 @@ public final class LegacyPostgresTestSupport {
 
     public static final String RO_USER = "reestr_ro";
     public static final String RO_PASSWORD = "ro_pass";
+    /** Общий список таблиц для reestr_ro; путь от корня проекта (рабочий каталог Gradle-тестов). */
+    public static final String GRANT_SCRIPT = "dev/legacy/grant-readonly.sql";
 
     @SuppressWarnings("resource")
     public static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(
@@ -53,10 +56,10 @@ public final class LegacyPostgresTestSupport {
             statement.execute("CREATE TABLE legacy_probe(id int)");
             statement.execute("INSERT INTO legacy_probe(id) VALUES (1)");
             loadGoldenFixture(connection);
-            statement.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO " + RO_USER);
-            statement.execute("GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO " + RO_USER);
-            statement.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO " + RO_USER);
-            statement.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO " + RO_USER);
+            // Те же права, что на стенде и в продуктиве: SELECT только на таблицы из списка.
+            ScriptUtils.executeSqlScript(connection,
+                    new EncodedResource(new FileSystemResource(GRANT_SCRIPT), StandardCharsets.UTF_8));
+            statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to prepare reestr_ro on Testcontainers PostgreSQL", e);
         }
@@ -66,7 +69,7 @@ public final class LegacyPostgresTestSupport {
         ClassPathResource fixture = new ClassPathResource("legacy/reestr-golden-fixture.sql");
         if (!fixture.exists()) {
             throw new IllegalStateException(
-                    "Нет фикстуры classpath:legacy/reestr-golden-fixture.sql"
+                    "Нет тестового набора classpath:legacy/reestr-golden-fixture.sql"
             );
         }
         ScriptUtils.executeSqlScript(connection, new EncodedResource(fixture, StandardCharsets.UTF_8));
