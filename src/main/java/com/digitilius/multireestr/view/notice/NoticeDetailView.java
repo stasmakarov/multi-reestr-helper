@@ -104,18 +104,13 @@ public class NoticeDetailView extends StandardView {
     private String number = "";
 
     @Override
-    protected void processBeforeEnterInternal(BeforeEnterEvent event) {
-        super.processBeforeEnterInternal(event);
+    public void beforeEnter(BeforeEnterEvent event) {
         number = event.getRouteParameters().get("number").orElse("");
+        super.beforeEnter(event);
     }
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
-        showNumber(number);
-    }
-
-    public void showNumber(String rawNumber) {
-        number = rawNumber == null ? "" : rawNumber;
         setPageTitle(messageBundle.formatMessage("noticeDetailView.title", number));
         loadCard();
     }
