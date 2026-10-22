@@ -11,6 +11,7 @@ final class NoticeCardSql {
     static final String Q09 = "classpath:sql/legacy/notice-card/q09-documents.sql";
     static final String Q10 = "classpath:sql/legacy/notice-card/q10-spec.sql";
     static final String Q11 = "classpath:sql/legacy/notice-card/q11-ktru.sql";
+    static final String Q12 = "classpath:sql/legacy/notice-card/q12-protocols.sql";
 
     private NoticeCardSql() {
     }

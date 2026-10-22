@@ -4,6 +4,7 @@ import com.digitilius.multireestr.entity.legacy.KtruCharacteristicDto;
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
 import com.digitilius.multireestr.entity.legacy.NoticeFinanceDto;
+import com.digitilius.multireestr.entity.legacy.ProtocolDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ResourceLoader;
@@ -30,6 +31,7 @@ public class NoticeCardService {
     private final NoticeCardQ09RowMapper q09RowMapper;
     private final NoticeCardQ10RowMapper q10RowMapper;
     private final NoticeCardQ11RowMapper q11RowMapper;
+    private final NoticeCardQ12RowMapper q12RowMapper;
     private final String q03Sql;
     private final String q04Sql;
     private final String q05Sql;
@@ -39,6 +41,7 @@ public class NoticeCardService {
     private final String q09Sql;
     private final String q10Sql;
     private final String q11Sql;
+    private final String q12Sql;
 
     public NoticeCardService(
             @Qualifier("legacyJdbc") NamedParameterJdbcTemplate legacyJdbc,
@@ -52,7 +55,8 @@ public class NoticeCardService {
             NoticeCardQ08RowMapper q08RowMapper,
             NoticeCardQ09RowMapper q09RowMapper,
             NoticeCardQ10RowMapper q10RowMapper,
-            NoticeCardQ11RowMapper q11RowMapper
+            NoticeCardQ11RowMapper q11RowMapper,
+            NoticeCardQ12RowMapper q12RowMapper
     ) {
         this.legacyJdbc = legacyJdbc;
         this.noticeLookupService = noticeLookupService;
@@ -65,6 +69,7 @@ public class NoticeCardService {
         this.q09RowMapper = q09RowMapper;
         this.q10RowMapper = q10RowMapper;
         this.q11RowMapper = q11RowMapper;
+        this.q12RowMapper = q12RowMapper;
         this.q03Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q03);
         this.q04Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q04);
         this.q05Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q05);
@@ -74,6 +79,7 @@ public class NoticeCardService {
         this.q09Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q09);
         this.q10Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q10);
         this.q11Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q11);
+        this.q12Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q12);
     }
 
     public Optional<NoticeDto> loadOriginal(NoticeNumber number) {
@@ -123,10 +129,17 @@ public class NoticeCardService {
             attachCharacteristics(items, legacyJdbc.query(q11Sql, params, q11RowMapper));
         }
         notice.setItems(items);
-        notice.setProtocols(List.of());
+        notice.setProtocols(loadProtocols(notice.getNumber()));
         notice.setContract(null);
         notice.setWarnings(NoticeCardAssembler.warnings(notice, requirements.size()));
         return Optional.of(notice);
+    }
+
+    private List<ProtocolDto> loadProtocols(String purchaseNumber) {
+        if (purchaseNumber == null) {
+            return List.of();
+        }
+        return legacyJdbc.query(q12Sql, Map.of("npn", purchaseNumber), q12RowMapper);
     }
 
     private static void applyRequirements(NoticeDto notice, NoticeCardRequirements requirements) {
