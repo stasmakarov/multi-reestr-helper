@@ -22,6 +22,7 @@
     <layout>
         <hbox id="buttonsPanel" classNames="buttons-panel">
             <button id="backBtn" text="msg://backToSearch.text"/>
+            <button id="excelBtn" text="msg://excelBtn.text" enabled="false"/>
         </hbox>
         <vbox id="notFoundBox" width="100%" visible="false">
             <span id="notFoundSpan" classNames="notice-empty-message"/>

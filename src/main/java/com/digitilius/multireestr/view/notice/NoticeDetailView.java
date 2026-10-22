@@ -12,6 +12,7 @@ import com.digitilius.multireestr.entity.legacy.OrganizationDto;
 import com.digitilius.multireestr.entity.legacy.ProtocolDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import com.digitilius.multireestr.legacy.notice.NoticeCardService;
+import com.digitilius.multireestr.legacy.notice.NoticeExcelExporter;
 import com.digitilius.multireestr.legacy.notice.NoticeNumber;
 import com.digitilius.multireestr.view.main.MainView;
 import com.vaadin.flow.component.ClickEvent;
@@ -25,6 +26,8 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.component.grid.DataGrid;
+import io.jmix.flowui.download.DownloadFormat;
+import io.jmix.flowui.download.Downloader;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.model.CollectionContainer;
 import io.jmix.flowui.model.InstanceContainer;
@@ -95,9 +98,15 @@ public class NoticeDetailView extends StandardView {
     private Anchor eisUrlAnchor;
     @ViewComponent
     private Span paidTotalValue;
+    @ViewComponent
+    private JmixButton excelBtn;
 
     @Autowired
     private ViewNavigators viewNavigators;
+    @Autowired
+    private Downloader downloader;
+    @Autowired
+    private NoticeExcelExporter noticeExcelExporter;
     @Autowired(required = false)
     private NoticeCardService noticeCardService;
 
@@ -118,6 +127,16 @@ public class NoticeDetailView extends StandardView {
     @Subscribe("backBtn")
     public void onBackBtnClick(final ClickEvent<JmixButton> event) {
         viewNavigators.view(this, NoticeSearchView.class).navigate();
+    }
+
+    @Subscribe("excelBtn")
+    public void onExcelBtnClick(final ClickEvent<JmixButton> event) {
+        NoticeDto notice = noticeDc.getItemOrNull();
+        if (notice == null) {
+            return;
+        }
+        String fileName = "извещение-" + notice.getNumber() + ".xlsx";
+        downloader.download(noticeExcelExporter.writeBytes(List.of(notice)), fileName, DownloadFormat.XLSX);
     }
 
     @Supply(to = "documentsGrid.url", subject = "renderer")
@@ -161,11 +180,13 @@ public class NoticeDetailView extends StandardView {
         notFoundSpan.setText(message);
         notFoundBox.setVisible(true);
         cardBox.setVisible(false);
+        excelBtn.setEnabled(false);
     }
 
     private void showNotice(NoticeDto notice) {
         notFoundBox.setVisible(false);
         cardBox.setVisible(true);
+        excelBtn.setEnabled(true);
         noticeDc.setItem(notice);
         customerDc.setItem(notice.getCustomer());
         lotsDc.setItems(orEmpty(notice.getLots()));
