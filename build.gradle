@@ -37,6 +37,8 @@ dependencies {
     implementation 'io.jmix.datatools:jmix-datatools-starter'
     implementation 'io.jmix.datatools:jmix-datatools-flowui-starter'
 
+    implementation 'org.apache.poi:poi-ooxml'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     developmentOnly 'com.vaadin:vaadin-dev'
 
