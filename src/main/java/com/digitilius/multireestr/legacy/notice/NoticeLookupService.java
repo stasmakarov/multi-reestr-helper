@@ -2,21 +2,17 @@ package com.digitilius.multireestr.legacy.notice;
 
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,8 +36,8 @@ public class NoticeLookupService {
         this.legacyJdbc = legacyJdbc;
         this.rowMapper = rowMapper;
         this.selector = new NoticeOriginalSelector();
-        this.byNumberSql = loadSql(resourceLoader, BY_NUMBER_SQL);
-        this.byDateSubjectSql = loadSql(resourceLoader, BY_DATE_SUBJECT_SQL);
+        this.byNumberSql = LegacySqlLoader.load(resourceLoader, BY_NUMBER_SQL);
+        this.byDateSubjectSql = LegacySqlLoader.load(resourceLoader, BY_DATE_SUBJECT_SQL);
     }
 
     public List<NoticeCandidateDto> findByNumber(NoticeNumber number) {
@@ -62,17 +58,20 @@ public class NoticeLookupService {
         params.addValue("date", date);
         params.addValue("subject", fragment == null ? null : escapeIlike(fragment));
         List<NoticeCandidateDto> candidates = legacyJdbc.query(byDateSubjectSql, params, rowMapper);
-        return markByNumberGroups(candidates);
+        return markByNumberGroups(selector, candidates);
     }
 
     public Optional<NoticeCandidateDto> chooseOriginal(List<NoticeCandidateDto> candidates) {
         return selector.chooseOriginal(candidates);
     }
 
-    private List<NoticeCandidateDto> markByNumberGroups(List<NoticeCandidateDto> candidates) {
+    static List<NoticeCandidateDto> markByNumberGroups(
+            NoticeOriginalSelector selector,
+            List<NoticeCandidateDto> candidates
+    ) {
         Map<String, List<NoticeCandidateDto>> groups = candidates.stream()
                 .collect(Collectors.groupingBy(
-                        NoticeCandidateDto::getNumber,
+                        NoticeLookupService::groupKey,
                         LinkedHashMap::new,
                         Collectors.toList()
                 ));
@@ -81,6 +80,10 @@ public class NoticeLookupService {
             result.addAll(selector.markAndSort(group));
         }
         return result;
+    }
+
+    static String groupKey(NoticeCandidateDto candidate) {
+        return Objects.toString(candidate.getNumber(), "#" + candidate.getId());
     }
 
     private static String blankToNull(String value) {
@@ -97,12 +100,4 @@ public class NoticeLookupService {
                 .replace("_", "\\_");
     }
 
-    private static String loadSql(ResourceLoader resourceLoader, String location) {
-        Resource resource = resourceLoader.getResource(location);
-        try {
-            return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Не удалось загрузить SQL: " + location, e);
-        }
-    }
 }

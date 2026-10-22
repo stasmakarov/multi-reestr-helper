@@ -2,6 +2,7 @@ package com.digitilius.multireestr.legacy;
 
 import com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@EnabledIf("com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport#dockerAvailable")
 class LegacyDataSourceIntegrationTest {
 
     @DynamicPropertySource
