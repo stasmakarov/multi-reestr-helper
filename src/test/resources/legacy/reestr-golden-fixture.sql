@@ -1,10 +1,11 @@
--- Тестовая фикстура legacy-БД MultiReestr (PostgreSQL 9.6-совместимо).
--- Сгенерировано из reestrdb.dump скриптом dev/legacy/make-test-fixture.sh, 2026-10-22 12:37 MSK.
+-- Тестовый набор данных legacy-БД MultiReestr (PostgreSQL 9.6-совместимо).
+-- Сгенерировано из reestrdb.dump скриптом dev/legacy/make-test-fixture.sh, 2026-10-22 20:48 MSK.
 -- Извещения notices.id IN (3,4,10,17,18,21,33,37,38,40,41,42) + связанные строки (noticeid / noticektruharactid),
 -- заказчики (owners: только id,name,fullname,ownerinn,ownerkpp), весь spdogovortypes,
 -- используемые sppurchasepreferences; для урока 3: noticefinances, protocols (по номеру) + весь protocol_types,
--- reestr (по tendernumber, включая удалённые), reestrspec, reestrprocedures, reestrprocexecutions, reestroplat, members;
+-- reestr (по tendernumber, включая удалённые), reestrspec, reestrprocedures, reestrprocexecutions;
 -- owners также по reestr.winnerid. userinfo и учётные данные не выгружаются.
+-- Персональные данные обезличены: ФИО физлиц -> «Поставщик-физлицо N», 12-значные ИНН -> фиктивные.
 -- Перегенерировать: dev/legacy/legacy-db.sh up && dev/legacy/make-test-fixture.sh
 
 DROP TABLE IF EXISTS notices;
@@ -1789,48 +1790,4 @@ INSERT INTO reestrprocexecutions (id, reestrproceduresid, srcid, executiontype, 
 INSERT INTO reestrprocexecutions (id, reestrproceduresid, srcid, executiontype, de_code, de_documentdate, de_documentnum, de_deliveryacceptdate, de_fulfilmentsum, pd_documentname, pd_documentdate, pd_documentnum, pd_documentdesc, paid, paidvat, improperexecutiontext, product, istempoplata, isadvancepaymentpaydoc, oosid, externalid, factpostavdate, markcolorname, markdesc, localnotes, garantreserv, ordinal) VALUES ('96', '96', NULL, '1', NULL, NULL, NULL, NULL, NULL, 'Платежное поручение', '2026-06-18', '1618', NULL, '33000.00', '0.00', '', '', NULL, '0', '770153169', '', NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO reestrprocexecutions (id, reestrproceduresid, srcid, executiontype, de_code, de_documentdate, de_documentnum, de_deliveryacceptdate, de_fulfilmentsum, pd_documentname, pd_documentdate, pd_documentnum, pd_documentdesc, paid, paidvat, improperexecutiontext, product, istempoplata, isadvancepaymentpaydoc, oosid, externalid, factpostavdate, markcolorname, markdesc, localnotes, garantreserv, ordinal) VALUES ('97', '97', NULL, '1', NULL, NULL, NULL, NULL, NULL, 'Платежное поручение', '2026-05-13', '8202', NULL, '16000.00', '0.00', '', '', NULL, '0', '761876152', '', NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO reestrprocexecutions (id, reestrproceduresid, srcid, executiontype, de_code, de_documentdate, de_documentnum, de_deliveryacceptdate, de_fulfilmentsum, pd_documentname, pd_documentdate, pd_documentnum, pd_documentdesc, paid, paidvat, improperexecutiontext, product, istempoplata, isadvancepaymentpaydoc, oosid, externalid, factpostavdate, markcolorname, markdesc, localnotes, garantreserv, ordinal) VALUES ('98', '98', NULL, '0', '38', '2026-05-08', 'ЯЕ26089', '2026-05-12', '16000.00', NULL, NULL, NULL, NULL, '0.00', '0.00', 'Отсутствует', 'Папка картонная. Товарный знак: отсутствует (17.23.13.193): 3 060,00 ;', NULL, NULL, '761442540', '', NULL, NULL, NULL, NULL, NULL, NULL);
-
-DROP TABLE IF EXISTS reestroplat;
-CREATE TABLE reestroplat (
-    id integer NOT NULL,
-    reestrid integer,
-    schetnumber character varying(100),
-    schetdate date,
-    summa numeric(18,2),
-    schetdesc character varying(500),
-    istfinsourcecode integer,
-    kosgucode1 integer,
-    kosgucode0 integer,
-    kosgucode2 integer,
-    factfinyear integer,
-    doctype integer,
-    docname character varying(200),
-    kbk character varying(20),
-    docregdate date
-);
-
-DROP TABLE IF EXISTS members;
-CREATE TABLE members (
-    id integer NOT NULL,
-    reestrid integer,
-    memberid integer,
-    memberinn character varying(16),
-    membername character varying(500),
-    iswinner smallint,
-    iszayavaway smallint,
-    isnotappear smallint,
-    isnotallowed smallint,
-    notallowedtype smallint,
-    isotkaz smallint,
-    membercena numeric(18,2),
-    zayavdate timestamp(6) without time zone,
-    journalnumber character varying(100),
-    firstofferprice numeric(18,2),
-    firstofferdate timestamp(6) without time zone,
-    lastofferdate timestamp(6) without time zone,
-    offersquantity integer,
-    apprating integer,
-    rejectedreasoncode character varying(100)
-);
-INSERT INTO members (id, reestrid, memberid, memberinn, membername, iswinner, iszayavaway, isnotappear, isnotallowed, notallowedtype, isotkaz, membercena, zayavdate, journalnumber, firstofferprice, firstofferdate, lastofferdate, offersquantity, apprating, rejectedreasoncode) VALUES ('3', '3', '4', '7708826943', 'ООО "МАСТЕР ТЕЛЕКОМ"', '1', '0', '0', '0', '0', '0', '0.00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
