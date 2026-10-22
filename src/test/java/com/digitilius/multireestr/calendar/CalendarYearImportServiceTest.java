@@ -31,8 +31,15 @@ class CalendarYearImportServiceTest {
 
     @Test
     void importThenReimportReplacesYearIncludingManual() throws Exception {
+        LocalDate manualDate = LocalDate.of(2024, 6, 1);
+        dataManager.load(CalendarDay.class)
+                .query("select e from mtr_CalendarDay e where e.date = :date")
+                .parameter("date", manualDate)
+                .optional()
+                .ifPresent(dataManager::remove);
+
         CalendarDay manual = dataManager.create(CalendarDay.class);
-        manual.setDate(LocalDate.of(2024, 6, 1));
+        manual.setDate(manualDate);
         manual.setYear(2024);
         manual.setDayType(DayType.WORKING);
         manual.setSource(CalendarSource.MANUAL);
