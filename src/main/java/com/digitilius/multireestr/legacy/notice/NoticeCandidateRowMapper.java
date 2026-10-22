@@ -7,13 +7,15 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.regex.Pattern;
 
 @Component
 public class NoticeCandidateRowMapper implements RowMapper<NoticeCandidateDto> {
 
-    private static final Pattern LOCAL_COPY_SUBJECT = Pattern.compile("(?i)^\\s*Копия");
+    private static final Pattern LOCAL_COPY_SUBJECT = Pattern.compile(
+            "^[\\s\\u00A0]*Копия",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+    );
 
     private final Metadata metadata;
 
@@ -27,22 +29,16 @@ public class NoticeCandidateRowMapper implements RowMapper<NoticeCandidateDto> {
         dto.setId(rs.getInt("id"));
         String purchaseNumber = rs.getString("purchasenumber");
         dto.setNumber(purchaseNumber == null ? null : purchaseNumber.trim());
-        Timestamp publishedAt = rs.getTimestamp("docpublishdate");
-        dto.setPublishedAt(publishedAt == null ? null : publishedAt.toLocalDateTime());
+        dto.setPublishedAt(LegacyResultSets.localDateTime(rs, "docpublishdate"));
         dto.setSubject(rs.getString("predmet"));
-        Integer modifVersion = rs.getObject("modifversion", Integer.class);
-        dto.setModifVersion(modifVersion);
-        dto.setDeleted(flag(rs.getObject("isdeleted", Integer.class)));
-        dto.setCanceled(flag(rs.getObject("iscanceled", Integer.class)));
+        dto.setModifVersion(LegacyResultSets.integer(rs, "modifversion"));
+        dto.setDeleted(LegacyResultSets.flag(rs, "isdeleted"));
+        dto.setCanceled(LegacyResultSets.flag(rs, "iscanceled"));
         dto.setLocalCopy(isLocalCopy(rs.getString("srcguid"), dto.getSubject()));
         return dto;
     }
 
-    private static boolean flag(Integer value) {
-        return value != null && value != 0;
-    }
-
-    private static boolean isLocalCopy(String srcGuid, String subject) {
+    static boolean isLocalCopy(String srcGuid, String subject) {
         boolean delphiGuid = srcGuid != null && srcGuid.startsWith("{");
         boolean copySubject = subject != null && LOCAL_COPY_SUBJECT.matcher(subject).find();
         return delphiGuid || copySubject;

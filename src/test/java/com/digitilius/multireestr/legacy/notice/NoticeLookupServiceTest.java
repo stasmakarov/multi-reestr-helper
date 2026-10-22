@@ -3,6 +3,7 @@ package com.digitilius.multireestr.legacy.notice;
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@EnabledIf("com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport#dockerAvailable")
 class NoticeLookupServiceTest {
 
     @DynamicPropertySource
@@ -55,11 +57,12 @@ class NoticeLookupServiceTest {
     @Test
     void findByDateWithoutSubject() {
         List<NoticeCandidateDto> found = noticeLookupService.findByDateAndSubject(
-                LocalDate.of(2026, 1, 21),
+                LocalDate.of(2026, 4, 3),
                 null
         );
         assertThat(found).extracting(NoticeCandidateDto::getNumber)
-                .containsExactly("0173100017026000003");
+                .containsExactly("0173100017026000014");
+        assertThat(found.get(0).getId()).isEqualTo(4);
         assertThat(found.get(0).getChosen()).isTrue();
     }
 
@@ -67,11 +70,13 @@ class NoticeLookupServiceTest {
     void findBySubjectWithoutDate() {
         List<NoticeCandidateDto> found = noticeLookupService.findByDateAndSubject(
                 null,
-                "криминалист"
+                "папки"
         );
         assertThat(found).extracting(NoticeCandidateDto::getNumber)
-                .containsExactly("0173100017026000003");
+                .containsOnly("0173100017026000015");
+        assertThat(found.get(0).getId()).isEqualTo(3);
         assertThat(found.get(0).getChosen()).isTrue();
+        assertThat(found.stream().filter(c -> Boolean.TRUE.equals(c.getChosen()))).hasSize(1);
     }
 
     @Test
