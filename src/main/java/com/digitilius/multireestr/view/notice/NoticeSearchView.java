@@ -1,6 +1,9 @@
 package com.digitilius.multireestr.view.notice;
 
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
+import com.digitilius.multireestr.entity.legacy.NoticeDto;
+import com.digitilius.multireestr.legacy.notice.NoticeCardService;
+import com.digitilius.multireestr.legacy.notice.NoticeExcelExporter;
 import com.digitilius.multireestr.legacy.notice.NoticeLookupService;
 import com.digitilius.multireestr.legacy.notice.NoticeNumber;
 import com.digitilius.multireestr.view.main.MainView;
@@ -21,6 +24,8 @@ import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.component.datepicker.TypedDatePicker;
 import io.jmix.flowui.component.grid.DataGrid;
 import io.jmix.flowui.component.textfield.TypedTextField;
+import io.jmix.flowui.download.DownloadFormat;
+import io.jmix.flowui.download.Downloader;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.model.CollectionContainer;
 import io.jmix.flowui.view.Install;
@@ -37,7 +42,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Route(value = "notices/search", layout = MainView.class)
@@ -61,13 +70,21 @@ public class NoticeSearchView extends StandardView {
     private DataGrid<NoticeCandidateDto> candidatesGrid;
     @ViewComponent
     private JmixButton openBtn;
+    @ViewComponent
+    private JmixButton excelBtn;
 
     @Autowired
     private ViewNavigators viewNavigators;
     @Autowired
     private Notifications notifications;
+    @Autowired
+    private Downloader downloader;
+    @Autowired
+    private NoticeExcelExporter noticeExcelExporter;
     @Autowired(required = false)
     private NoticeLookupService noticeLookupService;
+    @Autowired(required = false)
+    private NoticeCardService noticeCardService;
 
     @Subscribe("searchBtn")
     public void onSearchBtnClick(final ClickEvent<JmixButton> event) {
@@ -82,11 +99,17 @@ public class NoticeSearchView extends StandardView {
         clearNumberError();
         candidatesDc.setItems(List.of());
         openBtn.setEnabled(false);
+        excelBtn.setEnabled(false);
     }
 
     @Subscribe("openBtn")
     public void onOpenBtnClick(final ClickEvent<JmixButton> event) {
         openDetail(candidatesGrid.getSingleSelectedItem());
+    }
+
+    @Subscribe("excelBtn")
+    public void onExcelBtnClick(final ClickEvent<JmixButton> event) {
+        exportExcel();
     }
 
     @Subscribe("candidatesGrid")
@@ -187,6 +210,7 @@ public class NoticeSearchView extends StandardView {
         }
         candidatesDc.setItems(found);
         openBtn.setEnabled(false);
+        excelBtn.setEnabled(!found.isEmpty());
         if (found.isEmpty()) {
             notifications.create(messageBundle.getMessage("nothingFound"))
                     .withPosition(Notification.Position.TOP_END)
@@ -205,6 +229,64 @@ public class NoticeSearchView extends StandardView {
         viewNavigators.view(this, NoticeDetailView.class)
                 .withRouteParameters(new RouteParameters("number", candidate.getNumber()))
                 .navigate();
+    }
+
+    private void exportExcel() {
+        if (noticeCardService == null) {
+            showLegacyConnectionError(null);
+            return;
+        }
+        List<NoticeCandidateDto> source = candidatesToExport();
+        if (source.isEmpty()) {
+            notifications.create(messageBundle.getMessage("excelNothingToExport"))
+                    .withPosition(Notification.Position.TOP_END)
+                    .show();
+            return;
+        }
+        if (source.size() > NoticeExcelExporter.MAX_NOTICES) {
+            notifications.create(messageBundle.formatMessage("excelLimitExceeded", source.size()))
+                    .withPosition(Notification.Position.TOP_END)
+                    .show();
+            source = source.subList(0, NoticeExcelExporter.MAX_NOTICES);
+        }
+        List<NoticeDto> notices = new ArrayList<>();
+        try {
+            for (NoticeCandidateDto candidate : source) {
+                Optional<NoticeDto> loaded = noticeCardService.loadNotice(candidate.getId());
+                loaded.ifPresent(notices::add);
+            }
+        } catch (DataAccessException e) {
+            showLegacyConnectionError(e);
+            return;
+        }
+        if (notices.isEmpty()) {
+            notifications.create(messageBundle.getMessage("excelNothingToExport"))
+                    .withPosition(Notification.Position.TOP_END)
+                    .show();
+            return;
+        }
+        downloader.download(noticeExcelExporter.writeBytes(notices), excelFileName(notices), DownloadFormat.XLSX);
+    }
+
+    private List<NoticeCandidateDto> candidatesToExport() {
+        NoticeCandidateDto selected = candidatesGrid.getSingleSelectedItem();
+        if (selected != null) {
+            return List.of(selected);
+        }
+        List<NoticeCandidateDto> chosen = new ArrayList<>();
+        for (NoticeCandidateDto candidate : candidatesDc.getItems()) {
+            if (Boolean.TRUE.equals(candidate.getChosen())) {
+                chosen.add(candidate);
+            }
+        }
+        return chosen;
+    }
+
+    private static String excelFileName(List<NoticeDto> notices) {
+        if (notices.size() == 1 && notices.get(0).getNumber() != null) {
+            return "извещение-" + notices.get(0).getNumber() + ".xlsx";
+        }
+        return "извещения-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")) + ".xlsx";
     }
 
     private void showLegacyConnectionError(DataAccessException e) {
