@@ -47,9 +47,25 @@ class NoticeCardServiceTest {
         assertThat(notice.getLaw()).isEqualTo("44-ФЗ");
         assertThat(notice.getMethodName()).isEqualTo("Электронный аукцион");
         assertThat(notice.getPreferences()).contains("ET44");
+        assertThat(notice.getFinances()).hasSize(1);
+        assertThat(notice.getFinances().get(0).getKbk()).isEqualTo("41703018820090049244");
+        assertThat(notice.getFinances().get(0).getFinYear()).isEqualTo(2026);
+        assertThat(notice.getFinances().get(0).getAmount()).isEqualByComparingTo(new BigDecimal("43360.20"));
         assertThat(notice.getProtocols()).isEmpty();
         assertThat(notice.getContract()).isNull();
         assertThat(notice.getWarnings()).isEmpty();
+    }
+
+    @Test
+    void financesForNotice40() {
+        NoticeDto notice = noticeCardService.loadOriginal(NoticeNumber.parse("0173100017024000008"))
+                .orElseThrow();
+
+        assertThat(notice.getId()).isEqualTo(40);
+        assertThat(notice.getFinances()).hasSize(1);
+        assertThat(notice.getFinances().get(0).getKbk()).isEqualTo("41703018820090049242");
+        assertThat(notice.getFinances().get(0).getFinYear()).isEqualTo(2025);
+        assertThat(notice.getFinances().get(0).getAmount()).isEqualByComparingTo(new BigDecimal("1744800.00"));
     }
 
     @Test

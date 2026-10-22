@@ -11,13 +11,15 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 OUT="${1:-$DIR/../../src/test/resources/legacy/reestr-golden-fixture.sql}"
 PSQL="${PSQL:-docker exec -i -e PGPASSWORD=reestr_ro reestr-pg96 psql -h localhost -U reestr_ro -d reestrdb}"
 IDS="${IDS:-3,4,10,17,18,21,33,37,38,40,41,42}"
+NUMS="SELECT trim(purchasenumber) FROM notices WHERE id IN ($IDS)"
+RIDS="SELECT id FROM reestr WHERE trim(tendernumber) IN ($NUMS)"
 
 q() { $PSQL -X -q -At -v ON_ERROR_STOP=1 -c "$1"; }
 
 # table | columns filter (пусто = все) | WHERE
 TABLES=(
   "notices||id IN ($IDS)"
-  "owners|id,name,fullname,ownerinn,ownerkpp|id IN (SELECT ownerid FROM notices WHERE id IN ($IDS))"
+  "owners|id,name,fullname,ownerinn,ownerkpp|id IN (SELECT ownerid FROM notices WHERE id IN ($IDS)) OR id IN (SELECT winnerid FROM reestr WHERE id IN ($RIDS))"
   "spdogovortypes||true"
   "noticeprocedureinfo||noticeid IN ($IDS)"
   "noticelots||noticeid IN ($IDS)"
@@ -28,6 +30,15 @@ TABLES=(
   "noticespec||noticeid IN ($IDS)"
   "noticektruharacts||noticeid IN ($IDS)"
   "noticektruharactvalues||noticektruharactid IN (SELECT id FROM noticektruharacts WHERE noticeid IN ($IDS))"
+  "noticefinances||noticeid IN ($IDS)"
+  "protocol_types||true"
+  "protocols||trim(purchasenumber) IN ($NUMS)"
+  "reestr||id IN ($RIDS)"
+  "reestrspec||reestrid IN ($RIDS)"
+  "reestrprocedures||reestrid IN ($RIDS)"
+  "reestrprocexecutions||reestrproceduresid IN (SELECT id FROM reestrprocedures WHERE reestrid IN ($RIDS))"
+  "reestroplat||reestrid IN ($RIDS)"
+  "members||reestrid IN ($RIDS)"
 )
 
 {
@@ -35,7 +46,9 @@ TABLES=(
   echo "-- Сгенерировано из reestrdb.dump скриптом dev/legacy/make-test-fixture.sh, $(date '+%Y-%m-%d %H:%M %Z')."
   echo "-- Извещения notices.id IN ($IDS) + связанные строки (noticeid / noticektruharactid),"
   echo "-- заказчики (owners: только id,name,fullname,ownerinn,ownerkpp), весь spdogovortypes,"
-  echo "-- используемые sppurchasepreferences. userinfo и учётные данные не выгружаются."
+  echo "-- используемые sppurchasepreferences; для урока 3: noticefinances, protocols (по номеру) + весь protocol_types,"
+  echo "-- reestr (по tendernumber, включая удалённые), reestrspec, reestrprocedures, reestrprocexecutions, reestroplat, members;"
+  echo "-- owners также по reestr.winnerid. userinfo и учётные данные не выгружаются."
   echo "-- Перегенерировать: dev/legacy/legacy-db.sh up && dev/legacy/make-test-fixture.sh"
   echo
   for spec in "${TABLES[@]}"; do
@@ -51,7 +64,7 @@ TABLES=(
     echo ");"
     collist=$(q "SELECT string_agg(quote_ident(a.attname), ', ' ORDER BY a.attnum) $attrs")
     valexpr=$(q "SELECT string_agg('quote_nullable(' || quote_ident(a.attname) || ')', ' || '', '' || ' ORDER BY a.attnum) $attrs")
-    q "SELECT 'INSERT INTO $t ($collist) VALUES (' || $valexpr || ');' FROM $t WHERE $where ORDER BY 1"
+    q "SELECT s FROM (SELECT 'INSERT INTO $t ($collist) VALUES (' || $valexpr || ');' AS s FROM $t WHERE $where) x ORDER BY s COLLATE \"C\""
     echo
   done
 } > "$OUT.tmp"

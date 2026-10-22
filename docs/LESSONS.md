@@ -10,9 +10,10 @@
    - Материал урока: [lessons/lesson-01-legacy.md](lessons/lesson-01-legacy.md).
    - Каркас: проект Jmix 3.0.3 на Java 21, пользователь admin, создание модели данных в Studio. Основная БД: в разработке HSQLDB (или `postgres:16`), в продуктиве — отдельный PostgreSQL 16+. Jmix 3 не работает с PostgreSQL 9.6, поэтому на сервере MultiReestr основную БД не размещаем.
    - Второй DataSource `legacy`: БД MultiReestr подключается без Liquibase, через `NamedParameterJdbcTemplate` (`legacyJdbc`). Приложение стартует и без неё (с предупреждением). Защита от записи на трёх уровнях: драйвер (`readOnlyMode=always`), Hikari и пользователь БД.
-   - Тестовый стенд: Testcontainers `postgres:9.6`, схема из бэкапа, данные по 10 эталонным извещениям, тест на запрет записи.
+   - Тестовый стенд: Testcontainers `postgres:9.6`, схема из бэкапа, данные по 10 эталонным номерам (12 записей извещений, включая дубли), тест на запрет записи.
 
 2. **DTO-модель извещения и поиск.**
+   - Материал урока: [lessons/lesson-02-notice-search.md](lessons/lesson-02-notice-search.md).
    - Value object `NoticeNumber`: нормализация номера (пробелы, «№»), юнит-тесты.
    - `NoticeLookupService` находит запись и выбирает оригинал среди дублей и копий (голден-тесты на 10 номерах).
    - DTO `OrganizationDto`, `NoticeCandidateDto`, `NoticeDto`, `LotDto`, `SpecPositionDto` (с КТРУ), `NoticeDocumentDto`.
