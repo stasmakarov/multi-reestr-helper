@@ -5,6 +5,8 @@ import com.digitilius.multireestr.entity.CalendarSource;
 import com.digitilius.multireestr.entity.DayType;
 import io.jmix.core.DataManager;
 import io.jmix.core.SaveContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,9 @@ public class CalendarYearImportService {
     private final XmlCalendarClient client;
     private final DataManager dataManager;
     private final DbWorkingCalendar workingCalendar;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public CalendarYearImportService(
             XmlCalendarParser parser,
@@ -69,10 +74,10 @@ public class CalendarYearImportService {
 
     @Transactional
     public void replaceYear(CalendarYearPreview preview) {
-        List<CalendarDay> existing = loadYear(preview.year());
-        if (!existing.isEmpty()) {
-            dataManager.remove(existing.toArray(CalendarDay[]::new));
-        }
+        entityManager.createQuery("delete from mtr_CalendarDay e where e.year = :year")
+                .setParameter("year", preview.year())
+                .executeUpdate();
+        entityManager.flush();
         SaveContext saveContext = new SaveContext();
         for (ParsedCalendarDay parsed : preview.days()) {
             CalendarDay entity = dataManager.create(CalendarDay.class);
