@@ -13,6 +13,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,6 +38,8 @@ public class NoticeCardService {
     private final NoticeCardQ12RowMapper q12RowMapper;
     private final NoticeCardQ13RowMapper q13RowMapper;
     private final NoticeCardQ14RowMapper q14RowMapper;
+    private final NoticeCardQ16RowMapper q16RowMapper;
+    private final NoticeCardQ17RowMapper q17RowMapper;
     private final String q03Sql;
     private final String q04Sql;
     private final String q05Sql;
@@ -49,6 +52,8 @@ public class NoticeCardService {
     private final String q12Sql;
     private final String q13Sql;
     private final String q14Sql;
+    private final String q16Sql;
+    private final String q17Sql;
 
     public NoticeCardService(
             @Qualifier("legacyJdbc") NamedParameterJdbcTemplate legacyJdbc,
@@ -65,7 +70,9 @@ public class NoticeCardService {
             NoticeCardQ11RowMapper q11RowMapper,
             NoticeCardQ12RowMapper q12RowMapper,
             NoticeCardQ13RowMapper q13RowMapper,
-            NoticeCardQ14RowMapper q14RowMapper
+            NoticeCardQ14RowMapper q14RowMapper,
+            NoticeCardQ16RowMapper q16RowMapper,
+            NoticeCardQ17RowMapper q17RowMapper
     ) {
         this.legacyJdbc = legacyJdbc;
         this.noticeLookupService = noticeLookupService;
@@ -81,6 +88,8 @@ public class NoticeCardService {
         this.q12RowMapper = q12RowMapper;
         this.q13RowMapper = q13RowMapper;
         this.q14RowMapper = q14RowMapper;
+        this.q16RowMapper = q16RowMapper;
+        this.q17RowMapper = q17RowMapper;
         this.q03Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q03);
         this.q04Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q04);
         this.q05Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q05);
@@ -93,6 +102,8 @@ public class NoticeCardService {
         this.q12Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q12);
         this.q13Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q13);
         this.q14Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q14);
+        this.q16Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q16);
+        this.q17Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q17);
     }
 
     public Optional<NoticeDto> loadOriginal(NoticeNumber number) {
@@ -168,8 +179,19 @@ public class NoticeCardService {
             return null;
         }
         ContractDto contract = found.get(0);
-        contract.setItems(legacyJdbc.query(q14Sql, Map.of("rid", contract.getId()), q14RowMapper));
+        Map<String, Object> contractParams = Map.of("rid", contract.getId());
+        contract.setItems(legacyJdbc.query(q14Sql, contractParams, q14RowMapper));
+        contract.setExecutions(legacyJdbc.query(q16Sql, contractParams, q16RowMapper));
+        contract.setPaidTotal(loadPaidTotal(contractParams));
         return contract;
+    }
+
+    private BigDecimal loadPaidTotal(Map<String, Object> contractParams) {
+        List<BigDecimal> found = legacyJdbc.query(q17Sql, contractParams, q17RowMapper);
+        if (found.isEmpty() || found.get(0) == null) {
+            return BigDecimal.ZERO;
+        }
+        return found.get(0);
     }
 
     private static void applyRequirements(NoticeDto notice, NoticeCardRequirements requirements) {
