@@ -111,6 +111,11 @@ public class NoticeDetailView extends StandardView {
 
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
+        showNumber(number);
+    }
+
+    public void showNumber(String rawNumber) {
+        number = rawNumber == null ? "" : rawNumber;
         setPageTitle(messageBundle.formatMessage("noticeDetailView.title", number));
         loadCard();
     }
