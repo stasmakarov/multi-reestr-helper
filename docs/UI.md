@@ -20,7 +20,7 @@
 - **Подчинённые сущности** (`@Composition`) редактируются внутри карточки владельца, в DataGrid с кнопками «Создать / Изменить / Удалить» и вложенной карточкой. Это относится к `Rule.versions`, `RuleVersion.parameters` и `ReferenceList.items`.
 - **Legacy только для чтения.** Экраны извещения пишутся вручную на `StandardView`, а не на `StandardDetailView`: данные из legacy только читаются. Контейнеры объявлены как `<data readOnly="true">`, DTO-контейнеры заполняются через `setItems` из сервиса. Кнопок сохранения на этих экранах нет.
 - **Подсказка вместо ссылки.** JPA-сущности ссылаются на legacy только по значению, например `ContractTerm.contractLegacyId` или `PlanScheduleEvent.legacyPlanId`. Поэтому в карточках такие поля заполняются через поиск или выбор из DTO (**предложение**), а не через обычный entity picker.
-- **Экспорт.** Любой DataGrid можно выгрузить кнопкой «Экспорт» (`ExcelExporter` из gridexport). Для карточки извещения есть свой экспорт в формате `notices.xlsx`.
+- **Экспорт.** Платные дополнения (gridexport) не используются. Извещения выгружает кнопка «Excel» в карточке и на экране поиска: свой `NoticeExcelExporter` на Apache POI (`poi-ooxml`), два листа «Извещения» и «Спецификации» в формате образца `notices.xlsx` (урок 3).
 
 ## 2. Структура меню
 
@@ -61,7 +61,7 @@
 | Тип | свой (`StandardView`), не CRUD |
 | Поля поиска | номер (19 цифр, нормализуется через `NoticeNumber`), дата, фрагмент названия; кнопка «Найти» |
 | Таблица кандидатов | `NoticeCandidateDto`: `number`, `publishedAt`, `subject`, `modifVersion`, `deleted`, `canceled`, `localCopy`, `chosen`, `reason` |
-| Действия | «Найти». Двойной клик или «Открыть» ведёт в карточку. Если подходит ровно одно извещение, сразу открывается карточка (**предложение**). Пустой результат — сообщение «Ничего не найдено» |
+| Действия | «Найти». Двойной клик или «Открыть» ведёт в карточку. Если подходит ровно одно извещение, сразу открывается карточка (**предложение**). Пустой результат — сообщение «Ничего не найдено». «Excel» (урок 3): выгружает выделенную строку, а если ничего не выделено — все оригиналы, не больше 20 (при превышении — уведомление); файл `извещение-{номер}.xlsx` или `извещения-yyyyMMdd-HHmm.xlsx` |
 | Редактирование | нет, только чтение |
 | Переходы | → карточка извещения (`notices/:number`) |
 | Роли | С, А |
@@ -74,8 +74,8 @@
 | View id / route | `mtr_NoticeDetailView` / `notices/:number` (номер передаётся параметром маршрута) |
 | Тип | свой (`StandardView`, `<data readOnly="true">`), не CRUD |
 | Шапка | плашка `warnings`; `number`, `subject`, `law`, `methodName`, `nmck`, `publishedAt`, `modifVersion`, `customer` (OrganizationDto.name / inn), ссылка `eisUrl` |
-| Вкладки | **Извещение**: `ikz`, `planPosition`, `applicationsFrom/To`, `biddingDate`, `summarizingDate`, обеспечения (`appGuaranteeAmount/Pct`, `contractGuaranteePct`), `executionTermDays`, `executionEndDate`, `preferences`, `platform`, лоты (`LotDto`: `number`, `maxPrice`, `currency`), документы (`NoticeDocumentDto`: `name`, `url`) · **Спецификация**: `SpecPositionDto` (`pos`, `name`, `okpd2`, `ktru`, `qty`, `unit`, `price`, `amount`, `foreignBan`, `foreignRestriction`, `rfPreference`, `banImpossible`, `characteristicsText`), под ней характеристики выбранной позиции (`KtruCharacteristicDto`: `name`, `value`, `fromEis`, `required`) · **Протоколы**: `ProtocolDto` (`number`, `date`, `typeName`) · **Контракт и исполнение**: `ContractDto` (`number`, `registryNumber`, `date`, `endDate`, `price`, `reductionPct`, `paidTotal`, `supplier`), позиции `ContractItemDto`, исполнение `ExecutionDto` (`kind`, `stageNumber`, `stageEndDate`, `docNumber`, `docDate`, `acceptDate`, `amount`, `penaltyInfo`, `improperExecution`) |
-| Действия | «Excel» — свой `NoticeExcelExporter` (два листа, урок 3); «Экспорт» у отдельных таблиц (gridexport); **«Проверить»** (урок 7) открывает диалог результата проверки; «Нарушения по извещению» ведёт в реестр с фильтром по `objectKey` (**предложение**); «Условия контракта» ведёт в `ContractTerm` с фильтром по `contractLegacyId` (**предложение**) |
+| Вкладки | **Извещение**: `ikz`, `planPosition`, `applicationsFrom/To`, `biddingDate`, `summarizingDate`, обеспечения (`appGuaranteeAmount/Pct`, `contractGuaranteePct`), `executionTermDays`, `executionEndDate`, `preferences`, `platform`, лоты (`LotDto`: `number`, `maxPrice`, `currency`), финансирование (`NoticeFinanceDto`: `kbk`, `finYear`, `amount`), документы (`NoticeDocumentDto`: `name`, `url`) · **Спецификация**: `SpecPositionDto` (`pos`, `name`, `okpd2`, `ktru`, `qty`, `unit`, `price`, `amount`, `foreignBan`, `foreignRestriction`, `rfPreference`, `banImpossible`, `characteristicsText`), под ней характеристики выбранной позиции (`KtruCharacteristicDto`: `name`, `value`, `fromEis`, `required`) · **Протоколы**: `ProtocolDto` (`number`, `date`, `typeName`) · **Контракт и исполнение**: `ContractDto` (`number`, `registryNumber`, `date`, `endDate`, `price`, `reductionPct`, `paidTotal`, `supplier`), позиции `ContractItemDto`, исполнение `ExecutionDto` (`kind`, `stageNumber`, `stageEndDate`, `docName`, `docNumber`, `docDate`, `acceptDate`, `amount`, `penaltyInfo`, `improperExecution`); под таблицей исполнения — строка «Оплачено» (та же сумма, что в поле `paidTotal` формы контракта) |
+| Действия | «Назад к поиску»; «Excel» — свой `NoticeExcelExporter` (два листа, урок 3): выгружает загруженную карточку в файл `извещение-{номер}.xlsx`, кнопка выключена, если извещение не найдено; **«Проверить»** (урок 7) открывает диалог результата проверки; «Нарушения по извещению» ведёт в реестр с фильтром по `objectKey` (**предложение**); «Условия контракта» ведёт в `ContractTerm` с фильтром по `contractLegacyId` (**предложение**) |
 | Редактирование | нет |
 | Переходы | ← поиск; → диалог проверки; → реестр нарушений; → условия контракта |
 | Роли | С, А |
@@ -185,7 +185,7 @@
 | Колонки | `date`, `dayType`, `mark`, `source` |
 | Фильтры | `year` (по умолчанию текущий — **предложение**), `dayType`, `source` |
 | Карточка | `date`, `year` (вычисляется из даты — **предложение**), `dayType`, `source` (MANUAL при ручном вводе), `mark` |
-| Действия | **«Импорт с xmlcalendar.ru»** за выбранный год, с последующим сбросом кэша `DbWorkingCalendar`; «Удалить год» (**предложение**); «Сверить с legacy holidays» (**предложение**) |
+| Действия | **«Загрузить год»**: ввод года, загрузка с xmlcalendar.ru или из файла, сводка перед записью, замена исключений года в одной транзакции, сброс кэша `DbWorkingCalendar`. Годы тестового набора данных загружены по умолчанию из CSV в репо; «Удалить год» (**предложение**); «Сверить с legacy holidays» (**предложение**) |
 | Роли | А — правка; С — чтение (**предложение**) |
 | Урок | 4 |
 
