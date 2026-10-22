@@ -51,6 +51,7 @@
 | [NoticeCandidateDto](entities/NoticeCandidateDto.md) | DTO | — (не хранится) | 2 | Строка списка кандидатов при поиске (дубли по номеру, поиск по дате/названию) |
 | [NoticeDto](entities/NoticeDto.md) | DTO | — (не хранится) | 2 | Карточка извещения 44-ФЗ (Q3–Q11 из notice_lookup_spec |
 | [LotDto](entities/LotDto.md) | DTO | — (не хранится) | 2 | Лот извещения |
+| [NoticeFinanceDto](entities/NoticeFinanceDto.md) | DTO | — (не хранится) | 3 | Финансирование извещения (КБК, год, сумма) |
 | [SpecPositionDto](entities/SpecPositionDto.md) | DTO | — (не хранится) | 2 | Позиция спецификации извещения; вход для правил ПП 1875, КТРУ, описания (замечания 3, 4, 5, 7) |
 | [KtruCharacteristicDto](entities/KtruCharacteristicDto.md) | DTO | — (не хранится) | 2 | Характеристика позиции (КТРУ или заказчика) со значением; вход для правила «доп |
 | [NoticeDocumentDto](entities/NoticeDocumentDto.md) | DTO | — (не хранится) | 2 | Документ извещения (ссылка на filestore ЕИС) |
@@ -141,6 +142,7 @@ erDiagram
 classDiagram
     NoticeDto --> OrganizationDto : customer
     NoticeDto *-- LotDto : lots
+    NoticeDto *-- NoticeFinanceDto : finances
     NoticeDto *-- SpecPositionDto : items
     SpecPositionDto *-- KtruCharacteristicDto : characteristics
     NoticeDto *-- NoticeDocumentDto : documents

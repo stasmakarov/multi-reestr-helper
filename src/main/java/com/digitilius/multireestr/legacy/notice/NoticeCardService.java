@@ -3,6 +3,7 @@ package com.digitilius.multireestr.legacy.notice;
 import com.digitilius.multireestr.entity.legacy.KtruCharacteristicDto;
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
+import com.digitilius.multireestr.entity.legacy.NoticeFinanceDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -26,6 +27,7 @@ public class NoticeCardService {
     private final NoticeCardQ04RowMapper q04RowMapper;
     private final NoticeCardQ05RowMapper q05RowMapper;
     private final NoticeCardQ06RowMapper q06RowMapper;
+    private final NoticeCardQ07RowMapper q07RowMapper;
     private final NoticeCardQ08RowMapper q08RowMapper;
     private final NoticeCardQ09RowMapper q09RowMapper;
     private final NoticeCardQ10RowMapper q10RowMapper;
@@ -34,6 +36,7 @@ public class NoticeCardService {
     private final String q04Sql;
     private final String q05Sql;
     private final String q06Sql;
+    private final String q07Sql;
     private final String q08Sql;
     private final String q09Sql;
     private final String q10Sql;
@@ -47,6 +50,7 @@ public class NoticeCardService {
             NoticeCardQ04RowMapper q04RowMapper,
             NoticeCardQ05RowMapper q05RowMapper,
             NoticeCardQ06RowMapper q06RowMapper,
+            NoticeCardQ07RowMapper q07RowMapper,
             NoticeCardQ08RowMapper q08RowMapper,
             NoticeCardQ09RowMapper q09RowMapper,
             NoticeCardQ10RowMapper q10RowMapper,
@@ -58,6 +62,7 @@ public class NoticeCardService {
         this.q04RowMapper = q04RowMapper;
         this.q05RowMapper = q05RowMapper;
         this.q06RowMapper = q06RowMapper;
+        this.q07RowMapper = q07RowMapper;
         this.q08RowMapper = q08RowMapper;
         this.q09RowMapper = q09RowMapper;
         this.q10RowMapper = q10RowMapper;
@@ -66,6 +71,7 @@ public class NoticeCardService {
         this.q04Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q04);
         this.q05Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q05);
         this.q06Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q06);
+        this.q07Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q07);
         this.q08Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q08);
         this.q09Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q09);
         this.q10Sql = LegacySqlLoader.load(resourceLoader, NoticeCardSql.Q10);
@@ -104,6 +110,9 @@ public class NoticeCardService {
             applyRequirements(notice, requirements.get(0));
         }
 
+        List<NoticeFinanceDto> finances = legacyJdbc.query(q07Sql, params, q07RowMapper);
+        notice.setFinances(finances);
+
         List<String> preferenceNames = legacyJdbc.query(q08Sql, params, q08RowMapper);
         if (!preferenceNames.isEmpty()) {
             notice.setPreferences(String.join("; ", preferenceNames));
@@ -118,12 +127,7 @@ public class NoticeCardService {
         notice.setItems(items);
         notice.setProtocols(List.of());
         notice.setContract(null);
-        notice.setWarnings(NoticeCardAssembler.warnings(
-                notice,
-                !procedures.isEmpty(),
-                requirements.size(),
-                !items.isEmpty()
-        ));
+        notice.setWarnings(NoticeCardAssembler.warnings(notice, requirements.size()));
         return Optional.of(notice);
     }
 
