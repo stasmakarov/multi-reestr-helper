@@ -72,6 +72,10 @@ public class NoticeDto {
 
     @Composition
     @OnDelete(DeletePolicy.CASCADE)
+    private List<NoticeFinanceDto> finances;
+
+    @Composition
+    @OnDelete(DeletePolicy.CASCADE)
     private List<LotDto> lots;
 
     @Composition
@@ -288,6 +292,14 @@ public class NoticeDto {
 
     public void setCustomer(OrganizationDto customer) {
         this.customer = customer;
+    }
+
+    public List<NoticeFinanceDto> getFinances() {
+        return finances;
+    }
+
+    public void setFinances(List<NoticeFinanceDto> finances) {
+        this.finances = finances;
     }
 
     public List<LotDto> getLots() {

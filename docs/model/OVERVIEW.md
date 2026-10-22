@@ -147,6 +147,7 @@ classDiagram
     }
     NoticeDto --> OrganizationDto : customer
     NoticeDto *-- LotDto : lots
+    NoticeDto *-- NoticeFinanceDto : finances
     NoticeDto *-- SpecPositionDto : items
     SpecPositionDto *-- KtruCharacteristicDto : characteristics
     NoticeDto *-- NoticeDocumentDto : documents
@@ -454,6 +455,7 @@ flowchart LR
 | [NoticeCandidateDto](entities/NoticeCandidateDto.md) | DTO | legacy `notices` | 2 | Кандидат при поиске извещения |
 | [NoticeDto](entities/NoticeDto.md) | DTO | legacy `notices` + … | 2 | Карточка извещения, корень агрегата |
 | [LotDto](entities/LotDto.md) | DTO | legacy `noticelots` | 2 | Лот |
+| [NoticeFinanceDto](entities/NoticeFinanceDto.md) | DTO | legacy `noticefinances` | 3 | Финансирование (КБК, год, сумма) |
 | [SpecPositionDto](entities/SpecPositionDto.md) | DTO | legacy `noticespec` | 2 | Позиция спецификации |
 | [KtruCharacteristicDto](entities/KtruCharacteristicDto.md) | DTO | legacy `noticektruharacts` | 2 | Характеристика позиции |
 | [NoticeDocumentDto](entities/NoticeDocumentDto.md) | DTO | legacy `noticeextdocs` | 2 | Документ (ссылка на ЕИС) |

@@ -8,6 +8,7 @@ import com.digitilius.multireestr.entity.legacy.LotDto;
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDocumentDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
+import com.digitilius.multireestr.entity.legacy.NoticeFinanceDto;
 import com.digitilius.multireestr.entity.legacy.OrganizationDto;
 import com.digitilius.multireestr.entity.legacy.ProtocolDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
@@ -37,6 +38,8 @@ public interface NoticeViewerRole {
     @EntityAttributePolicy(entityClass = NoticeDto.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     @EntityPolicy(entityClass = OrganizationDto.class, actions = {EntityPolicyAction.READ})
     @EntityAttributePolicy(entityClass = OrganizationDto.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
+    @EntityPolicy(entityClass = NoticeFinanceDto.class, actions = EntityPolicyAction.READ)
+    @EntityAttributePolicy(entityClass = NoticeFinanceDto.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     @EntityPolicy(entityClass = LotDto.class, actions = {EntityPolicyAction.READ})
     @EntityAttributePolicy(entityClass = LotDto.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     @EntityPolicy(entityClass = SpecPositionDto.class, actions = {EntityPolicyAction.READ})
