@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/030-calendar-days.xml">
+
+    <changeSet id="1" author="multi-reestr">
+        <loadData tableName="MTR_CALENDAR_DAY"
+                  file="com/digitilius/multireestr/liquibase/data/mtr-calendar-day.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="ID" type="UUID"/>
+            <column name="DATE_" type="DATE"/>
+            <column name="YEAR_" type="NUMERIC"/>
+            <column name="DAY_TYPE" type="STRING"/>
+            <column name="SOURCE" type="STRING"/>
+            <column name="MARK" type="STRING"/>
+            <column name="CREATED_BY" type="STRING"/>
+            <column name="CREATED_DATE" type="DATETIME"/>
+            <column name="LAST_MODIFIED_BY" type="STRING"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME"/>
+        </loadData>
+    </changeSet>
+
+</databaseChangeLog>
