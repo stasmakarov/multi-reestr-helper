@@ -101,9 +101,10 @@ class NoticeDetailViewTest {
     private NoticeDetailView openDetail(String number) {
         viewNavigators.view(UiTestUtils.getCurrentView(), NoticeDetailView.class)
                 .withRouteParameters(new RouteParameters("number", number))
-                .withAfterNavigationHandler(event -> event.getView().showNumber(number))
                 .navigate();
-        return UiTestUtils.getCurrentView();
+        NoticeDetailView view = UiTestUtils.getCurrentView();
+        view.showNumber(number);
+        return view;
     }
 
     private static <T> List<T> gridItems(DataGrid<T> grid) {
