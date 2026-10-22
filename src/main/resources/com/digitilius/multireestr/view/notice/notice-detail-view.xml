@@ -40,7 +40,7 @@
                 <textArea id="subjectField" property="subject" readOnly="true" colspan="2" height="5em"/>
                 <hbox id="eisUrlRow" colspan="2" alignItems="CENTER" classNames="eis-url-row">
                     <span id="eisUrlCaption" text="msg://eisUrl.label"/>
-                    <anchor id="eisUrlAnchor" target="_blank"/>
+                    <anchor id="eisUrlAnchor"/>
                 </hbox>
             </formLayout>
             <tabSheet id="tabs" width="100%">
