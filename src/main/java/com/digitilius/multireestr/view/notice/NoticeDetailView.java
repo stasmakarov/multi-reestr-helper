@@ -16,6 +16,7 @@ import com.digitilius.multireestr.legacy.notice.NoticeNumber;
 import com.digitilius.multireestr.view.main.MainView;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.AnchorTarget;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -127,7 +128,7 @@ public class NoticeDetailView extends StandardView {
                 return new Span();
             }
             Anchor anchor = new Anchor(url, url);
-            anchor.setTarget("_blank");
+            anchor.setTarget(AnchorTarget.BLANK);
             return anchor;
         });
     }
@@ -226,6 +227,7 @@ public class NoticeDetailView extends StandardView {
         }
         eisUrlAnchor.setHref(url);
         eisUrlAnchor.setText(url);
+        eisUrlAnchor.setTarget(AnchorTarget.BLANK);
         eisUrlAnchor.setVisible(true);
     }
 
