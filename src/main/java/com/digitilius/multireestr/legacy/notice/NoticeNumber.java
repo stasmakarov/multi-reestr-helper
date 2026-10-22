@@ -6,8 +6,9 @@ import java.util.regex.Pattern;
 public record NoticeNumber(String value) {
 
     private static final Pattern DIGITS_19 = Pattern.compile("\\d{19}");
-    private static final Pattern PREFIX = Pattern.compile("(?i)^(?:№|no|n)");
-    private static final Pattern NOISE = Pattern.compile("[\\s\\u00A0\\-.]+");
+    private static final Pattern STRIP = Pattern.compile("[\\s\\u00A0]+");
+    private static final Pattern PREFIX = Pattern.compile("(?i)^(?:№|no\\.?|n)\\s*");
+    private static final Pattern NOISE = Pattern.compile("[\\s\\u00A0\\u2010-\\u2015\\-.]+");
 
     public NoticeNumber {
         if (value == null || !DIGITS_19.matcher(value).matches()) {
@@ -19,7 +20,9 @@ public record NoticeNumber(String value) {
         if (raw == null) {
             throw new IllegalArgumentException("Номер извещения не задан");
         }
-        String cleaned = NOISE.matcher(PREFIX.matcher(raw).replaceFirst("")).replaceAll("");
+        String stripped = STRIP.matcher(raw).replaceAll("");
+        String withoutPrefix = PREFIX.matcher(stripped).replaceFirst("");
+        String cleaned = NOISE.matcher(withoutPrefix).replaceAll("");
         if (cleaned.isEmpty()) {
             throw new IllegalArgumentException("Номер извещения не задан");
         }

@@ -95,6 +95,32 @@ class NoticeOriginalSelectorTest {
         assertThat(duplicate.getReason()).isEqualTo("Дубль (больший id)");
     }
 
+    @Test
+    void groupKeyUsesIdWhenNumberIsNull() {
+        NoticeCandidateDto dto = candidate(7, false, false, false, 1, LocalDateTime.of(2026, 1, 1, 0, 0));
+        dto.setNumber(null);
+        assertThat(NoticeLookupService.groupKey(dto)).isEqualTo("#7");
+    }
+
+    @Test
+    void markByNumberGroupsDoesNotFailWhenNumberIsNull() {
+        NoticeCandidateDto missingNumber = candidate(1, false, false, false, 1, LocalDateTime.of(2026, 1, 1, 0, 0));
+        missingNumber.setNumber(null);
+        NoticeCandidateDto otherMissing = candidate(2, false, false, false, 1, LocalDateTime.of(2026, 1, 1, 0, 0));
+        otherMissing.setNumber(null);
+        NoticeCandidateDto named = candidate(3, false, false, false, 1, LocalDateTime.of(2026, 1, 1, 0, 0));
+
+        List<NoticeCandidateDto> marked = NoticeLookupService.markByNumberGroups(
+                selector,
+                List.of(missingNumber, otherMissing, named)
+        );
+
+        assertThat(marked).hasSize(3);
+        assertThat(missingNumber.getChosen()).isTrue();
+        assertThat(otherMissing.getChosen()).isTrue();
+        assertThat(named.getChosen()).isTrue();
+    }
+
     private static NoticeCandidateDto candidate(
             int id,
             boolean localCopy,
