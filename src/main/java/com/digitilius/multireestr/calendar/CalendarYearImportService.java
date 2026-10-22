@@ -70,10 +70,10 @@ public class CalendarYearImportService {
     @Transactional
     public void replaceYear(CalendarYearPreview preview) {
         List<CalendarDay> existing = loadYear(preview.year());
-        SaveContext saveContext = new SaveContext();
-        for (CalendarDay day : existing) {
-            saveContext.removing(day);
+        if (!existing.isEmpty()) {
+            dataManager.remove(existing.toArray(CalendarDay[]::new));
         }
+        SaveContext saveContext = new SaveContext();
         for (ParsedCalendarDay parsed : preview.days()) {
             CalendarDay entity = dataManager.create(CalendarDay.class);
             entity.setDate(parsed.date());
