@@ -1,12 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <view xmlns="http://jmix.io/schema/flowui/view"
       title="msg://legacyConnectionView.title"
-      focusComponent="checkButton">
+      focusComponent="hostField">
+    <data>
+        <instance id="settingsDc"
+                  class="com.digitilius.multireestr.entity.LegacyConnectionSettings">
+            <fetchPlan extends="_base"/>
+        </instance>
+    </data>
     <layout>
+        <span id="sourceLabel"/>
+        <span id="secretKeyHint" visible="false"/>
+        <formLayout id="parametersForm" dataContainer="settingsDc">
+            <checkbox id="enabledField" property="enabled" label="msg://enabledField.label"/>
+            <textField id="hostField" property="host" required="true"/>
+            <integerField id="portField" property="port" required="true" min="1" max="65535"/>
+            <textField id="databaseNameField" property="databaseName" required="true"/>
+            <textField id="usernameField" property="username" required="true"/>
+            <passwordField id="passwordField" label="msg://passwordField.label"/>
+            <span id="passwordSavedHint" visible="false" text="msg://passwordSavedHint"/>
+        </formLayout>
         <hbox id="buttonsPanel" classNames="buttons-panel">
             <button id="checkButton" text="msg://checkButton.text"/>
+            <button id="saveApplyButton" text="msg://saveApplyButton.text"/>
+            <button id="resetButton" text="msg://resetButton.text"/>
         </hbox>
-        <formLayout id="form">
+        <formLayout id="statusForm" dataContainer="settingsDc">
             <textField id="statusField" label="msg://statusField.label" readOnly="true" datatype="string"/>
             <textField id="serverVersionField" label="msg://serverVersionField.label" readOnly="true" datatype="string"/>
             <textField id="currentUserField" label="msg://currentUserField.label" readOnly="true" datatype="string"/>
@@ -15,6 +34,9 @@
             <textField id="readOnlyField" label="msg://readOnlyField.label" readOnly="true" datatype="string"/>
             <textField id="responseMsField" label="msg://responseMsField.label" readOnly="true" datatype="string"/>
             <textField id="errorField" label="msg://errorField.label" readOnly="true" datatype="string"/>
+            <dateTimePicker id="lastCheckAtField" property="lastCheckAt" readOnly="true"/>
+            <checkbox id="lastCheckOkField" property="lastCheckOk" readOnly="true"/>
+            <textField id="lastCheckMessageField" property="lastCheckMessage" readOnly="true"/>
         </formLayout>
     </layout>
 </view>

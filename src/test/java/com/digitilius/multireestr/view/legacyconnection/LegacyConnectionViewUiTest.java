@@ -23,10 +23,13 @@ class LegacyConnectionViewUiTest {
     ViewNavigators viewNavigators;
 
     @Test
-    void opensAndCheckDoesNotCrashWithoutLegacyDatabase() {
+    void opensFormAndCheckDoesNotCrashWithoutLegacyDatabase() {
         viewNavigators.view(UiTestUtils.getCurrentView(), LegacyConnectionView.class).navigate();
 
         LegacyConnectionView view = UiTestUtils.getCurrentView();
+        TypedTextField<String> hostField = UiTestUtils.getComponent(view, "hostField");
+        assertThat(hostField).isNotNull();
+
         JmixButton checkButton = UiTestUtils.getComponent(view, "checkButton");
         checkButton.click();
 

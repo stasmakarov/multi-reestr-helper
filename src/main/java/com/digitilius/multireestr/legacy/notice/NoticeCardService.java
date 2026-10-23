@@ -8,7 +8,6 @@ import com.digitilius.multireestr.entity.legacy.NoticeFinanceDto;
 import com.digitilius.multireestr.entity.legacy.ProtocolDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@ConditionalOnBean(name = "legacyJdbc")
 public class NoticeCardService {
 
     private final NamedParameterJdbcTemplate legacyJdbc;

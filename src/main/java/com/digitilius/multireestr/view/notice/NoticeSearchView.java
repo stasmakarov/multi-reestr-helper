@@ -81,9 +81,9 @@ public class NoticeSearchView extends StandardView {
     private Downloader downloader;
     @Autowired
     private NoticeExcelExporter noticeExcelExporter;
-    @Autowired(required = false)
+    @Autowired
     private NoticeLookupService noticeLookupService;
-    @Autowired(required = false)
+    @Autowired
     private NoticeCardService noticeCardService;
 
     @Subscribe("searchBtn")
@@ -179,10 +179,6 @@ public class NoticeSearchView extends StandardView {
     }
 
     private List<NoticeCandidateDto> lookupByNumber(NoticeNumber number) {
-        if (noticeLookupService == null) {
-            showLegacyConnectionError(null);
-            return null;
-        }
         try {
             return noticeLookupService.findByNumber(number);
         } catch (DataAccessException e) {
@@ -192,10 +188,6 @@ public class NoticeSearchView extends StandardView {
     }
 
     private List<NoticeCandidateDto> lookupByDateAndSubject(LocalDate date, String subject) {
-        if (noticeLookupService == null) {
-            showLegacyConnectionError(null);
-            return null;
-        }
         try {
             return noticeLookupService.findByDateAndSubject(date, subject);
         } catch (DataAccessException e) {
@@ -232,10 +224,6 @@ public class NoticeSearchView extends StandardView {
     }
 
     private void exportExcel() {
-        if (noticeCardService == null) {
-            showLegacyConnectionError(null);
-            return;
-        }
         List<NoticeCandidateDto> source = candidatesToExport();
         if (source.isEmpty()) {
             notifications.create(messageBundle.getMessage("excelNothingToExport"))

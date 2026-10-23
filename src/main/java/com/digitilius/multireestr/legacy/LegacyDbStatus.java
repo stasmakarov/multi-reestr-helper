@@ -9,6 +9,14 @@ public record LegacyDbStatus(
         Integer port,
         boolean readOnly,
         long responseMs,
-        String error
+        String error,
+        boolean privilegeWarning
 ) {
+    public static final String NOT_CONFIGURED = "Legacy DataSource is not configured";
+
+    public LegacyDbStatus withPrivilegeWarning(boolean warning) {
+        return new LegacyDbStatus(
+                ok, serverVersion, currentUser, database, host, port, readOnly, responseMs, error, warning
+        );
+    }
 }

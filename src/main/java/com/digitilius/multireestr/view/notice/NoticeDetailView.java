@@ -107,7 +107,7 @@ public class NoticeDetailView extends StandardView {
     private Downloader downloader;
     @Autowired
     private NoticeExcelExporter noticeExcelExporter;
-    @Autowired(required = false)
+    @Autowired
     private NoticeCardService noticeCardService;
 
     private String number = "";
@@ -156,11 +156,6 @@ public class NoticeDetailView extends StandardView {
         Optional<NoticeNumber> parsed = NoticeNumber.tryParse(number);
         if (parsed.isEmpty()) {
             showNotFound(messageBundle.getMessage("noticeNumberInvalid"));
-            return;
-        }
-        if (noticeCardService == null) {
-            log.error("Legacy MultiReestr is not configured");
-            showNotFound(messageBundle.getMessage("legacyConnectionError"));
             return;
         }
         try {

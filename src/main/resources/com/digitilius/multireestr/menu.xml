@@ -6,10 +6,6 @@
               title="msg://com.digitilius.multireestr.view.notice/noticeSearchView.title"/>
     </menu>
 
-    <menu id="application" title="msg://com.digitilius.multireestr/menu.application.title" opened="true">
-        <item view="mtr_User.list" title="msg://com.digitilius.multireestr.view.user/UserListView.title"/>
-    </menu>
-
     <menu id="rules" title="msg://com.digitilius.multireestr/menu.rules.title" opened="true">
         <item view="mtr_Rule.list"
               title="msg://com.digitilius.multireestr.view.rule/ruleListView.title"/>
@@ -34,6 +30,7 @@
     </menu>
 
     <menu id="administration" title="msg://com.digitilius.multireestr/menu.administration.title" opened="true">
+        <item view="mtr_User.list" title="msg://com.digitilius.multireestr.view.user/UserListView.title"/>
         <item view="mtr_LegacyConnectionView"
               title="msg://com.digitilius.multireestr.view.legacyconnection/legacyConnectionView.title"/>
     </menu>

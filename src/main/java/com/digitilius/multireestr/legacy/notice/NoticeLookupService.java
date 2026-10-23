@@ -2,7 +2,6 @@ package com.digitilius.multireestr.legacy.notice;
 
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,7 +17,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@ConditionalOnBean(name = "legacyJdbc")
 public class NoticeLookupService {
 
     private static final String BY_NUMBER_SQL = "classpath:sql/legacy/notice-candidates-by-number.sql";

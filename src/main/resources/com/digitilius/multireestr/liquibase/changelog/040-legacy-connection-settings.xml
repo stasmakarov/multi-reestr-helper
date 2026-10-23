@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/040-legacy-connection-settings.xml">
+
+    <changeSet id="1" author="multi-reestr" context="!cuba">
+        <createTable tableName="MTR_LEGACY_CONNECTION_SETTINGS">
+            <column name="ID" type="${uuid.type}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="varchar(255)"/>
+            <column name="CREATED_DATE" type="timestamp"/>
+            <column name="LAST_MODIFIED_BY" type="varchar(255)"/>
+            <column name="LAST_MODIFIED_DATE" type="timestamp"/>
+            <column name="CODE" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ENABLED" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="HOST" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PORT" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DATABASE_NAME" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USERNAME" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASSWORD_ENCRYPTED" type="varchar(1000)"/>
+            <column name="LAST_CHECK_AT" type="timestamp"/>
+            <column name="LAST_CHECK_OK" type="boolean"/>
+            <column name="LAST_CHECK_MESSAGE" type="varchar(1000)"/>
+        </createTable>
+        <createIndex indexName="IDX_MTR_LEGACY_CONN_SETTINGS_UNQ"
+                     tableName="MTR_LEGACY_CONNECTION_SETTINGS"
+                     unique="true">
+            <column name="CODE"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

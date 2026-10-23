@@ -18,10 +18,17 @@ class LegacyOptionalStartupTest {
     @Autowired
     LegacyDbInfo legacyDbInfo;
 
+    @Autowired
+    SwappableLegacyDataSource legacyDataSource;
+
     @Test
     void jmixContextStartsWithoutLegacyDatabase() {
         assertThat(applicationContext).isNotNull();
-        assertThat(applicationContext.containsBean("legacyJdbc")).isFalse();
+        assertThat(applicationContext.containsBean("legacy")).isTrue();
+        assertThat(applicationContext.containsBean("legacyJdbc")).isTrue();
+        assertThat(legacyDataSource.hasPool()).isFalse();
         assertThat(legacyDbInfo.fetchPostgresVersion()).isEmpty();
+        assertThat(legacyDbInfo.check().ok()).isFalse();
+        assertThat(legacyDbInfo.check().error()).isEqualTo(LegacyDbStatus.NOT_CONFIGURED);
     }
 }
