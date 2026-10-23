@@ -27,14 +27,13 @@
     </facets>
     <layout>
         <genericFilter id="genericFilter" dataLoader="violationsDl">
-            <properties include=".*"/>
+            <properties include="status|severity|rule|objectType|objectKey|firstDetectedAt|lastDetectedAt"/>
             <configurations>
-                <configuration id="statusSeverityConfiguration" default="true"
-                               name="msg://statusSeverityFilter.name">
-                    <groupFilter id="statusSeverityGroup" operation="AND">
-                        <propertyFilter id="statusFilter" property="status" operation="EQUAL"/>
-                        <propertyFilter id="severityFilter" property="severity" operation="EQUAL"/>
-                    </groupFilter>
+                <configuration id="openStatusConfiguration" default="true"
+                               name="msg://openStatusFilter.name">
+                    <propertyFilter id="statusInFilter" property="status" operation="IN">
+                        <defaultValue>10,20</defaultValue>
+                    </propertyFilter>
                 </configuration>
             </configurations>
         </genericFilter>
@@ -55,14 +54,19 @@
                 <action id="editAction" type="list_edit"/>
             </actions>
             <columns resizable="true">
-                <column property="firstDetectedAt"/>
-                <column property="status"/>
                 <column property="severity"/>
+                <column property="status"/>
                 <column property="rule"/>
                 <column property="objectType"/>
                 <column property="objectKey"/>
                 <column property="objectCaption"/>
+                <column property="detail"/>
                 <column property="message"/>
+                <column property="dueDate"/>
+                <column property="factDate"/>
+                <column property="deviationDays"/>
+                <column property="firstDetectedAt"/>
+                <column property="lastDetectedAt"/>
             </columns>
         </dataGrid>
         <hbox id="lookupActions" visible="false">

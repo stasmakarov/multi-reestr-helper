@@ -27,7 +27,7 @@
     </facets>
     <layout>
         <genericFilter id="genericFilter" dataLoader="checkRunsDl">
-            <properties include=".*"/>
+            <properties include="mode|status|startedAt"/>
         </genericFilter>
         <hbox id="buttonsPanel" wrap="true" width="100%">
             <startSlot>
@@ -52,8 +52,12 @@
                 <column property="status"/>
                 <column property="objectType"/>
                 <column property="objectKey"/>
+                <column property="periodFrom"/>
+                <column property="periodTo"/>
+                <column property="ruleVersion"/>
                 <column property="objectsChecked"/>
                 <column property="violationsFound"/>
+                <column property="createdBy"/>
             </columns>
         </dataGrid>
         <hbox id="lookupActions" visible="false">
