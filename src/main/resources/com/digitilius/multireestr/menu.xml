@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <menu-config xmlns="http://jmix.io/schema/flowui/menu">
 
+    <menu id="notices" title="msg://com.digitilius.multireestr/menu.notices.title" opened="true">
+        <item view="mtr_NoticeSearchView"
+              title="msg://com.digitilius.multireestr.view.notice/noticeSearchView.title"/>
+    </menu>
+
     <menu id="rules" title="msg://com.digitilius.multireestr/menu.rules.title" opened="true">
         <item view="mtr_Rule.list"
               title="msg://com.digitilius.multireestr.view.rule/ruleListView.title"/>
