@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/052-users-roles.xml">
+
+    <!-- Демо-пользователи с известными паролями. На проде контекст demo не включать. -->
+    <changeSet id="1" author="multi-reestr" context="demo">
+        <insert tableName="MTR_USER">
+            <column name="ID" value="f1b1b1b1-b1b1-4b1b-8b1b-b1b1b1b1b1b1"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="specialist"/>
+            <column name="PASSWORD" value="{noop}specialist"/>
+            <column name="ACTIVE" valueBoolean="true"/>
+        </insert>
+        <insert tableName="MTR_USER">
+            <column name="ID" value="f2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="rule-admin"/>
+            <column name="PASSWORD" value="{noop}rule-admin"/>
+            <column name="ACTIVE" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2" author="multi-reestr" context="demo">
+        <insert tableName="SEC_ROLE_ASSIGNMENT">
+            <column name="ID" value="f3a3a3a3-a3a3-4a3a-8a3a-000000000001"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="specialist"/>
+            <column name="ROLE_CODE" value="ui-minimal"/>
+            <column name="ROLE_TYPE" value="resource"/>
+        </insert>
+        <insert tableName="SEC_ROLE_ASSIGNMENT">
+            <column name="ID" value="f3a3a3a3-a3a3-4a3a-8a3a-000000000002"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="specialist"/>
+            <column name="ROLE_CODE" value="notice-viewer"/>
+            <column name="ROLE_TYPE" value="resource"/>
+        </insert>
+        <insert tableName="SEC_ROLE_ASSIGNMENT">
+            <column name="ID" value="f3a3a3a3-a3a3-4a3a-8a3a-000000000003"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="specialist"/>
+            <column name="ROLE_CODE" value="specialist"/>
+            <column name="ROLE_TYPE" value="resource"/>
+        </insert>
+        <insert tableName="SEC_ROLE_ASSIGNMENT">
+            <column name="ID" value="f3a3a3a3-a3a3-4a3a-8a3a-000000000011"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="rule-admin"/>
+            <column name="ROLE_CODE" value="ui-minimal"/>
+            <column name="ROLE_TYPE" value="resource"/>
+        </insert>
+        <insert tableName="SEC_ROLE_ASSIGNMENT">
+            <column name="ID" value="f3a3a3a3-a3a3-4a3a-8a3a-000000000012"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="rule-admin"/>
+            <column name="ROLE_CODE" value="notice-viewer"/>
+            <column name="ROLE_TYPE" value="resource"/>
+        </insert>
+        <insert tableName="SEC_ROLE_ASSIGNMENT">
+            <column name="ID" value="f3a3a3a3-a3a3-4a3a-8a3a-000000000013"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="rule-admin"/>
+            <column name="ROLE_CODE" value="specialist"/>
+            <column name="ROLE_TYPE" value="resource"/>
+        </insert>
+        <insert tableName="SEC_ROLE_ASSIGNMENT">
+            <column name="ID" value="f3a3a3a3-a3a3-4a3a-8a3a-000000000014"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="USERNAME" value="rule-admin"/>
+            <column name="ROLE_CODE" value="rule-administrator"/>
+            <column name="ROLE_TYPE" value="resource"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

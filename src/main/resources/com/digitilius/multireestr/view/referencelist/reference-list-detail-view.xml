@@ -30,6 +30,8 @@
             <button id="createItemButton" action="itemsDataGrid.createAction"/>
             <button id="editItemButton" action="itemsDataGrid.editAction"/>
             <button id="removeItemButton" action="itemsDataGrid.removeAction"/>
+            <button id="importExcelButton" text="msg://importExcelButton.text"/>
+            <button id="exportExcelButton" text="msg://exportExcelButton.text"/>
         </hbox>
         <dataGrid id="itemsDataGrid" dataContainer="itemsDc" width="100%" minHeight="16em">
             <actions>

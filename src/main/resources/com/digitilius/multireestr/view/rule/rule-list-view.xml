@@ -25,13 +25,12 @@
     </facets>
     <layout>
         <genericFilter id="genericFilter" dataLoader="rulesDl">
-            <properties include=".*"/>
+            <properties include="templateType|objectType|severity|enabled"/>
         </genericFilter>
         <hbox id="buttonsPanel" wrap="true" width="100%">
             <startSlot>
                 <button id="createButton" action="rulesDataGrid.createAction"/>
                 <button id="editButton" action="rulesDataGrid.editAction"/>
-                <button id="removeButton" action="rulesDataGrid.removeAction"/>
             </startSlot>
             <endSlot>
                 <simplePagination id="pagination" dataLoader="rulesDl"/>
@@ -45,7 +44,6 @@
             <actions>
                 <action id="createAction" type="list_create"/>
                 <action id="editAction" type="list_edit"/>
-                <action id="removeAction" type="list_remove"/>
             </actions>
             <columns resizable="true">
                 <column property="code"/>

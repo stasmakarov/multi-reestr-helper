@@ -25,7 +25,7 @@
     </facets>
     <layout>
         <genericFilter id="genericFilter" dataLoader="referenceListsDl">
-            <properties include=".*"/>
+            <properties include="kind|code|name|legalRef"/>
         </genericFilter>
         <hbox id="buttonsPanel" wrap="true" width="100%">
             <startSlot>
