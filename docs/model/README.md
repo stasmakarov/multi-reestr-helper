@@ -17,8 +17,8 @@
 | Перечисления | Большинство — `EnumClass<String>`, id = имя константы (UPPER_SNAKE), в БД строка. **Исключение — три статуса с `EnumClass<Integer>`**: [ViolationStatus](enums/ViolationStatus.md) (NEW=10, ACKNOWLEDGED=20, FALSE_POSITIVE=30, FIXED=40), [CheckRunStatus](enums/CheckRunStatus.md) (RUNNING=10, SUCCESS=20, PARTIAL=30, FAILED=40), [RuleVersionStatus](enums/RuleVersionStatus.md) (DRAFT=10, ACTIVE=20, ARCHIVED=30); в БД число. Заголовки на русском — в `messages_ru.properties` |
 | Даты | дата без времени — `LocalDate`; момент события в приложении — `OffsetDateTime` (тип Studio *DateTime*); legacy timestamp без зоны (МСК) — `LocalDateTime` |
 | Деньги/количества | `BigDecimal` с точностью legacy (18,2; 21,2; 29,11) |
-| Main-БД | Jmix 3 не работает с PostgreSQL 9.6 → в продуктиве отдельный инстанс **PostgreSQL 16+** на той же машине, другой порт (например, `localhost:5433`, БД `multireestr`); в разработке — HSQLDB или `postgres:16`. Liquibase и JPA — только здесь. См. [OVERVIEW §8](OVERVIEW.md#8-развёртывание-и-базы-данных) |
-| Legacy-БД | `reestrdb` на PostgreSQL 9.6 (`localhost:5432`), обычный JDBC (`legacyJdbc`), read-only на трёх уровнях (драйвер, Hikari, роль `reestr_ro`); приложение стартует и без неё (предупреждение). **Не моделируется JPA** и не является data store: DTO заполняются из `NamedParameterJdbcTemplate` (read-only). Ссылки из JPA на legacy — только по значению (`contractLegacyId`, `objectKey`), без FK |
+| Main-БД | Jmix 3 не работает с PostgreSQL 9.6 → в продуктиве отдельный инстанс **PostgreSQL 16+** на той же машине, другой порт (`localhost:5435`, БД `multireestr`; см. [../deploy-windows.md](../deploy-windows.md)); в разработке — HSQLDB или `postgres:16`. Liquibase и JPA — только здесь. См. [OVERVIEW §8](OVERVIEW.md#8-развёртывание-и-базы-данных) |
+| Legacy-БД | `reestrdb` на PostgreSQL 9.6 (`localhost:5432`), обычный JDBC (`legacyJdbc`), read-only на трёх уровнях (драйвер, Hikari, роль `reestr_ro`); приложение стартует и без неё (предупреждение). Параметры подключения (с урока 1) задаются в UI ([LegacyConnectionSettings](entities/LegacyConnectionSettings.md)), свойства `legacy.datasource.*` остаются запасным вариантом. **Не моделируется JPA** и не является data store: DTO заполняются из `NamedParameterJdbcTemplate` (read-only). Ссылки из JPA на legacy — только по значению (`contractLegacyId`, `objectKey`), без FK |
 | Строки без длины | «unlimited» = тип *String* с пустой длиной → `@Lob` / `text` |
 | Связи | composition — для подчинённых (versions, parameters, items); association many-to-one — для остальных |
 
@@ -30,7 +30,7 @@
 
 | № | Урок | Сущности | Перечисления |
 |---|---|---|---|
-| 1 | Проект и подключение legacy-БД (read-only) | — | — |
+| 1 | Проект и подключение legacy-БД (read-only); настройка подключения из UI; развёртывание на Windows | [LegacyConnectionSettings](entities/LegacyConnectionSettings.md) | — |
 | 2 | DTO-модель извещения, поиск и экран поиска | [OrganizationDto](entities/OrganizationDto.md), [NoticeCandidateDto](entities/NoticeCandidateDto.md), [NoticeDto](entities/NoticeDto.md), [LotDto](entities/LotDto.md), [SpecPositionDto](entities/SpecPositionDto.md), [KtruCharacteristicDto](entities/KtruCharacteristicDto.md), [NoticeDocumentDto](entities/NoticeDocumentDto.md) | — |
 | 3 | DTO протоколов, контракта и исполнения; карточка извещения и Excel | [ProtocolDto](entities/ProtocolDto.md), [ContractDto](entities/ContractDto.md), [ContractItemDto](entities/ContractItemDto.md), [ExecutionDto](entities/ExecutionDto.md) | [ExecutionKind](enums/ExecutionKind.md) |
 | 4 | Производственный календарь | [CalendarDay](entities/CalendarDay.md) | [DayType](enums/DayType.md), [CalendarSource](enums/CalendarSource.md) |
@@ -41,12 +41,13 @@
 | 9 | Плановое сканирование (Quartz); оповещение в приложении — реестр нарушений + счётчик NEW в меню | — | — |
 | 10 | Dry-run правил на исторических данных | — | [DryRunDiff](enums/DryRunDiff.md) |
 
-Урок 1 — только конфигурация: main на HSQLDB / PostgreSQL 16+, legacy DataSource read-only. Урок 9 добавляет Quartz add-on со своими таблицами; новых сущностей не требует. Email-уведомления **не реализуем, только рассказываем** (возможное расширение — Email Sending add-on `io.jmix.email`). Add-on'ы Jmix Notifications (платный) и Jmix Audit не используются: история правил — RuleVersion, жизненный цикл нарушения — Violation.status, «кто/когда» — трейты аудита ядра. Урок 10 новых сущностей не требует (CheckRun с режимом DRY_RUN, CheckResultDto, RuleVersion в статусе DRAFT).
+Урок 1 — конфигурация (main на HSQLDB / PostgreSQL 16, legacy DataSource read-only) и одна сущность `LegacyConnectionSettings` для настройки подключения из UI. Урок 9 добавляет Quartz add-on со своими таблицами; новых сущностей не требует. Email-уведомления **не реализуем, только рассказываем** (возможное расширение — Email Sending add-on `io.jmix.email`). Add-on'ы Jmix Notifications (платный) и Jmix Audit не используются: история правил — RuleVersion, жизненный цикл нарушения — Violation.status, «кто/когда» — трейты аудита ядра. Урок 10 новых сущностей не требует (CheckRun с режимом DRY_RUN, CheckResultDto, RuleVersion в статусе DRAFT).
 
 ## Сущности
 
 | Сущность | Тип | Таблица | Урок | Назначение |
 |---|---|---|---|---|
+| [LegacyConnectionSettings](entities/LegacyConnectionSettings.md) | JPA | MTR_LEGACY_CONNECTION_SETTINGS | 1 | Параметры подключения к legacy-БД, задаваемые администратором в UI (одна запись, пароль зашифрован) |
 | [OrganizationDto](entities/OrganizationDto.md) | DTO | — (не хранится) | 2 | Организация из `owners`: заказчик извещения/контракта и поставщик (`reestr |
 | [NoticeCandidateDto](entities/NoticeCandidateDto.md) | DTO | — (не хранится) | 2 | Строка списка кандидатов при поиске (дубли по номеру, поиск по дате/названию) |
 | [NoticeDto](entities/NoticeDto.md) | DTO | — (не хранится) | 2 | Карточка извещения 44-ФЗ (Q3–Q11 из notice_lookup_spec |
