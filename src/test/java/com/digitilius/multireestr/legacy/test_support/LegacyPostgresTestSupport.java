@@ -70,6 +70,16 @@ public final class LegacyPostgresTestSupport {
             statement.execute("GRANT USAGE ON SCHEMA public TO " + RO_USER);
             statement.execute("CREATE TABLE legacy_probe(id int)");
             statement.execute("INSERT INTO legacy_probe(id) VALUES (1)");
+            // Дамп не содержит planzakuppackets; пустая таблица нужна только для GRANT.
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS planzakuppackets (
+                        id integer PRIMARY KEY,
+                        finyear integer,
+                        oosversion integer,
+                        publishdate timestamp,
+                        approvedate timestamp
+                    )
+                    """);
             loadGoldenFixture(connection);
             // Те же права, что на стенде и в продуктиве: SELECT только на таблицы из списка.
             ScriptUtils.executeSqlScript(connection,

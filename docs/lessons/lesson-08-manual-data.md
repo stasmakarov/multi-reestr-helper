@@ -101,7 +101,7 @@ XOR: либо `fixedDate`, либо заполненная формула. Об�
 
 `ContractLookupService.search`: id (если строка — короткое число), `contractnumber` и `tendernumber` через `ILIKE`. Карточка подставляет `contractLegacyId` / `contractNumber` / `purchaseNumber`.
 
-`PlanScheduleLookupService.listAll` читает `planzakuppackets` (`version` DTO ← `oosversion`). Нет таблицы или ошибка SQL — пустой список. В `dev/legacy/grant-readonly.sql` SELECT на `planzakuppackets` выдаётся, только если таблица есть: тестовый дамп её не содержит и **не расширяется**. Для проверки маппинга тест сам создаёт таблицу с минимальными колонками и двумя строками, затем удаляет.
+`PlanScheduleLookupService.listAll` читает `planzakuppackets` (`version` DTO ← `oosversion`). Нет таблицы или ошибка SQL — пустой список. В `dev/legacy/grant-readonly.sql` таблица в общем GRANT SELECT. Тестовый дамп её не содержит и **не расширяется**: Testcontainers перед GRANT создаёт пустую оболочку колонок, тест «таблицы нет» её снимает, тест маппинга вставляет две строки и удаляет таблицу.
 
 Combo на карточке `PlanScheduleEvent` подставляет `legacyPlanId`, `planVersion` (из `version`), `finYear`. `approveDate` в `approvalDate` не копируем: в данных поле пустое, дату утверждения специалист вводит сам.
 
