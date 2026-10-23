@@ -26,6 +26,9 @@ server.port=8080
 ui.login.defaultUsername=
 ui.login.defaultPassword=
 
+# Не загружать демо-пользователей (specialist / rule-admin с {noop}-паролями).
+main.liquibase.contexts=!demo
+
 # Цвета ANSI в консоли Windows не нужны.
 spring.output.ansi.enabled=never
 logging.file.name=logs/multi-reestr.log

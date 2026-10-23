@@ -23,6 +23,8 @@
             <textField id="codeField" property="code"/>
             <comboBox id="paramTypeField" property="paramType"/>
             <textField id="valueField" property="value"/>
+            <checkbox id="booleanValueField" label="msg://booleanValueField.label" visible="false"/>
+            <datePicker id="dateValueField" label="msg://dateValueField.label" visible="false"/>
             <entityComboBox id="referenceListField" property="referenceList">
                 <itemsQuery class="com.digitilius.multireestr.entity.ReferenceList">
                     <query>

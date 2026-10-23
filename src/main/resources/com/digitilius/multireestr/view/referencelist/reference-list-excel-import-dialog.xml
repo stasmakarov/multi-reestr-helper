@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://importExcelDialog.title">
+    <actions>
+        <action id="closeAction" type="view_close"/>
+    </actions>
+    <layout>
+        <vbox id="uploadBox" width="100%"/>
+        <textArea id="summaryField" label="msg://importExcelDialog.summaryLabel" readOnly="true" width="100%"
+                  height="8em"/>
+        <hbox id="buttonsPanel" classNames="buttons-panel">
+            <button id="previewButton" text="msg://importExcelDialog.preview"/>
+            <button id="importButton" text="msg://importExcelDialog.import"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>
