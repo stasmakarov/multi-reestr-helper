@@ -1,5 +1,6 @@
 package com.digitilius.multireestr.legacy;
 
+import com.digitilius.multireestr.legacy.test_support.DockerRequiredCondition.RequireDocker;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -9,6 +10,7 @@ import org.testcontainers.utility.DockerImageName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+@RequireDocker
 class LegacyDbInfoCheckTest {
 
     @SuppressWarnings("resource")
@@ -17,7 +19,9 @@ class LegacyDbInfoCheckTest {
     );
 
     static {
-        POSTGRES.start();
+        if (com.digitilius.multireestr.legacy.test_support.DockerAvailability.dockerAvailable()) {
+            POSTGRES.start();
+        }
     }
 
     @Test

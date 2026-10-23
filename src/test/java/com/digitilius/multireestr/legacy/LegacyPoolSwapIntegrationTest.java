@@ -3,8 +3,8 @@ package com.digitilius.multireestr.legacy;
 import com.digitilius.multireestr.entity.LegacyConnectionSettings;
 import com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport;
 import io.jmix.core.UnconstrainedDataManager;
+import com.digitilius.multireestr.legacy.test_support.DockerRequiredCondition.RequireDocker;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@EnabledIf("com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport#dockerAvailable")
+@RequireDocker
 class LegacyPoolSwapIntegrationTest {
 
     @SuppressWarnings("resource")
@@ -49,6 +49,10 @@ class LegacyPoolSwapIntegrationTest {
 
     @Autowired
     UnconstrainedDataManager unconstrainedDataManager;
+
+    @Autowired
+    @Qualifier("legacy")
+    SwappableLegacyDataSource legacyDataSource;
 
     @Test
     void swapBetweenTwoContainersKeepsReadOnly() {
@@ -125,6 +129,61 @@ class LegacyPoolSwapIntegrationTest {
                     .ifPresent(unconstrainedDataManager::remove);
             restoreFirstContainer();
             SECOND.stop();
+        }
+    }
+
+    @Test
+    void saveAndApplyDoesNotSwapPoolWhenProbeFails() {
+        String urlBefore = ((SwappableLegacyDataSource) legacyDataSource).getCurrentJdbcUrl();
+
+        LegacyConnectionSettings settings = unconstrainedDataManager.create(LegacyConnectionSettings.class);
+        settings.setCode(LegacyConnectionSettings.DEFAULT_CODE);
+        settings.setEnabled(true);
+        settings.setHost("127.0.0.1");
+        settings.setPort(1);
+        settings.setDatabaseName("reestrdb");
+        settings.setUsername("reestr_ro");
+
+        try {
+            LegacyDbStatus status = legacyConnectionService.saveAndApply(settings, "wrong");
+            assertThat(status.ok()).isFalse();
+            assertThat(((SwappableLegacyDataSource) legacyDataSource).getCurrentJdbcUrl()).isEqualTo(urlBefore);
+            assertThat(legacyDbInfo.fetchPostgresVersion()).isPresent();
+        } finally {
+            unconstrainedDataManager.load(LegacyConnectionSettings.class)
+                    .query("select e from mtr_LegacyConnectionSettings e where e.code = :code")
+                    .parameter("code", LegacyConnectionSettings.DEFAULT_CODE)
+                    .optional()
+                    .ifPresent(unconstrainedDataManager::remove);
+        }
+    }
+
+    @Test
+    void saveAndApplyDoesNotEncryptPropertiesPasswordWhenFormPasswordBlank() {
+        PostgreSQLContainer first = LegacyPostgresTestSupport.POSTGRES;
+        LegacyConnectionSettings settings = unconstrainedDataManager.create(LegacyConnectionSettings.class);
+        settings.setCode(LegacyConnectionSettings.DEFAULT_CODE);
+        settings.setEnabled(true);
+        settings.setHost(first.getHost());
+        settings.setPort(first.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT));
+        settings.setDatabaseName(first.getDatabaseName());
+        settings.setUsername(LegacyPostgresTestSupport.RO_USER);
+
+        try {
+            LegacyDbStatus status = legacyConnectionService.saveAndApply(settings, "  ");
+            assertThat(status.ok()).isTrue();
+            LegacyConnectionSettings stored = unconstrainedDataManager.load(LegacyConnectionSettings.class)
+                    .query("select e from mtr_LegacyConnectionSettings e where e.code = :code")
+                    .parameter("code", LegacyConnectionSettings.DEFAULT_CODE)
+                    .one();
+            assertThat(stored.getPasswordEncrypted()).isBlank();
+        } finally {
+            unconstrainedDataManager.load(LegacyConnectionSettings.class)
+                    .query("select e from mtr_LegacyConnectionSettings e where e.code = :code")
+                    .parameter("code", LegacyConnectionSettings.DEFAULT_CODE)
+                    .optional()
+                    .ifPresent(unconstrainedDataManager::remove);
+            restoreFirstContainer();
         }
     }
 

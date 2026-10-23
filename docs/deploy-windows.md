@@ -27,7 +27,7 @@
 
 Почему отдельный PostgreSQL 16: Jmix 3 не поддерживает PostgreSQL 9.6, а размещать свои таблицы в БД MultiReestr нельзя. Порт `5435` выбран, чтобы не пересечься с 9.6 на `5432`.
 
-> На Mac порт `5435` занят dev-контейнером `reestr-pg96` (legacy, см. `dev/legacy/legacy-db.sh`), и в `application.properties` по умолчанию `legacy.datasource.url=jdbc:postgresql://localhost:5435/reestrdb`. На Windows на `5435` будет PostgreSQL 16 для Jmix, поэтому **legacy URL на Windows всегда переопределяется** (раздел 5).
+> На Mac dev-контейнер `reestr-pg96` (legacy, см. `dev/legacy/legacy-db.sh`) слушает **5436**, и в `application.properties` по умолчанию `legacy.datasource.url=jdbc:postgresql://localhost:5436/reestrdb`. На Windows на `5435` стоит PostgreSQL 16 для Jmix. Порты больше не пересекаются, но **legacy URL на Windows всё равно переопределяется** на живую 9.6 (`:5432`, раздел 5).
 
 ```
 C:\multi-reestr\
@@ -122,7 +122,7 @@ $env:PGCLIENTENCODING = "UTF8"
 | `main.datasource.url` | `MAIN_DATASOURCE_URL` | `jdbc:postgresql://localhost:5435/multireestr` | config-файл |
 | `main.datasource.username` | `MAIN_DATASOURCE_USERNAME` | `multireestr` | config-файл |
 | `main.datasource.password` | `MAIN_DATASOURCE_PASSWORD` | пароль роли `multireestr` | переменная окружения |
-| `legacy.datasource.url` | `LEGACY_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/reestrdb` — **обязательно**, иначе возьмётся `5435` из jar | config-файл |
+| `legacy.datasource.url` | `LEGACY_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/reestrdb` — **обязательно**, иначе возьмётся `5436` из jar | config-файл |
 | `legacy.datasource.username` | `LEGACY_DATASOURCE_USERNAME` | `reestr_ro` | config-файл |
 | `legacy.datasource.password` | `LEGACY_DATASOURCE_PASSWORD` | пароль `reestr_ro` | переменная окружения (только до первой настройки в UI) |
 | `mtr.secret-key` | `MTR_SECRET_KEY` | 64 hex-символа, генерирует `set-env.ps1` | переменная окружения + копия в надёжном месте |
@@ -193,7 +193,7 @@ cd C:\multi-reestr
 
 | Симптом | Причина и что делать |
 |---|---|
-| `password authentication failed for user "reestr_ro"` на `:5435` | Не переопределён `legacy.datasource.url` — взялся dev-URL из jar. Задать URL на `:5432` (раздел 5) |
+| `password authentication failed for user "reestr_ro"` на `:5436` | Не переопределён `legacy.datasource.url` — взялся dev-URL из jar. Задать URL на `:5432` (раздел 5) |
 | `Connection refused` на `:5435` при старте | Не запущена служба `postgresql-x64-16` или контейнер Docker ещё не поднялся |
 | `permission denied for relation …` в legacy | Новый запрос читает таблицу, которой нет в `grant-readonly.sql`: добавить её туда (в репо) и повторить `create-legacy-ro.ps1` |
 | «Проверить подключение» показывает read-only «нет» | Подключились не под `reestr_ro` или драйвер без `readOnlyMode=always`; приложение всё равно не пишет, но роль нужно проверить |

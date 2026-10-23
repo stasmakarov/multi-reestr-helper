@@ -98,12 +98,9 @@ public class LegacyConnectionService {
         }
         if (typedPassword != null && !typedPassword.isBlank()) {
             settings.setPasswordEncrypted(cipher.encrypt(typedPassword));
-        } else if (isBlank(settings.getPasswordEncrypted()) && password != null && !password.isBlank()) {
-            settings.setPasswordEncrypted(cipher.encrypt(password));
         }
 
-        applyPool(settings, password);
-        LegacyDbStatus status = legacyDbInfo.check();
+        LegacyDbStatus status = applyPoolAfterProbe(settings, password);
         applyCheckResult(settings, status);
         return status;
     }
@@ -158,6 +155,36 @@ public class LegacyConnectionService {
             String password
     ) {
         legacyDataSource.swap(factory.create(host, port, databaseName, username, password, properties));
+    }
+
+    private LegacyDbStatus applyPoolAfterProbe(LegacyConnectionSettings settings, String password) {
+        if (!Boolean.TRUE.equals(settings.getEnabled())) {
+            applyPoolFromProperties();
+            return legacyDbInfo.check();
+        }
+        HikariDataSource probe = factory.create(
+                settings.getHost(),
+                settings.getPort(),
+                settings.getDatabaseName(),
+                settings.getUsername(),
+                password,
+                properties
+        );
+        LegacyJdbcUrls.JdbcEndpoint endpoint = new LegacyJdbcUrls.JdbcEndpoint(
+                settings.getHost(), settings.getPort(), settings.getDatabaseName()
+        );
+        try {
+            LegacyDbStatus status = legacyDbInfo.check(new NamedParameterJdbcTemplate(probe), endpoint);
+            if (status.ok()) {
+                legacyDataSource.swap(probe);
+                probe = null;
+            }
+            return status;
+        } finally {
+            if (probe != null) {
+                probe.close();
+            }
+        }
     }
 
     private void applyPool(LegacyConnectionSettings settings, String password) {

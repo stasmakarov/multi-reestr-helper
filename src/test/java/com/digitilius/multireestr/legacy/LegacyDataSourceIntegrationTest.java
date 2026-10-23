@@ -1,5 +1,7 @@
 package com.digitilius.multireestr.legacy;
 
+import com.digitilius.multireestr.legacy.test_support.DockerAvailability;
+import com.digitilius.multireestr.legacy.test_support.DockerRequiredCondition.RequireDocker;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@RequireDocker
 class LegacyDataSourceIntegrationTest {
 
     private static final String RO_USER = "reestr_ro";
@@ -32,8 +35,10 @@ class LegacyDataSourceIntegrationTest {
     );
 
     static {
-        POSTGRES.start();
-        prepareReadOnlyRole();
+        if (DockerAvailability.dockerAvailable()) {
+            POSTGRES.start();
+            prepareReadOnlyRole();
+        }
     }
 
     @DynamicPropertySource

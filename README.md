@@ -39,7 +39,7 @@ The default user credentials are:
 
 Основная база приложения (Jmix store `main`) в продуктиве — **отдельный PostgreSQL 16+** на другом порту (например `localhost:5433`, БД `multireestr`). В разработке main остаётся на HSQLDB. Jmix 3 не работает с PostgreSQL 9.6, поэтому main нельзя размещать на сервере MultiReestr.
 
-Параметры `legacy.datasource.*` задаются в `application.properties`. В разработке: `jdbc:postgresql://localhost:5435/reestrdb`, пользователь `reestr_ro`. В продуктиве URL — `jdbc:postgresql://localhost:5432/reestrdb`.
+Параметры `legacy.datasource.*` задаются в `application.properties`. В разработке: `jdbc:postgresql://localhost:5436/reestrdb`, пользователь `reestr_ro` (пароль — профиль `dev` или `LEGACY_DATASOURCE_PASSWORD`). В продуктиве URL — `jdbc:postgresql://localhost:5432/reestrdb`.
 
 Параметры драйвера `readOnly=true` и `readOnlyMode=always` задаёт приложение при сборке пула Hikari. В URL их писать не нужно.
 
@@ -51,7 +51,7 @@ The default user credentials are:
 
 ### Тесты
 
-Нужен Docker (Testcontainers поднимает `postgres:9.6`). Локальный PostgreSQL не требуется.
+Нужен Docker (Testcontainers поднимает `postgres:9.6`). Без Docker тесты с контейнером падают. Пропуск: `./gradlew test -PallowNoDocker`. Локальный PostgreSQL не требуется.
 
 ```bash
 ./gradlew test

@@ -18,7 +18,7 @@ dev/legacy/legacy-db.sh
 ```bash
 docker run -d --name reestr-pg96 \
   -e POSTGRES_PASSWORD=postgres \
-  -p 5435:5432 \
+  -p 5436:5432 \
   -v reestr-pg96:/var/lib/postgresql/data \
   postgres:9.6
 ```
@@ -28,7 +28,7 @@ Apple Silicon: тег `postgres:9.6` на Docker Hub содержит образ
 добавьте `--platform linux/amd64` (будет работать через эмуляцию Rosetta, медленнее).
 
 На машине автора порты 5432 (локальный Postgres), 5433 и 5434 заняты, поэтому контейнер
-пробрасывается на **5435** (`-p 5435:5432`), и в `legacy.datasource.url` указан `localhost:5435`.
+пробрасывается на **5436** (`-p 5436:5432`), и в `legacy.datasource.url` указан `localhost:5436`.
 Если выбираете другой порт, поправьте URL в `application.properties`.
 
 Дождитесь готовности:
@@ -64,7 +64,7 @@ dev/legacy/grant-readonly.sh
 ## 4. Переменные окружения приложения
 
 ```
-LEGACY_DB_URL=jdbc:postgresql://localhost:5435/reestrdb
+LEGACY_DB_URL=jdbc:postgresql://localhost:5436/reestrdb
 LEGACY_DB_USER=reestr_ro
 LEGACY_DB_PASSWORD=reestr_ro
 ```

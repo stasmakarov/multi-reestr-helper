@@ -10,7 +10,7 @@ public class LegacySecretCipher {
 
     /**
      * Fixed salt for {@code Encryptors.delux}; not a secret. The secret is {@code MTR_SECRET_KEY}.
-     * Hex of ASCII {@code mtrlegacy} (8 bytes).
+     * Hex of ASCII {@code mtrlegacy} (9 bytes).
      */
     static final String SALT_HEX = "6d74726c6567616379";
 

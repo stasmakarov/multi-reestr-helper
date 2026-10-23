@@ -1,7 +1,6 @@
 package com.digitilius.multireestr.legacy.test_support;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -23,6 +22,10 @@ public final class LegacyPostgresTestSupport {
         if (dockerAvailable()) {
             POSTGRES.start();
             prepareReadOnlySchema();
+        } else if (!allowNoDocker()) {
+            throw new ExceptionInInitializerError(new IllegalStateException(
+                    "Docker is required for legacy tests. Re-run with ./gradlew test -PallowNoDocker to skip them."
+            ));
         }
     }
 
@@ -30,7 +33,11 @@ public final class LegacyPostgresTestSupport {
     }
 
     public static boolean dockerAvailable() {
-        return DockerClientFactory.instance().isDockerAvailable();
+        return DockerAvailability.dockerAvailable();
+    }
+
+    public static boolean allowNoDocker() {
+        return DockerAvailability.allowNoDocker();
     }
 
     public static void registerLegacyProperties(DynamicPropertyRegistry registry) {

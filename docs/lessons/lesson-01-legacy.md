@@ -58,7 +58,7 @@ flowchart LR
         APP["multi-reestr<br/>Jmix 3.0.3 / Spring Boot"]
         H[("main: HSQLDB<br/>.jmix/hsqldb/mtr<br/>JPA + Liquibase")]
         subgraph DOCKER["Docker"]
-            L[("reestr-pg96<br/>PostgreSQL 9.6<br/>localhost:5435 / reestrdb<br/>роль reestr_ro")]
+            L[("reestr-pg96<br/>PostgreSQL 9.6<br/>localhost:5436 / reestrdb<br/>роль reestr_ro")]
         end
     end
     P[("prod: PostgreSQL 16<br/>отдельный инстанс :5435 (Windows)")]
@@ -70,11 +70,11 @@ flowchart LR
 | Хранилище | Где | Как | Что пишет |
 |---|---|---|---|
 | `main` | dev: HSQLDB-файл `.jmix/hsqldb/mtr`; prod: PostgreSQL 16+ | Jmix data store: JPA, Liquibase, `DataManager` | пользователи, модель данных курса |
-| `legacy` | Docker `reestr-pg96`, `localhost:5435/reestrdb` | бин `DataSource` с именем `legacy` + `NamedParameterJdbcTemplate` с именем `legacyJdbc` | ничего — только чтение |
+| `legacy` | Docker `reestr-pg96`, `localhost:5436/reestrdb` | бин `DataSource` с именем `legacy` + `NamedParameterJdbcTemplate` с именем `legacyJdbc` | ничего — только чтение |
 
 ## 3. Подготовка окружения
 
-**Порты на машине автора:** 5432 занят локальным Postgres, 5433 и 5434 тоже заняты, поэтому контейнер legacy пробрасывается на **5435**. Если у вас порт свободен, можно выбрать другой, но тогда поправьте URL (шаг 4.4).
+**Порты на машине автора:** 5432–5434 заняты локальным Postgres, а **5435** на Windows занят PostgreSQL 16 для main. Поэтому контейнер legacy пробрасывается на **5436**. Если у вас порт свободен, можно выбрать другой, но тогда поправьте URL (шаг 4.4).
 
 Всё окружение поднимается одним скриптом из репозитория, [`dev/legacy/legacy-db.sh`](../../dev/legacy/legacy-db.sh). Дамп `reestrdb.dump` нужно заранее положить в `dev/legacy/`.
 
@@ -87,7 +87,7 @@ dev/legacy/legacy-db.sh reset    # удалить контейнер и том, 
 
 При первом запуске `up` делает следующее:
 
-1. создаёт контейнер `reestr-pg96` (`postgres:9.6`, порт `5435:5432`, том `reestr-pg96`) с политикой `--restart unless-stopped`;
+1. создаёт контейнер `reestr-pg96` (`postgres:9.6`, порт `5436:5432`, том `reestr-pg96`) с политикой `--restart unless-stopped`;
 2. ждёт `pg_isready`;
 3. если базы `reestrdb` нет, создаёт её, восстанавливает дамп и заводит роль `reestr_ro` только для чтения;
 4. выводит URL подключения и число строк в `notices`.
@@ -186,16 +186,18 @@ public class LegacyDataSourceConfiguration {
 ```properties
 main.datasource.url=jdbc:hsqldb:file:.jmix/hsqldb/mtr
 
-legacy.datasource.url=jdbc:postgresql://localhost:5435/reestrdb
+legacy.datasource.url=jdbc:postgresql://localhost:5436/reestrdb
 legacy.datasource.username=reestr_ro
-legacy.datasource.password=reestr_ro
+legacy.datasource.password=${LEGACY_DATASOURCE_PASSWORD:}
 legacy.datasource.hikari.read-only=true
 legacy.datasource.hikari.maximum-pool-size=5
 legacy.datasource.hikari.connection-timeout=10000
 legacy.datasource.hikari.initialization-fail-timeout=-1
 ```
 
-Учётные данные записаны прямо в файле: это учебный проект без секретов, а у `reestr_ro` и так есть только `SELECT`. В реальном проекте пароль хранится в переменной окружения или в хранилище секретов.
+Пароль в основной файл и в production-jar не кладём: пустое значение по умолчанию, либо переменная `LEGACY_DATASOURCE_PASSWORD`. Учебный пароль `reestr_ro` живёт в `application-dev.properties`. Gradle включает профиль `dev` в `bootRun` и в тестах. В Jmix Studio / IntelliJ IDEA в конфигурации Spring Boot укажите Active profiles: `dev` (или VM option `-Dspring.profiles.active=dev`). Production-jar запускают без этого профиля.
+
+`legacy.datasource.hikari.read-only=false` в конфиге **игнорируется**: фабрика всегда ставит Hikari `readOnly` и пишет WARN.
 
 ### 4.5. Информация о подключении: `LegacyDbInfo` и `LegacyDbStatus`
 
@@ -257,7 +259,7 @@ public void onApplicationStarted(ApplicationStartedEvent event) {
 | Уровень | Где задан | Как проверить |
 |---|---|---|
 | **1. Драйвер pgjdbc** | `addDataSourceProperty("readOnly", "true")` и `("readOnlyMode", "always")` в `LegacyDataSourceConfiguration` | Тест `insertThroughLegacyJdbcFailsAsReadOnly`: `INSERT` через `legacyJdbc` падает с `cannot execute INSERT in a read-only transaction`. На экране поле «Только чтение» показывает `current_setting('transaction_read_only')` |
-| **2. Hikari** | `dataSource.setReadOnly(hikari.isReadOnly())`, свойство `legacy.datasource.hikari.read-only=true` | Hikari вызывает `Connection.setReadOnly(true)` для каждого соединения из пула. Вместе с `readOnlyMode=always` драйвер переводит транзакции в READ ONLY и в режиме autocommit |
+| **2. Hikari** | `dataSource.setReadOnly(true)` в `LegacyHikariFactory` (значение `hikari.read-only=false` игнорируется с WARN) | Hikari вызывает `Connection.setReadOnly(true)` для каждого соединения из пула. Вместе с `readOnlyMode=always` драйвер переводит транзакции в READ ONLY и в режиме autocommit |
 | **3. Роль БД `reestr_ro`** | `docs/sql/legacy_readonly_user.sql`: только `CONNECT`, `USAGE`, `SELECT` | Из psql под `reestr_ro`: `DELETE FROM notices WHERE false;` → `permission denied for relation notices`. Тест `createTableThroughLegacyJdbcFailsAsReadOnly` |
 
 Уровни дополняют друг друга. Первые два защищают от ошибки в коде приложения. Третий защищает от всего остального, в том числе от неправильно настроенного пула или чужой утилиты, запущенной под тем же пользователем.
@@ -294,11 +296,11 @@ public void onCheckButtonClick(final ClickEvent<JmixButton> event) {
 
 Затем показывается всплывающее уведомление: зелёное «Подключено» или красное «Ошибка подключения: …» (текст обрезается до 180 символов). Разметка `legacy-connection-view.xml` — это `hbox` с кнопкой и `formLayout` из восьми `textField readOnly="true"`. Подписи лежат в `messages_ru.properties`.
 
-Ожидаемый результат на стенде: Статус `OK`, версия `PostgreSQL 9.6.x…`, пользователь `reestr_ro`, база `reestrdb`, `localhost:5435`, «Только чтение» — `да`.
+Ожидаемый результат на стенде: Статус `OK`, версия `PostgreSQL 9.6.x…`, пользователь `reestr_ro`, база `reestrdb`, `localhost:5436`, «Только чтение» — `да`.
 
 ## 7. Тесты
 
-Нужен Docker: Testcontainers сам поднимает `postgres:9.6`. Локальный стенд на 5435 для тестов не нужен.
+Нужен Docker: Testcontainers сам поднимает `postgres:9.6`. Локальный стенд на 5436 для тестов не нужен. Без Docker legacy-тесты **падают**, а не пропускаются. Явный пропуск: `./gradlew test -PallowNoDocker` (или системное свойство `allowNoDocker=true`).
 
 ```bash
 ./gradlew test
@@ -311,7 +313,8 @@ public void onCheckButtonClick(final ClickEvent<JmixButton> event) {
 | `LegacyOptionalStartupTest` | Контекст Jmix стартует без URL: бины `legacy` / `legacyJdbc` есть, пула нет, `check()` = «не настроено» |
 | `LegacyConnectionViewUiTest` (`@UiTest`) | Экран с формой открывается, нажатие «Проверить подключение» без пула не роняет UI: «Статус» и «Ошибка» заполнены |
 | `LegacySecretCipherTest` | Шифрование и расшифровка; без ключа сохранить пароль нельзя |
-| `LegacyPoolSwapIntegrationTest` | Переключение пула между двумя контейнерами `postgres:9.6` без перезапуска; `INSERT` по-прежнему read-only; «Сохранить и применить» пишет зашифрованный пароль |
+| `LegacyPoolSwapIntegrationTest` | Переключение пула между двумя контейнерами `postgres:9.6` без перезапуска; `INSERT` по-прежнему read-only; «Сохранить и применить» пишет зашифрованный пароль, не подменяет пул при ошибке пробы и не шифрует пароль из свойств при пустом поле формы |
+| `LegacyHikariFactoryTest` | `hikari.read-only=false` не отключает read-only пула |
 
 Фрагмент подготовки роли в интеграционном тесте:
 
@@ -328,13 +331,13 @@ statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
 
 | Симптом | Причина | Что делать |
 |---|---|---|
-| `docker: ... port is already allocated` / `bind: address already in use` | Порт занят локальным Postgres или другим контейнером | `lsof -i :5435`; выберите свободный порт в `-p` и поправьте `legacy.datasource.url` |
+| `docker: ... port is already allocated` / `bind: address already in use` | Порт занят локальным Postgres или другим контейнером | `lsof -i :5436`; выберите свободный порт в `-p` и поправьте `legacy.datasource.url` |
 | На экране «Ошибка: Legacy DataSource is not configured» | Пула нет: пустой URL, нет включённой записи настроек, или `enabled = false` и свойств тоже нет | Проверьте экран «Подключение к MultiReestr», `application.properties` и активный профиль |
 | `Connection refused` / timeout | Контейнер не запущен или ещё стартует | `dev/legacy/legacy-db.sh status`, затем `dev/legacy/legacy-db.sh up` |
 | `password authentication failed for user "reestr_ro"` | Роль не создана или у неё другой пароль | Выполните раздел 3 `LEGACY_DOCKER.md` |
 | `permission denied for relation ...` при **чтении** | Новый SQL читает таблицу, которой нет в `dev/legacy/grant-readonly.sql` (`SELECT` выдаётся только на таблицы из `sql/legacy/**`) | Добавьте таблицу в `grant-readonly.sql` и выполните `dev/legacy/legacy-db.sh grant`. `GRANT SELECT ON ALL TABLES` не используйте |
 | `permission denied` при **записи** | Так и должно быть: сработал уровень 3 | — |
-| «Только чтение: нет» | `transaction_read_only` в сессии выключен: Hikari read-only или `readOnlyMode` не применились (например, `legacy.datasource.hikari.read-only=false`), либо проверочный запрос выполнился вне READ ONLY-транзакции | Проверьте свойство `hikari.read-only`. Попробуйте `INSERT` через `legacyJdbc`: если он проходит до уровня роли и падает с `permission denied`, а не `read-only transaction`, значит уровни 1–2 не работают. Уровень 3 всё равно защищает |
+| «Только чтение: нет» | `transaction_read_only` в сессии выключен: `readOnlyMode` не применился, либо проверочный запрос выполнился вне READ ONLY-транзакции | `hikari.read-only=false` больше не отключает защиту — смотрите WARN в логе и параметры драйвера. Попробуйте `INSERT` через `legacyJdbc` |
 | `pg_restore`: ошибки про `uuid-ossp` | Нестандартный образ без расширения | Используйте официальный `postgres:9.6` |
 
 ## 9. Контрольные вопросы и задания
@@ -344,17 +347,17 @@ statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
 3. Зачем задавать `readOnlyMode=always` в Java, а не в URL?
 4. Какой из трёх уровней защиты сработает, если кто-то подключится к `reestrdb` из DBeaver под `reestr_ro`?
 5. **Задание.** Остановите контейнер (`docker stop reestr-pg96`), запустите приложение и найдите в логе предупреждение. Откройте экран и нажмите «Проверить подключение». Какие поля заполнены?
-6. **Задание.** Временно поставьте `legacy.datasource.hikari.read-only=false` и посмотрите, как изменится поле «Только чтение» и с какой ошибкой теперь падает `INSERT` (тест `insertThroughLegacyJdbcFailsAsReadOnly`). Верните значение обратно.
+6. **Задание.** Временно поставьте `legacy.datasource.hikari.read-only=false`, найдите WARN в логе и убедитесь, что `INSERT` по-прежнему падает как read-only (тест `insertThroughLegacyJdbcFailsAsReadOnly` / `LegacyHikariFactoryTest`). Верните значение обратно.
 7. **Задание.** Добавьте на экран поле «Число таблиц в public» (`select count(*) from pg_tables where schemaname='public'`); ожидается 335.
 
 ## 10. Чеклист «урок завершён»
 
-- [ ] Контейнер `reestr-pg96` работает на `localhost:5435`, `reestrdb` восстановлена (335 таблиц).
+- [ ] Контейнер `reestr-pg96` работает на `localhost:5436`, `reestrdb` восстановлена (335 таблиц).
 - [ ] Роль `reestr_ro` создана, `DELETE` под ней даёт `permission denied`.
 - [ ] Права роли выданы через `dev/legacy/grant-readonly.sql`: `SELECT` только на 19 таблиц, `SELECT count(*) FROM userinfo` под `reestr_ro` даёт `permission denied`.
-- [ ] `application.properties`: main на HSQLDB, legacy на `localhost:5435/reestrdb`.
+- [ ] `application.properties`: main на HSQLDB, legacy URL на `localhost:5436/reestrdb`, пароль — `${LEGACY_DATASOURCE_PASSWORD:}`; учебный пароль в профиле `dev`.
 - [ ] Бины `legacy` и `legacyJdbc` создаются всегда (обёртка над сменяемым пулом); без URL и без включённой записи пула нет, приложение стартует; `@Primary` остался у main.
-- [ ] Драйвер получает `readOnly=true` и `readOnlyMode=always` из Java; Hikari `read-only=true`.
+- [ ] Драйвер получает `readOnly=true` и `readOnlyMode=always` из Java; Hikari всегда read-only (false в конфиге игнорируется).
 - [ ] Приложение стартует при остановленном контейнере (в логе есть `WARN ... continues without it`).
 - [ ] Экран «Администрирование → Подключение к MultiReestr» показывает `OK`, `reestr_ro`, «Только чтение: да».
 - [ ] `./gradlew test` зелёный.
@@ -377,7 +380,7 @@ git tag lesson-01
 3. **Переключаемый DataSource.** Сейчас бины `legacy`/`legacyJdbc` создаются только при непустом URL (`@ConditionalOnExpression`), а `NoticeLookupService` — только при наличии `legacyJdbc` (`@ConditionalOnBean`). Так пул нельзя создать или заменить во время работы. Меняем схему:
    - бин `legacy` создаётся **всегда** и представляет собой обёртку: класс, реализующий `DataSource` (удобно унаследовать `org.springframework.jdbc.datasource.DelegatingDataSource`), внутри которого лежит текущий `HikariDataSource` (или ничего);
    - `legacyJdbc` строится поверх обёртки один раз и не меняется; сервисы legacy тоже создаются всегда, условия `@ConditionalOn…` убираются;
-   - метод «применить настройки» создаёт новый Hikari-пул с теми же флагами read-only (драйвер `readOnly`, `readOnlyMode=always`, Hikari `readOnly`), атомарно подменяет ссылку и закрывает старый пул (`close()` дожидается возврата занятых соединений);
+   - метод «применить настройки» сначала проверяет параметры **пробным** пулом; рабочий пул подменяется только если проба успешна. Пароль из свойств при пустом поле формы не шифруется в БД;
    - если пула нет, обёртка бросает понятное исключение «БД MultiReestr не настроена» — экраны показывают его так же, как недоступность БД;
    - при старте пул строится из свойств; после `ApplicationStartedEvent` (когда доступен `DataManager`) читается запись настроек и, если она включена, пул пересобирается по ней;
    - `LegacyDbInfo` берёт хост и порт у обёртки (текущий JDBC-URL), а не через `instanceof HikariDataSource`; `LegacyAvailabilityListener` — из текущих настроек, а не из `Environment`.
@@ -398,7 +401,7 @@ git tag lesson-01
 - сборка production-jar на Mac (`dev/deploy/build-jar.sh`);
 - JDK 21 и отдельный PostgreSQL 16 на порту `5435` для main (Jmix 3 не работает с 9.6);
 - роль `reestr_ro` на живой БД 9.6 (`create-legacy-ro.ps1`, тот же `grant-readonly.sql`, что и на стенде);
-- `config\application.properties` и переменные окружения: на Windows legacy URL обязательно переопределяется, потому что значение по умолчанию (`localhost:5435`) — это dev-стенд на Mac, а на Windows там PostgreSQL 16 для Jmix;
+- `config\application.properties` и переменные окружения: на Windows legacy URL обязательно переопределяется на живую 9.6 (`localhost:5432/reestrdb`), потому что в jar по умолчанию Mac-стенд `localhost:5436/reestrdb`; PostgreSQL 16 для Jmix на Windows слушает `:5435`;
 - первый запуск `java -jar` (`start-app.ps1`), смена пароля admin, настройка подключения на экране из раздела 11.
 
 **Чеклист.**

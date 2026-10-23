@@ -1,10 +1,14 @@
 package com.digitilius.multireestr.legacy;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LegacyHikariFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(LegacyHikariFactory.class);
 
     public HikariDataSource create(
             String jdbcUrl,
@@ -21,7 +25,9 @@ public class LegacyHikariFactory {
         dataSource.addDataSourceProperty("readOnlyMode", "always");
 
         LegacyDataSourceProperties.Hikari hikari = properties.getHikari();
-        dataSource.setReadOnly(hikari.isReadOnly());
+        if (!hikari.isReadOnly()) {
+            log.warn("legacy.datasource.hikari.read-only=false is ignored; legacy pool is always read-only");
+        }
         dataSource.setMaximumPoolSize(hikari.getMaximumPoolSize());
         dataSource.setConnectionTimeout(hikari.getConnectionTimeout());
         dataSource.setInitializationFailTimeout(hikari.getInitializationFailTimeout());

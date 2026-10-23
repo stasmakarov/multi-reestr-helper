@@ -6,7 +6,7 @@ set -euo pipefail
 
 NAME=reestr-pg96
 VOLUME=reestr-pg96
-PORT=5435
+PORT=5436
 DB=reestrdb
 RO_USER=reestr_ro
 RO_PASS=reestr_ro

@@ -57,8 +57,16 @@ configurations.implementation {
     exclude group: 'com.vaadin', module: 'copilot'
 }
 
+bootRun {
+    args '--spring.profiles.active=dev'
+}
+
 test {
     useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'test,dev'
+    if (project.hasProperty('allowNoDocker')) {
+        systemProperty 'allowNoDocker', 'true'
+    }
 }
 
 idea {
