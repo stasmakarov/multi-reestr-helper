@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://loadYearDialog.title"
+      focusComponent="yearField">
+    <actions>
+        <action id="closeAction" type="view_close"/>
+    </actions>
+    <layout>
+        <formLayout id="form" width="100%">
+            <integerField id="yearField" label="msg://loadYearDialog.year" min="2013" max="2100"/>
+            <checkbox id="fromFileField" label="msg://loadYearDialog.fromFile"/>
+        </formLayout>
+        <vbox id="uploadBox" width="100%" visible="false"/>
+        <textArea id="summaryField" label="msg://loadYearDialog.summaryLabel" readOnly="true" width="100%"
+                  height="10em"/>
+        <hbox id="buttonsPanel" classNames="buttons-panel">
+            <button id="previewButton" text="msg://loadYearDialog.preview"/>
+            <button id="importButton" text="msg://loadYearDialog.import"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

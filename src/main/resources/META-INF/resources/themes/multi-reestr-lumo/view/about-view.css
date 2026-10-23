@@ -1,0 +1,38 @@
+.about-page {
+    width: 100%;
+    padding: 0.5rem 0.25rem 0.25rem;
+    box-sizing: border-box;
+}
+
+.about-logo {
+    width: 16rem;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.about-product-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.about-tagline {
+    color: var(--lumo-secondary-text-color);
+    font-size: var(--lumo-font-size-s);
+    text-align: center;
+    margin: 0.75rem 0;
+}
+
+.about-meta {
+    color: var(--lumo-secondary-text-color);
+    margin: 0.15rem 0;
+}
+
+.about-copyright {
+    color: var(--lumo-secondary-text-color);
+    margin-top: 2rem;
+    font-size: var(--lumo-font-size-xs);
+}

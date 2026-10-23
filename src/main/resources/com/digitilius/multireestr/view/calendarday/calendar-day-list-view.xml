@@ -38,6 +38,7 @@
                 <button id="createButton" action="calendarDaysDataGrid.createAction"/>
                 <button id="editButton" action="calendarDaysDataGrid.editAction"/>
                 <button id="removeButton" action="calendarDaysDataGrid.removeAction"/>
+                <button id="loadYearButton" text="msg://loadYearButton.text"/>
             </startSlot>
             <endSlot>
                 <simplePagination id="pagination" dataLoader="calendarDaysDl"/>
