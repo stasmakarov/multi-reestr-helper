@@ -29,7 +29,7 @@ WHERE CASE WHEN :'pn_valid' THEN
        OR regexp_replace(coalesce(n.docnumber,''),'[^0-9]','','g') = :'pn_norm'
        OR trim(n.internalnumber) = :'pn_norm'
       ELSE
-          (:'pdate' = '' OR n.docpublishdate::date = nullif(:'pdate','')::date)
+          (:'pdate' = '' OR (n.docpublishdate >= nullif(:'pdate','')::date AND n.docpublishdate < nullif(:'pdate','')::date + 1))
       AND (:'pname' = '' OR n.predmet ILIKE '%' || :'pname' || '%')
       AND (:'pdate' <> '' OR :'pname' <> '')
       END
@@ -44,7 +44,7 @@ WHERE CASE WHEN :'pn_valid' THEN
        OR regexp_replace(coalesce(n.docnumber,''),'[^0-9]','','g') = :'pn_norm'
        OR trim(n.internalnumber) = :'pn_norm'
       ELSE
-          (:'pdate' = '' OR n.docpublishdate::date = nullif(:'pdate','')::date)
+          (:'pdate' = '' OR (n.docpublishdate >= nullif(:'pdate','')::date AND n.docpublishdate < nullif(:'pdate','')::date + 1))
       AND (:'pname' = '' OR n.predmet ILIKE '%' || :'pname' || '%')
       AND (:'pdate' <> '' OR :'pname' <> '')
       END

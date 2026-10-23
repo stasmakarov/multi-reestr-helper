@@ -2,7 +2,7 @@ package com.digitilius.multireestr.legacy.notice;
 
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport;
-import org.junit.jupiter.api.condition.EnabledIf;
+import com.digitilius.multireestr.legacy.test_support.DockerRequiredCondition.RequireDocker;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@EnabledIf("com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport#dockerAvailable")
+@RequireDocker
 class NoticeLookupGoldenTest {
 
     @DynamicPropertySource

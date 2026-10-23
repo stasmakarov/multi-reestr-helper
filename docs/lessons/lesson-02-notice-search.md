@@ -86,7 +86,7 @@ flowchart LR
 
 ## 3. Подготовка окружения
 
-Стенд тот же, что в уроке 1: контейнер `reestr-pg96` на `localhost:5435`, роль `reestr_ro`.
+Стенд тот же, что в уроке 1: контейнер `reestr-pg96` на `localhost:5436`, роль `reestr_ro`.
 
 ```bash
 dev/legacy/legacy-db.sh          # поднять (при первом запуске — восстановить дамп)
@@ -99,7 +99,7 @@ dev/legacy/legacy-db.sh status   # URL и число извещений (40)
 dev/legacy/legacy-db.sh up
 dev/legacy/make-test-fixture.sh                 # перезаписывает тестовый набор
 # другой источник или набор id:
-PSQL="psql -h localhost -p 5435 -U reestr_ro -d reestrdb" IDS=3,4,10 dev/legacy/make-test-fixture.sh /tmp/f.sql
+PSQL="psql -h localhost -p 5436 -U reestr_ro -d reestrdb" IDS=3,4,10 dev/legacy/make-test-fixture.sh /tmp/f.sql
 ```
 
 Что делает скрипт (только `SELECT`):
@@ -258,16 +258,22 @@ return fragment
 
 ```sql
 WITH keys AS (
-    SELECT DISTINCT trim(n.purchasenumber) AS pn
+    SELECT trim(n.purchasenumber) AS pn,
+           row_number() OVER (ORDER BY max(n.docpublishdate) DESC, trim(n.purchasenumber)) AS rn
     FROM notices n
     WHERE n.purchasenumber IS NOT NULL
-      AND (CAST(:date AS date) IS NULL OR n.docpublishdate::date = CAST(:date AS date))
+      AND (CAST(:date AS date) IS NULL
+           OR (n.docpublishdate >= CAST(:date AS date)
+               AND n.docpublishdate < CAST(:date AS date) + 1))
       AND (CAST(:subject AS text) IS NULL OR n.predmet ILIKE '%' || CAST(:subject AS text) || '%' ESCAPE '\')
-    LIMIT 200
+    GROUP BY trim(n.purchasenumber)
 )
 SELECT ... FROM notices n
 JOIN keys k ON trim(n.purchasenumber) = k.pn
+WHERE k.rn <= 201
 ```
+
+Если номеров больше 200, UI сообщает, что результат усечён.
 
 **Записи без номера в поиск по дате не попадают.** Строки с `purchasenumber IS NULL` — это черновики и локальные шаблоны MultiReestr, а не опубликованные извещения. Условие `n.purchasenumber IS NOT NULL` отбрасывает их уже в CTE `keys`. Без него черновики попадали бы в `keys` с `pn = NULL` и занимали место в лимите 200, а `JOIN` по `NULL` потом молча их терял: пользователь недосчитался бы настоящего номера.
 
@@ -416,7 +422,7 @@ static {
 ScriptUtils.executeSqlScript(connection, new EncodedResource(fixture, StandardCharsets.UTF_8));
 ```
 
-Классы с БД помечены `@EnabledIf("…LegacyPostgresTestSupport#dockerAvailable")` (или `@Testcontainers(disabledWithoutDocker = true)`): **без Docker они пропускаются**, а не падают с «Failed to load ApplicationContext». Не забывайте: «зелёный» прогон без Docker — это прогон без половины тестов.
+Классы с БД помечены `@RequireDocker`: без Docker они **падают**. Явный пропуск: `./gradlew test -PallowNoDocker` (урок 1).
 
 | Тест | Что проверяет |
 |---|---|
@@ -425,7 +431,7 @@ ScriptUtils.executeSqlScript(connection, new EncodedResource(fixture, StandardCh
 | `NoticeCandidateRowMapperTest` | «копия», «КОПИЯ», nbsp перед «Копия», `srcguid` с `{` |
 | `NoticeCardAssemblerTest` | Все предупреждения при пустых блоках; ни одного — при полной карточке |
 | `NoticeLookupGoldenTest` (БД) | 10 номеров из `notice-golden.csv`: число кандидатов, ровно один `chosen`, он первый, у остальных есть причина |
-| `NoticeLookupServiceTest` (БД) | Поиск по номеру; неизвестный номер; только дата (`2026-04-03` → id 4); только предмет («папки» → id 3); без условий — исключение; черновик без номера не занимает место в лимите 200 (`findByDateSkipsDraftsWithoutNumber`: 200 номеров + черновик на одну дату → ровно 200 номеров) |
+| `NoticeLookupServiceTest` (БД) | Поиск по номеру; неизвестный номер; только дата (`2026-04-03` → id 4); только предмет («папки» → id 3); без условий — исключение; черновик без номера не занимает место в лимите 200; при 201 номере `truncated=true` и в выдаче 200 |
 | `NoticeCardServiceTest` (БД) | Карточка `0173100017026000015`: id 3, ИНН 7714841940, НМЦК 43360.20, окончание подачи 15.04.2026 10:00, «Электронный аукцион», ET44, КТРУ `17.23.13.193-00000002` с характеристиками; неизвестный id → пусто |
 | `NoticeSearchViewTest` (`@UiTest`, БД) | Экран открывается; номер обычный и с пробелами → 2 строки, первая — оригинал id 3; неверный номер → ошибка поля, грид пуст |
 
@@ -455,7 +461,7 @@ void findByNumberChoosesGoldenOriginal(
 | Редакция «0» вместо пустого | `rs.getInt()` для `NULL` возвращает 0 | `LegacyResultSets.integer` |
 | `ERROR: could not determine data type of parameter $1` | `NULL`-параметр без типа | `CAST(:date AS date) IS NULL OR …` |
 | Пользователь с ролью `notice-viewer` не может войти | Нет `UiMinimalRole` | Назначить обе роли |
-| 27 тестов падают с «Failed to load ApplicationContext» | Docker не запущен, а тесты не помечены условием | `@EnabledIf(...dockerAvailable)`; запустить Docker Desktop |
+| Тесты с Docker падают с «Docker is required» | Docker не запущен | Запустить Docker или `./gradlew test -PallowNoDocker` |
 | Тесты зелёные, а на реальной БД ошибка | Синтетический тестовый набор | Перегенерировать `make-test-fixture.sh` |
 | `permission denied for relation noticespec` в тестах | Таблицы нет в `dev/legacy/grant-readonly.sql`, или тестовый набор загружен после выдачи прав | Добавить таблицу в `grant-readonly.sql`; загружать тестовый набор до `grant-readonly.sql`. `GRANT SELECT ON ALL TABLES` не использовать |
 
@@ -481,7 +487,7 @@ void findByNumberChoosesGoldenOriginal(
 - [ ] `NoticeCardService` собирает карточку id 3: заказчик, сроки, лоты, ИКЗ, преференции без дублей, документы, КТРУ `17.23.13.193-00000002` с характеристиками.
 - [ ] Экран «Извещения → Поиск извещения» работает: Enter, ошибки ввода, «Нет подключения к MultiReestr», выделение оригинала, автопереход.
 - [ ] Роль `notice-viewer` создана; тестовый пользователь с `ui-minimal` + `notice-viewer` видит только поиск.
-- [ ] Тестовый набор сгенерирован `dev/legacy/make-test-fixture.sh`, в ней нет `userinfo` и учётных данных.
+- [ ] Тестовый набор сгенерирован `dev/legacy/make-test-fixture.sh`, в нём нет `userinfo` и учётных данных.
 - [ ] Docker запущен, `./gradlew test` зелёный **без пропущенных** тестов.
 - [ ] Коммит и тег:
 

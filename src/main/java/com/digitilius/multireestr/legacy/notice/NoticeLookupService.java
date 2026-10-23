@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
 @Service
 public class NoticeLookupService {
 
+    static final int DATE_SUBJECT_NUMBER_LIMIT = 200;
+
+    public record DateSubjectLookup(List<NoticeCandidateDto> candidates, boolean truncated) {
+    }
+
     private static final String BY_NUMBER_SQL = "classpath:sql/legacy/notice-candidates-by-number.sql";
     private static final String BY_DATE_SUBJECT_SQL = "classpath:sql/legacy/notice-candidates-by-date-subject.sql";
 
@@ -49,7 +54,7 @@ public class NoticeLookupService {
         return selector.markAndSort(candidates);
     }
 
-    public List<NoticeCandidateDto> findByDateAndSubject(LocalDate date, String subjectFragment) {
+    public DateSubjectLookup findByDateAndSubject(LocalDate date, String subjectFragment) {
         String fragment = blankToNull(subjectFragment);
         if (date == null && fragment == null) {
             throw new IllegalArgumentException("Нужна дата публикации или фрагмент объекта закупки");
@@ -57,8 +62,16 @@ public class NoticeLookupService {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("date", date);
         params.addValue("subject", fragment == null ? null : escapeIlike(fragment));
-        List<NoticeCandidateDto> candidates = legacyJdbc.query(byDateSubjectSql, params, rowMapper);
-        return markByNumberGroups(selector, candidates);
+        boolean[] truncated = {false};
+        List<NoticeCandidateDto> candidates = legacyJdbc.query(byDateSubjectSql, params, (rs, rowNum) -> {
+            int rn = rs.getInt("rn");
+            if (rn > DATE_SUBJECT_NUMBER_LIMIT) {
+                truncated[0] = true;
+                return null;
+            }
+            return rowMapper.mapRow(rs, rowNum);
+        }).stream().filter(Objects::nonNull).toList();
+        return new DateSubjectLookup(markByNumberGroups(selector, candidates), truncated[0]);
     }
 
     public Optional<NoticeCandidateDto> chooseOriginal(List<NoticeCandidateDto> candidates) {

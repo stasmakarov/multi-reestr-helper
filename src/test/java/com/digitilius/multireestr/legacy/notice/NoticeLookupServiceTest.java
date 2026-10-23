@@ -3,7 +3,7 @@ package com.digitilius.multireestr.legacy.notice;
 import com.digitilius.multireestr.entity.legacy.NoticeCandidateDto;
 import com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
+import com.digitilius.multireestr.legacy.test_support.DockerRequiredCondition.RequireDocker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@EnabledIf("com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport#dockerAvailable")
+@RequireDocker
 class NoticeLookupServiceTest {
 
     @DynamicPropertySource
@@ -60,10 +60,12 @@ class NoticeLookupServiceTest {
 
     @Test
     void findByDateWithoutSubject() {
-        List<NoticeCandidateDto> found = noticeLookupService.findByDateAndSubject(
+        NoticeLookupService.DateSubjectLookup lookup = noticeLookupService.findByDateAndSubject(
                 LocalDate.of(2026, 4, 3),
                 null
         );
+        List<NoticeCandidateDto> found = lookup.candidates();
+        assertThat(lookup.truncated()).isFalse();
         assertThat(found).extracting(NoticeCandidateDto::getNumber)
                 .containsExactly("0173100017026000014");
         assertThat(found.get(0).getId()).isEqualTo(4);
@@ -72,10 +74,12 @@ class NoticeLookupServiceTest {
 
     @Test
     void findBySubjectWithoutDate() {
-        List<NoticeCandidateDto> found = noticeLookupService.findByDateAndSubject(
+        NoticeLookupService.DateSubjectLookup lookup = noticeLookupService.findByDateAndSubject(
                 null,
                 "папки"
         );
+        List<NoticeCandidateDto> found = lookup.candidates();
+        assertThat(lookup.truncated()).isFalse();
         assertThat(found).extracting(NoticeCandidateDto::getNumber)
                 .containsOnly("0173100017026000015");
         assertThat(found.get(0).getId()).isEqualTo(3);
@@ -106,14 +110,43 @@ class NoticeLookupServiceTest {
                 insert.executeBatch();
             }
             try {
-                List<NoticeCandidateDto> found = noticeLookupService.findByDateAndSubject(day, null);
+                NoticeLookupService.DateSubjectLookup lookup = noticeLookupService.findByDateAndSubject(day, null);
+                List<NoticeCandidateDto> found = lookup.candidates();
 
+                assertThat(lookup.truncated()).isFalse();
                 assertThat(found).hasSize(200);
                 assertThat(found).extracting(NoticeCandidateDto::getNumber).doesNotContainNull();
                 assertThat(found).extracting(NoticeCandidateDto::getId).doesNotContain(900_999);
             } finally {
                 try (Statement statement = admin.createStatement()) {
                     statement.execute("DELETE FROM notices WHERE id BETWEEN 900000 AND 900999");
+                }
+            }
+        }
+    }
+
+    @Test
+    void findByDateTruncatesWhenOverNumberLimit() throws Exception {
+        LocalDate day = LocalDate.of(2098, 1, 1);
+        try (Connection admin = adminConnection()) {
+            try (PreparedStatement insert = admin.prepareStatement(
+                    "INSERT INTO notices (id, purchasenumber, docpublishdate, predmet, isdeleted, iscanceled, modifversion) "
+                            + "VALUES (?, ?, ?, 'Проверка усечения', 0, 0, 1)")) {
+                for (int i = 0; i < 201; i++) {
+                    insert.setInt(1, 910_000 + i);
+                    insert.setString(2, String.format("0173100017098%06d", i));
+                    insert.setTimestamp(3, java.sql.Timestamp.valueOf(day.atTime(10, 0)));
+                    insert.addBatch();
+                }
+                insert.executeBatch();
+            }
+            try {
+                NoticeLookupService.DateSubjectLookup lookup = noticeLookupService.findByDateAndSubject(day, null);
+                assertThat(lookup.truncated()).isTrue();
+                assertThat(lookup.candidates()).hasSize(200);
+            } finally {
+                try (Statement statement = admin.createStatement()) {
+                    statement.execute("DELETE FROM notices WHERE id BETWEEN 910000 AND 910999");
                 }
             }
         }

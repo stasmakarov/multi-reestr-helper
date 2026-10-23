@@ -152,7 +152,16 @@ public class NoticeSearchView extends StandardView {
                     .show();
             return;
         }
-        showCandidates(lookupByDateAndSubject(date, subject));
+        NoticeLookupService.DateSubjectLookup lookup = lookupByDateAndSubject(date, subject);
+        if (lookup == null) {
+            return;
+        }
+        showCandidates(lookup.candidates());
+        if (lookup.truncated()) {
+            notifications.create(messageBundle.getMessage("searchTruncated"))
+                    .withPosition(Notification.Position.TOP_END)
+                    .show();
+        }
     }
 
     private List<NoticeCandidateDto> lookupByNumber(NoticeNumber number) {
@@ -164,7 +173,7 @@ public class NoticeSearchView extends StandardView {
         }
     }
 
-    private List<NoticeCandidateDto> lookupByDateAndSubject(LocalDate date, String subject) {
+    private NoticeLookupService.DateSubjectLookup lookupByDateAndSubject(LocalDate date, String subject) {
         try {
             return noticeLookupService.findByDateAndSubject(date, subject);
         } catch (DataAccessException e) {

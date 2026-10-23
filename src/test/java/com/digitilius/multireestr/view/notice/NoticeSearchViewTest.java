@@ -12,7 +12,7 @@ import io.jmix.flowui.testassist.FlowuiTestAssistConfiguration;
 import io.jmix.flowui.testassist.UiTest;
 import io.jmix.flowui.testassist.UiTestUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
+import com.digitilius.multireestr.legacy.test_support.DockerRequiredCondition.RequireDocker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @UiTest
 @SpringBootTest(classes = {MultiReestrApplication.class, FlowuiTestAssistConfiguration.class})
 @ActiveProfiles("test")
-@EnabledIf("com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport#dockerAvailable")
+@RequireDocker
 class NoticeSearchViewTest {
 
     @DynamicPropertySource
