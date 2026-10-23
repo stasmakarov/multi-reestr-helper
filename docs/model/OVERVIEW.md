@@ -27,7 +27,7 @@
 | Хранилище | Что это | Как читается/пишется | Что там лежит |
 |---|---|---|---|
 | **legacy** | PostgreSQL 9.6 MultiReestr (`reestrdb`, `localhost:5432`), отдельный `DataSource` `legacy` | Только чтение через `NamedParameterJdbcTemplate` (`legacyJdbc`), обычный JDBC. Это **не** data store Jmix: хранилище не добавляется в `jmix.core.additional-stores`, для него нет EntityManager и Liquibase | Извещения, лоты, спецификации, характеристики КТРУ, документы, протоколы, контракты, исполнение, планы-графики, организации |
-| **main** | Основная БД приложения (Jmix data store `main`): в продуктиве — отдельный инстанс PostgreSQL 16+ (например, `localhost:5433/multireestr`), в разработке — HSQLDB или `postgres:16` | JPA-сущности, Liquibase, `DataManager` | Производственный календарь, справочные списки, правила с версиями и параметрами, журнал запусков проверок, реестр нарушений, данные для ручного ввода (условия контрактов, даты ЛБО/ПГ) |
+| **main** | Основная БД приложения (Jmix data store `main`): в продуктиве — отдельный инстанс PostgreSQL 16+ (`localhost:5435/multireestr`), в разработке — HSQLDB или `postgres:16` | JPA-сущности, Liquibase, `DataManager` | Производственный календарь, справочные списки, правила с версиями и параметрами, журнал запусков проверок, реестр нарушений, данные для ручного ввода (условия контрактов, даты ЛБО/ПГ) |
 
 Режим «только чтение» для legacy задан на трёх уровнях: параметры драйвера `readOnly=true&readOnlyMode=always`, `hikari.read-only` и `connection-init-sql` с `default_transaction_read_only`. Кроме того, у пользователя БД есть только права на чтение. Подробнее о размещении баз — в [разделе 8](#8-развёртывание-и-базы-данных).
 
@@ -404,7 +404,7 @@ Jmix 3 не работает с PostgreSQL 9.6, поэтому основная 
 
 | Среда | main (Jmix: JPA + Liquibase) | legacy (MultiReestr `reestrdb`) |
 |---|---|---|
-| **Продуктив** | Отдельный инстанс **PostgreSQL 16+** на той же машине, что и MultiReestr пользователя, на другом порту (например, `localhost:5433`, БД `multireestr`) | PostgreSQL 9.6, `localhost:5432`, БД `reestrdb`, роль `reestr_ro` |
+| **Продуктив** | Отдельный инстанс **PostgreSQL 16+** на той же машине, что и MultiReestr пользователя, на другом порту (`localhost:5435`, БД `multireestr`; порядок установки — [../deploy-windows.md](../deploy-windows.md)) | PostgreSQL 9.6, `localhost:5432`, БД `reestrdb`, роль `reestr_ro` |
 | **Разработка** | HSQLDB (по умолчанию в Studio) или контейнер `postgres:16` | копия БД или контейнер `postgres:9.6` |
 | **Тесты** | HSQLDB / `postgres:16` | Testcontainers `postgres:9.6` со схемой из бэкапа и эталонными данными |
 
@@ -417,7 +417,7 @@ flowchart LR
     U["Браузер пользователя"] -->|"HTTP"| APP
     subgraph HOST["Машина пользователя MultiReestr"]
         APP["multi-reestr (Jmix 3.0.3, Spring Boot)"]
-        M[("PostgreSQL 16+ :5433<br/>БД multireestr<br/>JPA + Liquibase")]
+        M[("PostgreSQL 16+ :5435<br/>БД multireestr<br/>JPA + Liquibase")]
         L[("PostgreSQL 9.6 :5432<br/>БД reestrdb<br/>роль reestr_ro")]
         MR["MultiReestr (существующая система)"]
     end

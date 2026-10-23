@@ -1,0 +1,31 @@
+# Пример config\application.properties для Windows-машины пользователя.
+# Скопируйте в C:\multi-reestr\config\application.properties (Spring Boot читает ./config/ рядом с jar)
+# и заполните пароли. Пароли можно не писать сюда, а задать переменными окружения
+# MAIN_DATASOURCE_PASSWORD, LEGACY_DATASOURCE_PASSWORD, MTR_SECRET_KEY (они сильнее файла).
+
+# Основная БД Jmix: PostgreSQL 16 на той же машине, порт 5435.
+main.datasource.url=jdbc:postgresql://localhost:5435/multireestr
+main.datasource.username=multireestr
+main.datasource.password=
+
+# Legacy-БД MultiReestr: PostgreSQL 9.6, обычно порт 5432. Только для первого старта:
+# после сохранения настроек на экране «Подключение к MultiReestr» действуют они.
+# ВАЖНО: значение по умолчанию в jar указывает на localhost:5435 (dev-стенд на Mac) —
+# на Windows это была бы БД Jmix, поэтому URL обязательно переопределить.
+legacy.datasource.url=jdbc:postgresql://localhost:5432/reestrdb
+legacy.datasource.username=reestr_ro
+legacy.datasource.password=
+
+# Ключ шифрования пароля legacy в БД (урок 1, §11). Лучше задать переменной MTR_SECRET_KEY.
+# mtr.secret-key=
+
+# Порт веб-интерфейса.
+server.port=8080
+
+# Не подставлять admin/admin на форме входа.
+ui.login.defaultUsername=
+ui.login.defaultPassword=
+
+# Цвета ANSI в консоли Windows не нужны.
+spring.output.ansi.enabled=never
+logging.file.name=logs/multi-reestr.log
