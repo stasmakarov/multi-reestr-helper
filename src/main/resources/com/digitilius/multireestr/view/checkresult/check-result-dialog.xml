@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://checkResultDialog.title"
+      focusComponent="resultsDataGrid">
+    <data>
+        <collection id="resultsDc" class="com.digitilius.multireestr.entity.legacy.CheckResultDto"/>
+    </data>
+    <actions>
+        <action id="closeAction" type="view_close"/>
+    </actions>
+    <layout>
+        <span id="emptyHint" text="msg://checkResultDialog.empty" visible="false"/>
+        <dataGrid id="resultsDataGrid"
+                  dataContainer="resultsDc"
+                  width="100%"
+                  minHeight="16em"
+                  columnReorderingAllowed="true">
+            <columns resizable="true">
+                <column property="severity" autoWidth="true"/>
+                <column property="ruleCode" autoWidth="true"/>
+                <column property="ruleName" autoWidth="true"/>
+                <column property="detail" flexGrow="1"/>
+                <column property="message" flexGrow="1"/>
+                <column property="legalRef" flexGrow="1"/>
+            </columns>
+        </dataGrid>
+        <hbox id="buttonsPanel" classNames="buttons-panel">
+            <button id="saveButton" text="msg://checkResultDialog.save"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

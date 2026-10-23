@@ -13,6 +13,7 @@ import com.vaadin.flow.router.RouteParameters;
 import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.component.grid.DataGrid;
 import io.jmix.flowui.component.textfield.TypedTextField;
+import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.data.grid.DataGridItems;
 import io.jmix.flowui.testassist.FlowuiTestAssistConfiguration;
 import io.jmix.flowui.testassist.UiTest;
@@ -80,6 +81,11 @@ class NoticeDetailViewTest {
         VerticalLayout noContractBox = UiTestUtils.getComponent(view, "noContractBox");
         assertThat(contractBox.isVisible()).isTrue();
         assertThat(noContractBox.isVisible()).isFalse();
+
+        JmixButton checkBtn = UiTestUtils.getComponent(view, "checkBtn");
+        JmixButton violationsBtn = UiTestUtils.getComponent(view, "violationsBtn");
+        assertThat(checkBtn.isEnabled()).isTrue();
+        assertThat(violationsBtn.isEnabled()).isTrue();
     }
 
     @Test

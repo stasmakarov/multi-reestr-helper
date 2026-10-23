@@ -29,6 +29,7 @@
             <entityPicker id="ruleVersionField" property="ruleVersion" readOnly="true"/>
             <integerField id="objectsCheckedField" property="objectsChecked" readOnly="true"/>
             <integerField id="violationsFoundField" property="violationsFound" readOnly="true"/>
+            <textField id="createdByField" property="createdBy" readOnly="true"/>
             <textArea id="errorMessageField" property="errorMessage" readOnly="true" colspan="2" height="6em"/>
         </formLayout>
         <hbox id="detailActions">
