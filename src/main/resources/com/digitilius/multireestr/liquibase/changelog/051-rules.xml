@@ -52,22 +52,26 @@
     </changeSet>
 
     <changeSet id="3" author="multi-reestr">
-        <loadData tableName="MTR_RULE_PARAMETER"
-                  file="com/digitilius/multireestr/liquibase/data/mtr-rule-parameter.csv"
-                  separator=","
-                  encoding="UTF-8">
-            <column name="ID" type="UUID"/>
-            <column name="VERSION" type="NUMERIC"/>
-            <column name="RULE_VERSION_ID" type="UUID"/>
-            <column name="CODE" type="STRING"/>
-            <column name="PARAM_TYPE" type="STRING"/>
-            <column name="VALUE_" type="STRING"/>
-            <column name="REFERENCE_LIST_ID" type="UUID"/>
-            <column name="CREATED_BY" type="STRING"/>
-            <column name="CREATED_DATE" type="DATETIME"/>
-            <column name="LAST_MODIFIED_BY" type="STRING"/>
-            <column name="LAST_MODIFIED_DATE" type="DATETIME"/>
-        </loadData>
+        <insert tableName="MTR_RULE_PARAMETER">
+            <column name="ID" value="e9999999-9999-4999-8999-999999999999"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="RULE_VERSION_ID" value="d6666666-6666-4666-8666-666666666666"/>
+            <column name="CODE" value="okpdList"/>
+            <column name="PARAM_TYPE" value="LIST"/>
+            <column name="REFERENCE_LIST_ID" value="a1111111-1111-4111-8111-111111111111"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="MTR_RULE_PARAMETER">
+            <column name="ID" value="eaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="RULE_VERSION_ID" value="d7777777-7777-4777-8777-777777777777"/>
+            <column name="CODE" value="allowedIfKtruPermits"/>
+            <column name="PARAM_TYPE" value="BOOLEAN"/>
+            <column name="VALUE_" value="false"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>
