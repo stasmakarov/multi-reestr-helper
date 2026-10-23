@@ -14,6 +14,7 @@ import io.jmix.core.FetchPlan;
 import io.jmix.core.FetchPlans;
 import io.jmix.core.Metadata;
 import io.jmix.core.SaveContext;
+import io.jmix.core.UnconstrainedDataManager;
 import io.jmix.core.accesscontext.SpecificOperationAccessContext;
 import io.jmix.core.AccessManager;
 import io.jmix.core.security.CurrentAuthentication;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.UUID;
 public class OnDemandCheckService {
 
     private final DataManager dataManager;
+    private final UnconstrainedDataManager unconstrainedDataManager;
     private final FetchPlans fetchPlans;
     private final Metadata metadata;
     private final NoticeRuleEvaluator noticeRuleEvaluator;
@@ -39,6 +42,7 @@ public class OnDemandCheckService {
 
     public OnDemandCheckService(
             DataManager dataManager,
+            UnconstrainedDataManager unconstrainedDataManager,
             FetchPlans fetchPlans,
             Metadata metadata,
             NoticeRuleEvaluator noticeRuleEvaluator,
@@ -46,6 +50,7 @@ public class OnDemandCheckService {
             CurrentAuthentication currentAuthentication
     ) {
         this.dataManager = dataManager;
+        this.unconstrainedDataManager = unconstrainedDataManager;
         this.fetchPlans = fetchPlans;
         this.metadata = metadata;
         this.noticeRuleEvaluator = noticeRuleEvaluator;
@@ -55,6 +60,10 @@ public class OnDemandCheckService {
 
     public boolean canCheckOnDemand() {
         return permitted(MultiReestrSpecifics.CHECK_ON_DEMAND);
+    }
+
+    public boolean canTriageViolations() {
+        return permitted(MultiReestrSpecifics.VIOLATION_TRIAGE);
     }
 
     public OnDemandCheckResult check(NoticeDto notice) {
@@ -103,9 +112,11 @@ public class OnDemandCheckService {
         for (Violation violation : existing) {
             byFingerprint.put(violation.getFingerprint(), violation);
         }
-        Set<String> currentFingerprints = safe.bindings().keySet();
+        Map<String, CheckResultDto> uniqueHits = uniqueHitsByFingerprint(safe.hits());
+        uniqueHits.entrySet().removeIf(entry -> safe.bindings().get(entry.getKey()) == null);
+        Set<String> currentFingerprints = uniqueHits.keySet();
         SaveContext saveContext = new SaveContext();
-        for (CheckResultDto hit : safe.hits()) {
+        for (CheckResultDto hit : uniqueHits.values()) {
             NoticeCheckOutcome.HitBinding binding = safe.bindings().get(hit.getFingerprint());
             if (binding == null) {
                 continue;
@@ -126,11 +137,12 @@ public class OnDemandCheckService {
                 saveContext.saving(violation);
             }
         }
-        dataManager.save(saveContext);
+        unconstrainedDataManager.save(saveContext);
     }
 
     @Transactional
     public Violation acknowledge(Violation violation) {
+        requireTriagePermission();
         Violation loaded = reload(violation.getId());
         if (loaded.getStatus() != ViolationStatus.NEW) {
             throw new IllegalStateException("Квитировать можно только новое нарушение");
@@ -138,11 +150,12 @@ public class OnDemandCheckService {
         loaded.setStatus(ViolationStatus.ACKNOWLEDGED);
         loaded.setAcknowledgedBy(currentAuthentication.getUser().getUsername());
         loaded.setAcknowledgedAt(OffsetDateTime.now());
-        return dataManager.save(loaded);
+        return unconstrainedDataManager.save(loaded);
     }
 
     @Transactional
     public Violation markFalsePositive(Violation violation) {
+        requireTriagePermission();
         String comment = violation.getComment();
         if (comment == null || comment.isBlank()) {
             throw new IllegalStateException("Комментарий обязателен для ложного срабатывания");
@@ -153,7 +166,18 @@ public class OnDemandCheckService {
         }
         loaded.setComment(comment);
         loaded.setStatus(ViolationStatus.FALSE_POSITIVE);
-        return dataManager.save(loaded);
+        return unconstrainedDataManager.save(loaded);
+    }
+
+    private static Map<String, CheckResultDto> uniqueHitsByFingerprint(List<CheckResultDto> hits) {
+        Map<String, CheckResultDto> unique = new LinkedHashMap<>();
+        for (CheckResultDto hit : hits) {
+            if (hit.getFingerprint() == null || hit.getFingerprint().isBlank()) {
+                continue;
+            }
+            unique.putIfAbsent(hit.getFingerprint(), hit);
+        }
+        return unique;
     }
 
     private List<Violation> loadForObject(RuleObjectType objectType, String objectKey) {
@@ -186,6 +210,12 @@ public class OnDemandCheckService {
     private void requireCheckPermission() {
         if (!canCheckOnDemand()) {
             throw new IllegalStateException("Нет права запускать проверку по запросу");
+        }
+    }
+
+    private void requireTriagePermission() {
+        if (!canTriageViolations()) {
+            throw new IllegalStateException("Нет права квитировать нарушения");
         }
     }
 

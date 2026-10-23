@@ -10,19 +10,28 @@ import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.Severity;
 import com.digitilius.multireestr.entity.Violation;
 import com.digitilius.multireestr.entity.ViolationStatus;
+import com.digitilius.multireestr.entity.User;
+import com.digitilius.multireestr.entity.legacy.CheckResultDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
+import com.digitilius.multireestr.security.NoticeViewerRole;
+import com.digitilius.multireestr.security.SpecialistRole;
 import com.digitilius.multireestr.test_support.AuthenticatedAsAdmin;
 import io.jmix.core.DataManager;
 import io.jmix.core.SaveContext;
+import io.jmix.core.security.SystemAuthenticator;
+import io.jmix.security.role.assignment.RoleAssignmentRoleType;
+import io.jmix.securitydata.entity.RoleAssignmentEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +47,10 @@ class OnDemandCheckServiceTest {
     OnDemandCheckService onDemandCheckService;
     @Autowired
     DataManager dataManager;
+    @Autowired
+    SystemAuthenticator systemAuthenticator;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Test
     void checkWritesJournalAndSaveDedupesAndFixesOnlyEvaluatedRules() {
@@ -105,6 +118,81 @@ class OnDemandCheckServiceTest {
     }
 
     @Test
+    void duplicateHitsInOneRunAreDedupedBeforeSave() {
+        NoticeDto notice = batteryNotice();
+        notice.setNumber("0173100017099000002");
+        try {
+            OnDemandCheckService.OnDemandCheckResult result = onDemandCheckService.check(notice);
+            assertThat(result.outcome().hits()).isNotEmpty();
+            CheckResultDto first = result.outcome().hits().get(0);
+            List<CheckResultDto> duplicated = new ArrayList<>(result.outcome().hits());
+            duplicated.add(first);
+            NoticeCheckOutcome duplicatedOutcome = new NoticeCheckOutcome(
+                    duplicated, result.outcome().evaluatedRuleIds(), result.outcome().bindings());
+            onDemandCheckService.saveToRegistry(result.checkRun(), notice, duplicatedOutcome);
+            assertThat(loadViolations(notice.getNumber())).hasSize(result.outcome().hits().size());
+        } finally {
+            removeViolationsAndRuns(notice.getNumber(), null);
+        }
+    }
+
+    @Test
+    void specialistCanTriageAndViewerCannot() {
+        NoticeDto notice = batteryNotice();
+        notice.setNumber("0173100017099000003");
+        User specialist = null;
+        User viewer = null;
+        RoleAssignmentEntity specialistAssignment = null;
+        RoleAssignmentEntity viewerAssignment = null;
+        try {
+            OnDemandCheckService.OnDemandCheckResult result = onDemandCheckService.check(notice);
+            onDemandCheckService.saveToRegistry(result.checkRun(), notice, result.outcome());
+            Violation violation = loadViolations(notice.getNumber()).get(0);
+
+            specialist = createUser("triage-spec-" + UUID.randomUUID().toString().substring(0, 8));
+            specialistAssignment = assignResourceRole(specialist.getUsername(), SpecialistRole.CODE);
+            viewer = createUser("triage-view-" + UUID.randomUUID().toString().substring(0, 8));
+            viewerAssignment = assignResourceRole(viewer.getUsername(), NoticeViewerRole.CODE);
+
+            systemAuthenticator.begin(specialist.getUsername());
+            try {
+                Violation acknowledged = onDemandCheckService.acknowledge(violation);
+                assertThat(acknowledged.getStatus()).isEqualTo(ViolationStatus.ACKNOWLEDGED);
+                assertThat(acknowledged.getAcknowledgedBy()).isEqualTo(specialist.getUsername());
+            } finally {
+                systemAuthenticator.end();
+            }
+
+            systemAuthenticator.begin(viewer.getUsername());
+            try {
+                assertThatThrownBy(() -> onDemandCheckService.acknowledge(violation))
+                        .isInstanceOf(IllegalStateException.class)
+                        .hasMessageContaining("квитировать");
+                violation.setComment("не применимо");
+                assertThatThrownBy(() -> onDemandCheckService.markFalsePositive(violation))
+                        .isInstanceOf(IllegalStateException.class)
+                        .hasMessageContaining("квитировать");
+            } finally {
+                systemAuthenticator.end();
+            }
+        } finally {
+            removeViolationsAndRuns(notice.getNumber(), null);
+            if (specialistAssignment != null) {
+                dataManager.remove(specialistAssignment);
+            }
+            if (viewerAssignment != null) {
+                dataManager.remove(viewerAssignment);
+            }
+            if (specialist != null) {
+                dataManager.remove(specialist);
+            }
+            if (viewer != null) {
+                dataManager.remove(viewer);
+            }
+        }
+    }
+
+    @Test
     void falsePositiveWithoutCommentFails() {
         Violation violation = dataManager.create(Violation.class);
         violation.setComment(" ");
@@ -162,6 +250,22 @@ class OnDemandCheckServiceTest {
             dataManager.load(Rule.class).id(stubRuleId).optional().ifPresent(saveContext::removing);
         }
         dataManager.save(saveContext);
+    }
+
+    private User createUser(String username) {
+        User user = dataManager.create(User.class);
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode("test-passwd"));
+        user.setActive(true);
+        return dataManager.save(user);
+    }
+
+    private RoleAssignmentEntity assignResourceRole(String username, String roleCode) {
+        RoleAssignmentEntity assignment = dataManager.create(RoleAssignmentEntity.class);
+        assignment.setUsername(username);
+        assignment.setRoleCode(roleCode);
+        assignment.setRoleType(RoleAssignmentRoleType.RESOURCE);
+        return dataManager.save(assignment);
     }
 
     private static NoticeDto batteryNotice() {

@@ -54,13 +54,17 @@ public interface SpecialistRole {
     @EntityAttributePolicy(entityClass = ReferenceList.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     @EntityPolicy(entityClass = ReferenceListItem.class, actions = EntityPolicyAction.READ)
     @EntityAttributePolicy(entityClass = ReferenceListItem.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
-    @EntityPolicy(entityClass = Violation.class, actions = {EntityPolicyAction.CREATE, EntityPolicyAction.READ, EntityPolicyAction.UPDATE})
-    @EntityAttributePolicy(entityClass = Violation.class, attributes = "*", action = EntityAttributePolicyAction.MODIFY)
+    @EntityPolicy(entityClass = Violation.class, actions = EntityPolicyAction.READ)
+    @EntityAttributePolicy(entityClass = Violation.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
+    @EntityAttributePolicy(entityClass = Violation.class, attributes = "comment", action = EntityAttributePolicyAction.MODIFY)
     @EntityPolicy(entityClass = CheckRun.class, actions = {EntityPolicyAction.CREATE, EntityPolicyAction.READ, EntityPolicyAction.UPDATE})
     @EntityAttributePolicy(entityClass = CheckRun.class, attributes = "*", action = EntityAttributePolicyAction.MODIFY)
     @EntityPolicy(entityClass = CheckResultDto.class, actions = EntityPolicyAction.READ)
     @EntityAttributePolicy(entityClass = CheckResultDto.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
-    @SpecificPolicy(resources = MultiReestrSpecifics.CHECK_ON_DEMAND)
+    @SpecificPolicy(resources = {
+            MultiReestrSpecifics.CHECK_ON_DEMAND,
+            MultiReestrSpecifics.VIOLATION_TRIAGE
+    })
     @EntityPolicy(entityClass = CalendarDay.class, actions = EntityPolicyAction.READ)
     @EntityAttributePolicy(entityClass = CalendarDay.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     @EntityPolicy(entityClass = ContractTerm.class, actions = EntityPolicyAction.ALL)

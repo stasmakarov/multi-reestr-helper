@@ -89,7 +89,8 @@ public final class ViolationMerge {
             Set<UUID> evaluatedRuleIds,
             Set<String> currentFingerprints
     ) {
-        if (existing.getStatus() == ViolationStatus.FIXED) {
+        if (existing.getStatus() == ViolationStatus.FIXED
+                || existing.getStatus() == ViolationStatus.FALSE_POSITIVE) {
             return false;
         }
         if (existing.getFingerprint() != null && currentFingerprints.contains(existing.getFingerprint())) {

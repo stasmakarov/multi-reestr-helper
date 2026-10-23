@@ -102,6 +102,16 @@ class ViolationMergeTest {
                 existing, Set.of(existing.getRule().getId()), Set.of())).isFalse();
     }
 
+    @Test
+    void falsePositiveIsNotMarkedFixedWhenHitGone() {
+        Violation existing = acknowledged();
+        existing.setStatus(ViolationStatus.FALSE_POSITIVE);
+        existing.setComment("не применяется");
+
+        assertThat(ViolationMerge.shouldMarkFixed(
+                existing, Set.of(existing.getRule().getId()), Set.of())).isFalse();
+    }
+
     private static Violation acknowledged() {
         Violation existing = new Violation();
         ViolationMerge.initNew(existing, hit(), rule(), version(), notice(), run(),

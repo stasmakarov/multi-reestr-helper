@@ -30,6 +30,8 @@ public class CheckResultDialog extends StandardView {
     @ViewComponent
     private Span emptyHint;
     @ViewComponent
+    private JmixButton saveButton;
+    @ViewComponent
     private MessageBundle messageBundle;
 
     @Autowired
@@ -51,11 +53,13 @@ public class CheckResultDialog extends StandardView {
 
     @Subscribe("saveButton")
     public void onSaveButtonClick(final ClickEvent<JmixButton> event) {
+        saveButton.setEnabled(false);
         try {
             onDemandCheckService.saveToRegistry(checkRun, notice, outcome);
             notifications.create(messageBundle.getMessage("checkResultDialog.saved")).show();
             close(StandardOutcome.SAVE);
         } catch (RuntimeException e) {
+            saveButton.setEnabled(true);
             notifications.create(e.getMessage() == null ? "" : e.getMessage()).show();
         }
     }

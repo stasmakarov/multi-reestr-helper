@@ -321,7 +321,7 @@ flowchart LR
 
 | Роль | `code` | Видит | Права |
 |---|---|---|---|
-| **Специалист** (С) | `specialist` | Извещения (через `notice-viewer`), Правила — чтение, Контроль, Справочники | READ правил, версий, параметров, списков, календаря. CREATE+UPDATE (без DELETE) `Violation` и `CheckRun`, READ `CheckResultDto`. ALL на `ContractTerm` / `PlanScheduleEvent` (экраны урока 8). `SpecificPolicy` `mtr.check.ondemand` (кнопка «Проверить»). Квитирование — действия на карточке нарушения |
+| **Специалист** (С) | `specialist` | Извещения (через `notice-viewer`), Правила — чтение, Контроль, Справочники | READ правил, версий, параметров, списков, календаря. READ `Violation` (на форме `comment` можно править), CREATE+UPDATE (без DELETE) `CheckRun`, READ `CheckResultDto`. ALL на `ContractTerm` / `PlanScheduleEvent` (экраны урока 8). `SpecificPolicy` `mtr.check.ondemand` (кнопка «Проверить») и `mtr.violation.triage` (квитирование через сервис) |
 | **Администратор правил** (А) | `rule-administrator` | Всё, что видит специалист, плюс правка Правил, списков и календаря; диалоги импорта Excel, «Загрузить год» и результат проверки | CRUD правил, версий, параметров, списков, `CalendarDay`. `SpecificPolicy`: `mtr.rule.activate`, `mtr.referencelist.import`, `mtr.check.ondemand` |
 
 Демо-логины `specialist` / `rule-admin` с `{noop}`-паролями — только ченджсет `052-users-roles.xml` с `context="demo"`. На Windows в продуктиве `main.liquibase.contexts=!demo`.

@@ -66,7 +66,7 @@ flowchart TD
 | `OnDemandCheckService` | `rules` | Журнал, запись в реестр, квитирование |
 | `ViolationMerge` | `rules` | Дедуп, reopen FIXED, условие `shouldMarkFixed` |
 | `CheckResultDialog` | `view.checkresult` | Таблица hits, «Сохранить в реестр» |
-| `SpecialistRole` / `RuleAdministratorRole` | `security` | CREATE/UPDATE Violation и CheckRun у специалиста; `mtr.check.ondemand` у С и А |
+| `SpecialistRole` / `RuleAdministratorRole` | `security` | Violation у специалиста только READ; квитирование — `mtr.violation.triage`; CREATE/UPDATE CheckRun; `mtr.check.ondemand` у С и А |
 
 Новых ченджсетов нет. Номера **050–052 заняты**, следующий свободный — **060+**, если понадобится демо.
 
@@ -81,7 +81,7 @@ flowchart TD
 3. `NoticeRuleEvaluator.evaluateAll`. Нет `publishedAt` — пустой исход, журнал всё равно SUCCESS, `violationsFound=0`.
 4. SUCCESS, `objectsChecked=1`, `violationsFound=hits.size()`. Исключение — FAILED и `errorMessage`, затем проброс. `PARTIAL` на одном объекте не используем.
 
-Диалог показывает `severity`, `ruleCode`, `ruleName`, `detail`, `message`, `legalRef`. «Закрыть» оставляет журнал без `Violation`. «Сохранить в реестр» пишет нарушения, привязанные к этому `CheckRun`.
+Диалог показывает `severity`, `ruleCode`, `ruleName`, `detail`, `message`, `legalRef`. «Закрыть» оставляет журнал без `Violation`. «Сохранить в реестр» пишет нарушения, привязанные к этому `CheckRun`. Кнопка блокируется на время сохранения и после успеха.
 
 ## 4. Реестр: fingerprint, статусы, FIXED
 
@@ -91,7 +91,9 @@ flowchart TD
 
 Повтор с тем же fingerprint: обновить `lastDetectedAt`, `lastCheckRun`, `ruleVersion`, текст; **не** сбрасывать ACKNOWLEDGED и FALSE_POSITIVE. Если было FIXED — снова NEW, очистить `resolvedAt` и квитирование.
 
-`FIXED`, если fingerprint пропал **и** `rule.id` входит в `evaluatedRuleIds` этого запуска. В `evaluatedRuleIds` попадает правило, у которого `enabled`, есть ACTIVE-версия на дату извещения и есть бин шаблона. Выключенное правило, версия вне периода, шаблон без бина — запись не трогаем.
+`FIXED`, если fingerprint пропал **и** `rule.id` входит в `evaluatedRuleIds` этого запуска **и** статус не `FALSE_POSITIVE`. ACKNOWLEDGED при исчезнувшем hit становится FIXED. Ложное срабатывание остаётся FP. В `evaluatedRuleIds` попадает правило, у которого `enabled`, есть ACTIVE-версия на дату извещения и есть бин шаблона. Выключенное правило, версия вне периода, шаблон без бина — запись не трогаем.
+
+Hits одного запуска перед записью схлопываются по `fingerprint` (первый оставляем): повтор в том же `CheckRun` не должен упираться в UNIQUE.
 
 Статусы Integer-enum: NEW=10, ACKNOWLEDGED=20, FALSE_POSITIVE=30, FIXED=40. «Принять к сведению» только из NEW. «Ложное срабатывание» нельзя из FIXED; комментарий обязателен (берётся с формы, пишется сервисом).
 
@@ -109,7 +111,7 @@ flowchart TD
 
 | Роль | Что добавили |
 |---|---|
-| Специалист | CREATE+UPDATE (без DELETE) `Violation` и `CheckRun`; READ `CheckResultDto`; экран диалога; `SpecificPolicy` `mtr.check.ondemand` |
+| Специалист | READ `Violation` (атрибуты VIEW, `comment` — MODIFY на форме); CREATE+UPDATE (без DELETE) `CheckRun`; READ `CheckResultDto`; экран диалога; `SpecificPolicy` `mtr.check.ondemand` и `mtr.violation.triage` |
 | Администратор правил | тот же specific и диалог, чтобы А мог нажать «Проверить» в стеке; запись в БД — политики специалиста |
 
 `createdBy` журнала — текущий пользователь, `SystemAuthenticator` не используем.
@@ -121,12 +123,12 @@ flowchart TD
 | **A** | Когда писать `CheckRun` | **На «Проверить»**, не на «Сохранить». Save только `Violation`. |
 | **B** | `PARTIAL` | На одном извещении не используем. |
 | **C** | Счётчик NEW | **Урок 9.** |
-| **D** | FIXED vs FALSE_POSITIVE, если hit исчез | **FIXED**, если правило в этом запуске оценивалось. |
+| **D** | FIXED vs FALSE_POSITIVE, если hit исчез | ACKNOWLEDGED → **FIXED**. FALSE_POSITIVE **не трогаем**. |
 | **E** | Повтор hit на ACK/FP | Статус не менять, обновить метаданные обнаружения. |
 | **F** | Повтор hit на FIXED | **NEW**, сбросить `resolvedAt` и квитирование. |
 | **G** | Нет `ruleVersion` в DTO | `NoticeCheckOutcome.bindings`, DTO не меняем. |
 | **H** | Кто жмёт «Проверить» | С и А; specific на обеих ролях; CREATE/UPDATE — на специалисте. |
-| **I** | Отдельный specific на квитирование | **Нет.** Entity UPDATE + действия UI. |
+| **I** | Отдельный specific на квитирование | **`mtr.violation.triage`** у специалиста. Сервис проверяет право; стандартного save карточки нет. |
 | **J** | «Нарушения по извещению» | **Делаем**, query `objectKey`. |
 | **K** | Нарушения на карточке `CheckRun` | **Не делаем.** |
 | **L** | Экспорт реестра | **Не делаем.** |
@@ -173,9 +175,12 @@ flowchart TD
 | `sameFingerprintUpdatesLastDetectedAndKeepsAcknowledged` | ACK живёт |
 | `falsePositiveSurvivesRehit` | FP живёт |
 | `fixedRehitReopensAsNew` | reopen |
-| `missingFingerprintOfEvaluatedRuleIsFixed` | FIXED |
+| `missingFingerprintOfEvaluatedRuleIsFixed` | ACK → FIXED |
+| `falsePositiveIsNotMarkedFixedWhenHitGone` | FP не становится FIXED |
 | `doesNotFixWhenRuleWasNotEvaluated` | выключенное / без бина |
 | `checkWritesJournalAndSaveDedupesAndFixesOnlyEvaluatedRules` | журнал, дедуп, FIXED только у оценённого, FP после ACK |
+| `duplicateHitsInOneRunAreDedupedBeforeSave` | повтор fingerprint в одном запуске |
+| `specialistCanTriageAndViewerCannot` | `mtr.violation.triage` |
 | `evaluateGoldenNoticeRuleCodes` | 10 номеров тестового набора (данных), уникальные коды; пустой список валиден (`-`) |
 
 Голден (уникальные коды, не число позиций): `0173100017025000006` и `0173100017024000008` — пусто; `0173100017026000008` — R03; `0173100017026000015` — R05; `0173100017026000001` — R03+R07. Номера открытые, ПДн нет.
@@ -186,7 +191,7 @@ flowchart TD
 |---|---|---|
 | Дубли в реестре | Не тот fingerprint или не UNIQUE | SHA-256 как в `CheckResults` |
 | Выключенное правило стало FIXED | В `evaluatedRuleIds` попали все enabled | Только ACTIVE + бин |
-| 403 на «Сохранить» | У специалиста только READ | CREATE+UPDATE |
+| 403 на «Сохранить» / квитирование | Entity UPDATE на Violation нет | Запись в реестр — `mtr.check.ondemand` + unconstrained; квитирование — `mtr.violation.triage` |
 | «Проверить» у rule-admin без стека | Specific только у specialist | Specific на обеих ролях |
 | Комментарий FP пропал | Reload из БД до копирования поля | Брать `comment` с формы |
 | Журнал пустой после ошибки | FAILED в той же транзакции, что и throw | Сохранить FAILED отдельно |
@@ -212,7 +217,7 @@ flowchart TD
 - [ ] FIXED только для оценённых в этом запуске правил.
 - [ ] Квитирование и ложное срабатывание с комментарием.
 - [ ] «Нарушения по извещению»; счётчика NEW нет.
-- [ ] Роли: `mtr.check.ondemand`, CREATE/UPDATE у специалиста.
+- [ ] Роли: `mtr.check.ondemand`, `mtr.violation.triage`, Violation у специалиста только READ.
 - [ ] Нет Liquibase 060. Тексты — «тестовый набор (данных)», без ПДн.
 - [ ] Docker, `./gradlew test`: 188 / 0 / 0.
 - [ ] Коммит и тег:
