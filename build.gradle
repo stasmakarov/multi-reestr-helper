@@ -36,6 +36,8 @@ dependencies {
     implementation 'io.jmix.flowui:jmix-flowui-themes'
     implementation 'io.jmix.datatools:jmix-datatools-starter'
     implementation 'io.jmix.datatools:jmix-datatools-flowui-starter'
+    implementation 'io.jmix.quartz:jmix-quartz-starter'
+    implementation 'io.jmix.quartz:jmix-quartz-flowui-starter'
 
     implementation 'org.apache.poi:poi-ooxml'
 
@@ -65,6 +67,7 @@ bootRun {
 
 test {
     useJUnitPlatform()
+    maxHeapSize = '2g'
     systemProperty 'spring.profiles.active', 'test,dev'
     if (project.hasProperty('allowNoDocker')) {
         systemProperty 'allowNoDocker', 'true'

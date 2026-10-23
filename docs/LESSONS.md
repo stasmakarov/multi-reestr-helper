@@ -60,7 +60,8 @@
    - `PlanScheduleEvent`: даты ЛБО и утверждения плана-графика, с подсказкой из `PlanScheduleDto`.
 
 9. **Плановое сканирование (Quartz) и оповещение в приложении.**
-   - Проверка по расписанию через Jmix Quartz, в первую очередь сроков поставки и приёмки.
+   - Материал урока: [lessons/lesson-09-scheduled.md](lessons/lesson-09-scheduled.md).
+   - Проверка по расписанию через Jmix Quartz, в первую очередь сроков поставки и приёмки (`ContractTerm` + `DeadlineCalculator` / `DeadlineAnchorResolver`) и правил по извещениям за окно публикации. Журнал `CheckRun` `SCHEDULED`, реестр `Violation` через общий `ViolationRegistryService` (тот же merge, что у кнопки «Проверить»).
    - Оповещение — только реестр нарушений и счётчик новых (NEW) нарушений в меню.
    - Почту (аддон Email Sending, `io.jmix.email`) не реализуем, только рассказываем.
 
