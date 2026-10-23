@@ -45,6 +45,7 @@
                         <button id="editVersionButton" action="versionsDataGrid.editAction"/>
                         <button id="removeVersionButton" action="versionsDataGrid.removeAction"/>
                         <button id="copyVersionButton" text="msg://copyVersionButton.text"/>
+                        <button id="dryRunButton" text="msg://dryRunButton.text"/>
                     </hbox>
                     <dataGrid id="versionsDataGrid" dataContainer="versionsDc" width="100%" minHeight="16em">
                         <actions>

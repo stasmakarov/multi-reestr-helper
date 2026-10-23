@@ -46,6 +46,18 @@ public class NoticeRuleEvaluator {
         return evaluateAll(notice).hits();
     }
 
+    public List<CheckResultDto> evaluateVersion(NoticeDto notice, RuleVersion version) {
+        if (notice == null || notice.getPublishedAt() == null || version == null || version.getRule() == null) {
+            return List.of();
+        }
+        Rule rule = version.getRule();
+        RuleTemplateEvaluator evaluator = evaluators.get(rule.getTemplateType());
+        if (evaluator == null) {
+            throw new IllegalStateException("Нет бина шаблона " + rule.getTemplateType());
+        }
+        return evaluator.evaluate(notice, rule, version, new RuleEvalParams(version.getParameters()));
+    }
+
     public NoticeCheckOutcome evaluateAll(NoticeDto notice) {
         if (notice == null || notice.getPublishedAt() == null) {
             return NoticeCheckOutcome.empty();

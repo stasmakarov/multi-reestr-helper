@@ -11,6 +11,8 @@
               title="msg://com.digitilius.multireestr.view.rule/ruleListView.title"/>
         <item view="mtr_ReferenceList.list"
               title="msg://com.digitilius.multireestr.view.referencelist/referenceListListView.title"/>
+        <item view="mtr_DryRunView"
+              title="msg://com.digitilius.multireestr.view.dryrun/dryRunView.title"/>
     </menu>
 
     <menu id="control" title="msg://com.digitilius.multireestr/menu.control.title" opened="true">
