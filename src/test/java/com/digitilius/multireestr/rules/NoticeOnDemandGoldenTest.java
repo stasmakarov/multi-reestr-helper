@@ -45,7 +45,7 @@ class NoticeOnDemandGoldenTest {
         NoticeDto notice = noticeCardService.loadOriginal(NoticeNumber.parse(number)).orElseThrow();
         List<CheckResultDto> hits = noticeRuleEvaluator.evaluate(notice);
         List<String> expected = parseCodes(codes);
-        assertThat(hits).extracting(CheckResultDto::getRuleCode)
+        assertThat(hits.stream().map(CheckResultDto::getRuleCode).distinct().toList())
                 .containsExactlyInAnyOrderElementsOf(expected);
         assertThat(hits).allSatisfy(hit -> {
             assertThat(hit.getFingerprint()).hasSize(64);

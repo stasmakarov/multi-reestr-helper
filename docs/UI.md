@@ -76,20 +76,20 @@
 | Тип | свой (`StandardView`, `<data readOnly="true">`), не CRUD |
 | Шапка | плашка `warnings`; `number`, `subject`, `law`, `methodName`, `nmck`, `publishedAt`, `modifVersion`, `customer` (OrganizationDto.name / inn), ссылка `eisUrl` |
 | Вкладки | **Извещение**: `ikz`, `planPosition`, `applicationsFrom/To`, `biddingDate`, `summarizingDate`, обеспечения (`appGuaranteeAmount/Pct`, `contractGuaranteePct`), `executionTermDays`, `executionEndDate`, `preferences`, `platform`, лоты (`LotDto`: `number`, `maxPrice`, `currency`), финансирование (`NoticeFinanceDto`: `kbk`, `finYear`, `amount`), документы (`NoticeDocumentDto`: `name`, `url`) · **Спецификация**: `SpecPositionDto` (`pos`, `name`, `okpd2`, `ktru`, `qty`, `unit`, `price`, `amount`, `foreignBan`, `foreignRestriction`, `rfPreference`, `banImpossible`, `characteristicsText`), под ней характеристики выбранной позиции (`KtruCharacteristicDto`: `name`, `value`, `fromEis`, `required`) · **Протоколы**: `ProtocolDto` (`number`, `date`, `typeName`) · **Контракт и исполнение**: `ContractDto` (`number`, `registryNumber`, `date`, `endDate`, `price`, `reductionPct`, `paidTotal`, `supplier`), позиции `ContractItemDto`, исполнение `ExecutionDto` (`kind`, `stageNumber`, `stageEndDate`, `docName`, `docNumber`, `docDate`, `acceptDate`, `amount`, `penaltyInfo`, `improperExecution`); под таблицей исполнения — строка «Оплачено» (та же сумма, что в поле `paidTotal` формы контракта) |
-| Действия | «Назад к поиску»; «Excel» — свой `NoticeExcelExporter` (два листа, урок 3): выгружает загруженную карточку в файл `извещение-{номер}.xlsx`, кнопка выключена, если извещение не найдено; **«Проверить»** (урок 7) открывает диалог результата проверки; «Нарушения по извещению» ведёт в реестр с фильтром по `objectKey` (**предложение**); «Условия контракта» ведёт в `ContractTerm` с фильтром по `contractLegacyId` (**предложение**) |
+| Действия | «Назад к поиску»; «Excel» — свой `NoticeExcelExporter` (два листа, урок 3): выгружает загруженную карточку в файл `извещение-{номер}.xlsx`, кнопка выключена, если извещение не найдено; **«Проверить»** (урок 7) пишет `CheckRun` `ON_DEMAND` и открывает диалог результата; «Нарушения по извещению» ведёт в реестр с query `objectKey`; «Условия контракта» ведёт в `ContractTerm` с фильтром по `contractLegacyId` (**предложение**, урок 8) |
 | Редактирование | нет |
 | Переходы | ← поиск; → диалог проверки; → реестр нарушений; → условия контракта |
 | Роли | С, А |
 | Урок | 3 (карточка, Excel), 7 (кнопка «Проверить») |
 
-#### Результат проверки — `CheckResultDialog` (**предложение** по имени)
+#### Результат проверки — `CheckResultDialog`
 | | |
 |---|---|
 | Назначение | Сценарий «создал извещение — система проверила»: показать срабатывания правил по одному объекту до записи в реестр |
-| View id | `mtr_CheckResultDialog` (диалог, без маршрута) — **предложение** |
+| View id | `mtr_CheckResultDialog` (диалог, без маршрута) |
 | Тип | свой (`StandardView`, открывается как диалог) |
 | Таблица | `CheckResultDto`: `severity`, `ruleCode`, `ruleName`, `detail`, `message`, `legalRef` |
-| Действия | «Сохранить в реестр» — результаты превращаются в `Violation` (дедупликация по `fingerprint`) и создаётся `CheckRun` с режимом `ON_DEMAND`; «Закрыть» |
+| Действия | «Сохранить в реестр» — результаты превращаются в `Violation` (дедупликация по `fingerprint`); `CheckRun` `ON_DEMAND` уже создан кнопкой «Проверить». «Закрыть» — журнал остаётся, в реестр ничего не пишется |
 | Редактирование | нет |
 | Роли | С, А |
 | Урок | 7 |
@@ -157,10 +157,10 @@
 | Назначение | Срабатывания правил по объектам: статус и квитирование |
 | Тип | CRUD, доработанный (создавать вручную нельзя) |
 | Колонки | `severity`, `status`, `rule`, `objectType`, `objectKey`, `objectCaption`, `detail`, `message`, `dueDate`, `factDate`, `deviationDays`, `firstDetectedAt`, `lastDetectedAt` |
-| Фильтры | `status` (по умолчанию NEW + ACKNOWLEDGED — **предложение**), `severity`, `rule`, `objectType`, `objectKey`, период обнаружения |
+| Фильтры | `status` (по умолчанию NEW + ACKNOWLEDGED), `severity`, `rule`, `objectType`, `objectKey`, период обнаружения. С query `objectKey` фильтр статусов по умолчанию не навязывается |
 | Карточка | всё перечисленное, а также `legalRef`, `ruleVersion`, `lastCheckRun`, `resolvedAt`, `acknowledgedBy`, `acknowledgedAt`, `comment` |
 | Редактируется | только `status` (через действия) и `comment`. Остальные поля только для чтения: их заполняет проверка |
-| Действия | «Принять к сведению» (NEW → ACKNOWLEDGED, заполняет `acknowledgedBy/At`); «Ложное срабатывание» (FALSE_POSITIVE, `comment` обязателен); «Открыть объект» — карточка извещения по `objectKey` для NOTICE; «Экспорт» |
+| Действия | «Принять к сведению» (NEW → ACKNOWLEDGED, заполняет `acknowledgedBy/At`); «Ложное срабатывание» (FALSE_POSITIVE, `comment` обязателен); «Открыть объект» — карточка извещения по `objectKey` для NOTICE. «Экспорт» — **не сделано** (нет gridexport) |
 | Меню | счётчик записей NEW (урок 9) |
 | Роли | С, А |
 | Урок | 7, 9 (счётчик) |
@@ -172,7 +172,7 @@
 | Тип | CRUD, только чтение (без Создать / Изменить / Удалить) |
 | Колонки | `startedAt`, `finishedAt`, `mode`, `status`, `objectType`, `objectKey`, `periodFrom`, `periodTo`, `ruleVersion`, `objectsChecked`, `violationsFound`, `createdBy` (кто запустил) |
 | Фильтры | `mode`, `status`, период `startedAt` |
-| Карточка | все поля и `errorMessage`; список нарушений с этим `lastCheckRun` (**предложение**) |
+| Карточка | все поля, `createdBy` и `errorMessage`. Список нарушений с этим `lastCheckRun` — **не сделано** |
 | Роли | С, А |
 | Урок | 7 (ON_DEMAND), 9 (SCHEDULED), 10 (DRY_RUN) |
 
@@ -291,7 +291,7 @@ flowchart LR
 |---|---|---|---|---|
 | 1 | Поиск извещения | `mtr_NoticeSearchView` | свой | 2 |
 | 2 | Карточка извещения (+ Excel) | `mtr_NoticeDetailView` | свой | 3 |
-| 3 | Результат проверки (диалог) | `mtr_CheckResultDialog` (предложение) | свой | 7 |
+| 3 | Результат проверки (диалог) | `mtr_CheckResultDialog` | свой | 7 |
 | 4 | Правила — список | `mtr_Rule.list` | CRUD | 6 |
 | 5 | Правило — карточка с версиями | `mtr_Rule.detail` | CRUD + доработка | 6 |
 | 6 | Версия правила с параметрами | `mtr_RuleVersion.detail` | CRUD + доработка | 6 |
@@ -321,8 +321,8 @@ flowchart LR
 
 | Роль | `code` | Видит | Права |
 |---|---|---|---|
-| **Специалист** (С) | `specialist` | Извещения (через `notice-viewer`), Правила — чтение, Контроль, Справочники | READ правил, версий, параметров, списков, календаря, `Violation`, `CheckRun`. ALL на `ContractTerm` / `PlanScheduleEvent` (экраны урока 8). Квитирование нарушений и «Проверить» — урок 7 |
-| **Администратор правил** (А) | `rule-administrator` | Всё, что видит специалист, плюс правка Правил, списков и календаря; диалоги импорта Excel и «Загрузить год» | CRUD правил, версий, параметров, списков, `CalendarDay`. `SpecificPolicy`: `mtr.rule.activate`, `mtr.referencelist.import` |
+| **Специалист** (С) | `specialist` | Извещения (через `notice-viewer`), Правила — чтение, Контроль, Справочники | READ правил, версий, параметров, списков, календаря. CREATE+UPDATE (без DELETE) `Violation` и `CheckRun`, READ `CheckResultDto`. ALL на `ContractTerm` / `PlanScheduleEvent` (экраны урока 8). `SpecificPolicy` `mtr.check.ondemand` (кнопка «Проверить»). Квитирование — действия на карточке нарушения |
+| **Администратор правил** (А) | `rule-administrator` | Всё, что видит специалист, плюс правка Правил, списков и календаря; диалоги импорта Excel, «Загрузить год» и результат проверки | CRUD правил, версий, параметров, списков, `CalendarDay`. `SpecificPolicy`: `mtr.rule.activate`, `mtr.referencelist.import`, `mtr.check.ondemand` |
 
 Демо-логины `specialist` / `rule-admin` с `{noop}`-паролями — только ченджсет `052-users-roles.xml` с `context="demo"`. На Windows в продуктиве `main.liquibase.contexts=!demo`.
 
