@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ExtendWith(AuthenticatedAsAdmin.class)
@@ -63,5 +64,14 @@ class DbWorkingCalendarTest {
         assertThat(workingCalendar.minus(LocalDate.of(2024, 5, 2), 2)).isEqualTo(friday);
         assertThat(workingCalendar.plus(LocalDate.of(2024, 5, 8), 1)).isEqualTo(LocalDate.of(2024, 5, 13));
         assertThat(workingCalendar.plus(friday, 0)).isEqualTo(friday);
+    }
+
+    @Test
+    void missingYearDoesNotFallBackToWeekdays() {
+        LocalDate unloaded = LocalDate.of(2099, 1, 6);
+        assertThatThrownBy(() -> workingCalendar.isBusinessDay(unloaded))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("2099")
+                .hasMessageContaining("не загружен в производственный календарь");
     }
 }

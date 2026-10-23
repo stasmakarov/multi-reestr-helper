@@ -91,6 +91,10 @@ public class DbWorkingCalendar implements WorkingCalendar {
                 .query("select e from mtr_CalendarDay e where e.year = :year")
                 .parameter("year", year)
                 .list();
+        if (days.isEmpty()) {
+            throw new IllegalStateException(
+                    "Год " + year + " не загружен в производственный календарь");
+        }
         Map<LocalDate, CalendarDay> map = new HashMap<>();
         for (CalendarDay day : days) {
             map.put(day.getDate(), day);
