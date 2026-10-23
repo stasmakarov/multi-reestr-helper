@@ -7,13 +7,16 @@ import com.digitilius.multireestr.entity.RuleObjectType;
 import com.digitilius.multireestr.entity.RuleParameter;
 import com.digitilius.multireestr.entity.RuleTemplateType;
 import com.digitilius.multireestr.entity.RuleVersion;
+import com.digitilius.multireestr.entity.RuleVersionStatus;
 import com.digitilius.multireestr.entity.Severity;
 import com.digitilius.multireestr.entity.legacy.KtruCharacteristicDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,6 +81,28 @@ class RuleEvaluatorsTest {
 
         assertThat(results).hasSize(1);
         assertThat(results.get(0).getDetail()).isEqualTo("pos=1;id=30");
+    }
+
+    @Test
+    void activeVersionOnPicksHighestVersionNumber() {
+        Rule rule = rule("R03_PP1875", RuleTemplateType.OKPD2_FOREIGN_BAN);
+        RuleVersion first = activeVersion(1, LocalDate.of(2024, 1, 1), LocalDate.of(2026, 12, 31));
+        RuleVersion second = activeVersion(3, LocalDate.of(2025, 1, 1), null);
+        RuleVersion third = activeVersion(2, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31));
+        rule.setVersions(new ArrayList<>(List.of(first, second, third)));
+
+        RuleVersion chosen = NoticeRuleEvaluator.activeVersionOn(rule, LocalDate.of(2025, 6, 1));
+        assertThat(chosen).isSameAs(second);
+        assertThat(chosen.getVersionNumber()).isEqualTo(3);
+    }
+
+    private static RuleVersion activeVersion(int number, LocalDate from, LocalDate to) {
+        RuleVersion version = new RuleVersion();
+        version.setVersionNumber(number);
+        version.setStatus(RuleVersionStatus.ACTIVE);
+        version.setValidFrom(from);
+        version.setValidTo(to);
+        return version;
     }
 
     private static NoticeDto notice(SpecPositionDto... items) {

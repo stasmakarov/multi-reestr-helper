@@ -230,6 +230,8 @@ for (Rule rule : loadEnabledRules()) {
 }
 ```
 
+Если на дату несколько ACTIVE-версий, берётся максимальный `versionNumber` (порядок коллекции не важен).
+
 Fetch-plan правила тянет версии, параметры, список и его элементы — иначе matcher увидит пустой `items`.
 
 `CheckResults.hit` заполняет код, имя, серьёзность, `objectKey = notice.number`, норму, сообщение, fingerprint.

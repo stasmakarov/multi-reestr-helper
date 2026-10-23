@@ -62,6 +62,7 @@ public class NoticeRuleEvaluator {
         if (rule.getVersions() == null) {
             return null;
         }
+        RuleVersion chosen = null;
         for (RuleVersion version : rule.getVersions()) {
             if (version == null || version.getStatus() != RuleVersionStatus.ACTIVE) {
                 continue;
@@ -72,9 +73,15 @@ public class NoticeRuleEvaluator {
             if (version.getValidTo() != null && date.isAfter(version.getValidTo())) {
                 continue;
             }
-            return version;
+            if (chosen == null || versionNumber(version) > versionNumber(chosen)) {
+                chosen = version;
+            }
         }
-        return null;
+        return chosen;
+    }
+
+    private static int versionNumber(RuleVersion version) {
+        return version.getVersionNumber() == null ? Integer.MIN_VALUE : version.getVersionNumber();
     }
 
     private List<Rule> loadEnabledRules() {
