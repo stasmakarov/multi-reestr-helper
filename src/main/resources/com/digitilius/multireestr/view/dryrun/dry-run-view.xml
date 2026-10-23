@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://dryRunView.title"
+      focusComponent="versionField">
+    <data>
+        <collection id="versionsDc" class="com.digitilius.multireestr.entity.RuleVersion">
+            <fetchPlan extends="_base">
+                <property name="rule" fetchPlan="_base"/>
+            </fetchPlan>
+            <loader id="versionsDl">
+                <query>
+                    <![CDATA[select e from mtr_RuleVersion e where e.status = @enum(com.digitilius.multireestr.entity.RuleVersionStatus.DRAFT) order by e.rule.code, e.versionNumber]]>
+                </query>
+            </loader>
+        </collection>
+        <collection id="resultsDc" class="com.digitilius.multireestr.entity.legacy.CheckResultDto"/>
+    </data>
+    <facets>
+        <dataLoadCoordinator auto="true"/>
+    </facets>
+    <layout>
+        <formLayout id="form" width="100%">
+            <entityComboBox id="versionField"
+                            metaClass="mtr_RuleVersion"
+                            itemsContainer="versionsDc"
+                            label="msg://versionField.label"/>
+            <textField id="objectTypeField" label="msg://objectTypeField.label" readOnly="true"/>
+            <datePicker id="periodFromField" label="msg://periodFromField.label" datatype="localDate"/>
+            <datePicker id="periodToField" label="msg://periodToField.label" datatype="localDate"/>
+        </formLayout>
+        <hbox id="buttonsPanel" classNames="buttons-panel" width="100%">
+            <button id="runButton" text="msg://runButton.text" themeNames="primary"/>
+            <button id="exportButton" text="msg://exportButton.text" enabled="false"/>
+            <button id="activateButton" text="msg://activateButton.text" enabled="false"/>
+        </hbox>
+        <span id="summaryLabel" text=""/>
+        <dataGrid id="resultsDataGrid"
+                  dataContainer="resultsDc"
+                  width="100%"
+                  minHeight="20em"
+                  columnReorderingAllowed="true">
+            <columns resizable="true">
+                <column property="diff" autoWidth="true"/>
+                <column property="objectKey" autoWidth="true"/>
+                <column property="detail" flexGrow="1"/>
+                <column property="message" flexGrow="1"/>
+                <column property="severity" autoWidth="true"/>
+                <column property="ruleCode" autoWidth="true"/>
+            </columns>
+        </dataGrid>
+    </layout>
+</view>

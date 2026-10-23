@@ -12,6 +12,7 @@ import io.jmix.security.role.annotation.EntityAttributePolicy;
 import io.jmix.security.role.annotation.EntityPolicy;
 import io.jmix.security.role.annotation.ResourceRole;
 import io.jmix.security.role.annotation.SpecificPolicy;
+import io.jmix.securityflowui.role.annotation.MenuPolicy;
 import io.jmix.securityflowui.role.annotation.ViewPolicy;
 
 @ResourceRole(name = "Администратор правил", code = RuleAdministratorRole.CODE)
@@ -22,8 +23,10 @@ public interface RuleAdministratorRole {
     @ViewPolicy(viewIds = {
             "mtr_CalendarYearLoadDialog",
             "mtr_ReferenceListExcelImportDialog",
-            "mtr_CheckResultDialog"
+            "mtr_CheckResultDialog",
+            "mtr_DryRunView"
     })
+    @MenuPolicy(menuIds = "mtr_DryRunView")
     void screens();
 
     @EntityPolicy(entityClass = Rule.class, actions = EntityPolicyAction.ALL)
@@ -41,7 +44,8 @@ public interface RuleAdministratorRole {
     @SpecificPolicy(resources = {
             MultiReestrSpecifics.RULE_ACTIVATE,
             MultiReestrSpecifics.REFERENCE_LIST_IMPORT,
-            MultiReestrSpecifics.CHECK_ON_DEMAND
+            MultiReestrSpecifics.CHECK_ON_DEMAND,
+            MultiReestrSpecifics.CHECK_DRY_RUN
     })
     void entities();
 }
