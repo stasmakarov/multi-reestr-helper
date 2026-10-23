@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/051-rules.xml">
+
+    <changeSet id="1" author="multi-reestr">
+        <loadData tableName="MTR_RULE"
+                  file="com/digitilius/multireestr/liquibase/data/mtr-rule.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="ID" type="UUID"/>
+            <column name="VERSION" type="NUMERIC"/>
+            <column name="CODE" type="STRING"/>
+            <column name="NAME" type="STRING"/>
+            <column name="TEMPLATE_TYPE" type="STRING"/>
+            <column name="OBJECT_TYPE" type="STRING"/>
+            <column name="SEVERITY" type="STRING"/>
+            <column name="LEGAL_REF" type="STRING"/>
+            <column name="EXPLANATION_TEMPLATE" type="STRING"/>
+            <column name="ENABLED" type="BOOLEAN"/>
+            <column name="DESCRIPTION" type="STRING"/>
+            <column name="CREATED_BY" type="STRING"/>
+            <column name="CREATED_DATE" type="DATETIME"/>
+            <column name="LAST_MODIFIED_BY" type="STRING"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="2" author="multi-reestr">
+        <loadData tableName="MTR_RULE_VERSION"
+                  file="com/digitilius/multireestr/liquibase/data/mtr-rule-version.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="ID" type="UUID"/>
+            <column name="VERSION" type="NUMERIC"/>
+            <column name="RULE_ID" type="UUID"/>
+            <column name="VERSION_NUMBER" type="NUMERIC"/>
+            <column name="STATUS" type="NUMERIC"/>
+            <column name="VALID_FROM" type="DATE"/>
+            <column name="VALID_TO" type="DATE"/>
+            <column name="CHANGE_NOTE" type="STRING"/>
+            <column name="APPROVED_BY" type="STRING"/>
+            <column name="APPROVED_AT" type="DATETIME"/>
+            <column name="CREATED_BY" type="STRING"/>
+            <column name="CREATED_DATE" type="DATETIME"/>
+            <column name="LAST_MODIFIED_BY" type="STRING"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="3" author="multi-reestr">
+        <loadData tableName="MTR_RULE_PARAMETER"
+                  file="com/digitilius/multireestr/liquibase/data/mtr-rule-parameter.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="ID" type="UUID"/>
+            <column name="VERSION" type="NUMERIC"/>
+            <column name="RULE_VERSION_ID" type="UUID"/>
+            <column name="CODE" type="STRING"/>
+            <column name="PARAM_TYPE" type="STRING"/>
+            <column name="VALUE_" type="STRING"/>
+            <column name="REFERENCE_LIST_ID" type="UUID"/>
+            <column name="CREATED_BY" type="STRING"/>
+            <column name="CREATED_DATE" type="DATETIME"/>
+            <column name="LAST_MODIFIED_BY" type="STRING"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME"/>
+        </loadData>
+    </changeSet>
+
+</databaseChangeLog>
