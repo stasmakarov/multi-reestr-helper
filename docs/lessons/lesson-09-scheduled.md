@@ -13,7 +13,7 @@
 
 **Что получится в конце.** Аддон Jmix Quartz, джоба `mtr-scheduled-check` (`@DisallowConcurrentExecution`), `ScheduledCheckService`, общий `ViolationRegistryService` (ON_DEMAND и SCHEDULED), бейдж NEW, правила `R09_DELIVERY` / `R10_ACCEPTANCE`. Почту (`io.jmix.email`) не подключаем. Новых JPA-сущностей, перечислений и DTO нет.
 
-**Как проверяем.** Юнит/Spring без Docker: нет legacy → CheckRun FAILED; календарь 1999 → исключение не роняет assess-тест (его ловит джоба). Docker + тестовый набор (данных): просроченная поставка в реестре, FALSE_POSITIVE живёт. `./gradlew test` при запущенном Docker.
+**Как проверяем.** Юнит/Spring без Docker: нет legacy → CheckRun FAILED; календарь 1999 → исключение не роняет assess-тест (его ловит джоба). Docker + тестовый набор (данных): просроченная поставка в реестре, FALSE_POSITIVE живёт. `./gradlew test` при запущенном Docker: **217 passed, 0 skipped, 0 failed**.
 
 ## Содержание
 
@@ -222,7 +222,7 @@ Merge **по объекту**: извещение — `objectKey` номер; к
 - [ ] Бейдж NEW. Почты нет.
 - [ ] Регистрация не затирает cron UI. Quartz в тестах не стартует.
 - [ ] 061 не `demo`. Тексты — «тестовый набор (данных)», без ПДн.
-- [ ] Docker, `./gradlew test`.
+- [ ] Docker, `./gradlew test`: 217 / 0 / 0.
 - [ ] Коммит и тег:
 
 ```bash

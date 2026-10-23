@@ -82,13 +82,7 @@ class ScheduledCheckServiceLegacyTest {
                     .isEqualTo(ViolationStatus.FALSE_POSITIVE);
             assertThat(loadViolations(String.valueOf(overdueId))).hasSize(1);
         } finally {
-            removeByObjectKeys(List.of(String.valueOf(overdueId)));
-            if (first != null) {
-                dataManager.remove(first);
-            }
-            if (second != null) {
-                dataManager.remove(second);
-            }
+            removeRunsAndViolations(first, second, String.valueOf(overdueId));
             dataManager.remove(overdue);
         }
     }
@@ -108,13 +102,31 @@ class ScheduledCheckServiceLegacyTest {
                 .list();
     }
 
-    private void removeByObjectKeys(List<String> keys) {
+    private void removeRunsAndViolations(CheckRun first, CheckRun second, String objectKey) {
         SaveContext saveContext = new SaveContext();
-        for (String key : keys) {
-            for (Violation violation : loadViolations(key)) {
+        for (Violation violation : loadViolations(objectKey)) {
+            saveContext.removing(violation);
+        }
+        for (CheckRun run : List.of(first, second)) {
+            if (run == null || run.getId() == null) {
+                continue;
+            }
+            List<Violation> byRun = dataManager.load(Violation.class)
+                    .query("select e from mtr_Violation e where e.lastCheckRun = :run")
+                    .parameter("run", run)
+                    .list();
+            for (Violation violation : byRun) {
                 saveContext.removing(violation);
             }
         }
         dataManager.save(saveContext);
+        SaveContext runs = new SaveContext();
+        if (first != null) {
+            runs.removing(first);
+        }
+        if (second != null && (first == null || !second.getId().equals(first.getId()))) {
+            runs.removing(second);
+        }
+        dataManager.save(runs);
     }
 }

@@ -67,6 +67,7 @@ bootRun {
 
 test {
     useJUnitPlatform()
+    maxHeapSize = '2g'
     systemProperty 'spring.profiles.active', 'test,dev'
     if (project.hasProperty('allowNoDocker')) {
         systemProperty 'allowNoDocker', 'true'
