@@ -90,7 +90,7 @@ public class DeadlineCalculator {
             case WORKING_DAYS -> addWorkingDays(anchor, n, startNextDay);
             case MONTHS -> startNextDay
                     ? anchor.plusMonths(n)
-                    : anchor.plusMonths(n - 1L);
+                    : anchor.plusMonths(n).minusDays(1);
         };
     }
 

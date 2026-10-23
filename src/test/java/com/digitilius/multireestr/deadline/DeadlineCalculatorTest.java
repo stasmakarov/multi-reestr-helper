@@ -80,6 +80,18 @@ class DeadlineCalculatorTest {
     }
 
     @Test
+    void startNextDayFalseMonthsEndsDayBeforeSameNumber() {
+        DeadlineSpec spec = spec(1, DayCountUnit.MONTHS, false, ShiftRule.NONE);
+
+        assertThat(deadlineCalculator.deadline(LocalDate.of(2025, 3, 15), spec))
+                .isEqualTo(LocalDate.of(2025, 4, 14));
+        assertThat(deadlineCalculator.deadline(LocalDate.of(2024, 1, 31), spec))
+                .isEqualTo(LocalDate.of(2024, 2, 28));
+        assertThat(deadlineCalculator.deadline(LocalDate.of(2025, 1, 31), spec))
+                .isEqualTo(LocalDate.of(2025, 2, 27));
+    }
+
+    @Test
     void startNextDayFalseCalendarDaysCountEventAsDayOne() {
         DeadlineSpec spec = spec(10, DayCountUnit.CALENDAR_DAYS, false, ShiftRule.NONE);
         LocalDate event = LocalDate.of(2025, 3, 26);

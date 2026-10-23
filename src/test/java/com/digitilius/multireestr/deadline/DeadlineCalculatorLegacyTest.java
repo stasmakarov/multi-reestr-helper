@@ -13,8 +13,8 @@ import com.digitilius.multireestr.legacy.notice.NoticeCardService;
 import com.digitilius.multireestr.legacy.notice.NoticeNumber;
 import com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport;
 import com.digitilius.multireestr.test_support.AuthenticatedAsAdmin;
+import com.digitilius.multireestr.legacy.test_support.DockerRequiredCondition.RequireDocker;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ExtendWith(AuthenticatedAsAdmin.class)
 @ActiveProfiles("test")
-@EnabledIf("com.digitilius.multireestr.legacy.test_support.LegacyPostgresTestSupport#dockerAvailable")
+@RequireDocker
 class DeadlineCalculatorLegacyTest {
 
     @DynamicPropertySource

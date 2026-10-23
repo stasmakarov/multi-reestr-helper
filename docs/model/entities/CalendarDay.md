@@ -54,7 +54,7 @@ public record DayInfo(LocalDate date, boolean businessDay, DayType dayType,
                       @Nullable String mark, boolean fromTable) {}
 ```
 
-Реализация `DbWorkingCalendar`: читает `CalendarDay` за год в кэш (`Map<LocalDate, CalendarDay>`), сбрасывает кэш после импорта/правки.
+Реализация `DbWorkingCalendar`: читает `CalendarDay` за год в кэш (`Map<LocalDate, CalendarDay>`), сбрасывает кэш после импорта/правки. Год без строк в таблице — ошибка («не загружен»), а не молчаливая пятидневка. Если год загружен, а конкретной даты в таблице нет, действует правило Сб/Вс.
 
 Правила ст.191/193 ГК РФ — **не** в `WorkingCalendar`, а в отдельном `DeadlineCalculator` поверх него:
 - `deadline(LocalDate event, int n, DayCountUnit unit)` — течение со следующего дня после события;

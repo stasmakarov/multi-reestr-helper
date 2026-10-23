@@ -127,7 +127,7 @@ flowchart TD
 | | Тема | Решение |
 |---|---|---|
 | **A** | Ст. 191 и `plus` | `startNextDay=true` (и `null`): N единиц **после** дня события, день события не входит. Календарные: `anchor.plusDays(N)`. Рабочие: `calendar.plus(anchor, N)`. `startNextDay=false`: день события — день 1. Календарные: `anchor.plusDays(N − 1)`. Рабочие: если якорь рабочий — он день 1, дальше `plus(anchor, N − 1)`; если нет — `plus(anchor, N)`. По одному тесту на календарные и на рабочие. |
-| **B** | Месяцы | Всегда `anchor.plusMonths(N)` при `startNextDay=true` (ст. 192). Нет числа — последний день месяца. |
+| **B** | Месяцы | `startNextDay=true`: `anchor.plusMonths(N)` (ст. 192). `startNextDay=false`: `anchor.plusMonths(N).minusDays(1)`. Нет числа — последний день месяца (`plusMonths`). |
 | **C** | `shiftRule == null` | Как в [ShiftRule.md](../model/enums/ShiftRule.md): для `CALENDAR_DAYS` и `MONTHS` — `NEXT_WORKDAY` (ст. 193); для `WORKING_DAYS` — `NONE`. Записать в javadoc класса. Срок замечания 6 (05.03.2026) — рабочий, перенос его не двигает; это проверяет тест. |
 | **D** | `PREVIOUS_WORKDAY` | Реализовать: идти назад, пока день нерабочий; если уже рабочий — оставить. Есть тест (пятница + 1 календарный день → суббота → назад на пятницу). |
 | **E** | Рабочие дни + `NEXT_WORKDAY` | Разрешено. Последний день `plus` уже рабочий, перенос — пустая операция. Есть тест. |
@@ -176,7 +176,7 @@ if (n == 0) {
 return switch (unit) {
     case CALENDAR_DAYS -> startNextDay ? anchor.plusDays(n) : anchor.plusDays(n - 1L);
     case WORKING_DAYS -> addWorkingDays(anchor, n, startNextDay);
-    case MONTHS -> startNextDay ? anchor.plusMonths(n) : anchor.plusMonths(n - 1L);
+    case MONTHS -> startNextDay ? anchor.plusMonths(n) : anchor.plusMonths(n).minusDays(1);
 };
 ```
 
@@ -228,6 +228,7 @@ case NOT_EARLIER -> !targetDate.isBefore(dueDate); // target ≥ due
 | `newYear2026DueIsFirstSeededBusinessDay` | 30.12.2025 + 1 календарный день + `NEXT_WORKDAY`. Ожидание — **первый рабочий день** по seed `CalendarDay` начиная с 31.12.2025 (`firstBusinessDayOnOrAfter`), без захардкоженной даты |
 | `mayHolidaysShiftCalendarDeadline` | 30.04.2024 + 1 и 26.04.2024 + 2 → 02.05.2024 (через 01.05 `HOLIDAY` и переносы конца апреля) |
 | `monthPeriodEndsOnSameNumberOrLastDayOfMonth` | 31.01.2024 + 1 месяц → 29.02.2024; 31.03.2025 + 1 месяц → 30.04.2025 |
+| `startNextDayFalseMonthsEndsDayBeforeSameNumber` | `startNextDay=false`, n=1: 15.03.2025 → 14.04.2025; 31.01.2024 + 1 месяц → 28.02.2024; 31.01.2025 → 27.02.2025 |
 | `startNextDayFalseCalendarDaysCountEventAsDayOne` | 26.03.2025 + 10 календарных, `startNextDay=false` → `plusDays(9)` |
 | `startNextDayFalseWorkingDaysCountEventIfWorking` | тот же якорь, рабочие, день события входит → `plus(якорь, 9)` |
 | `previousWorkdayShiftsBackFromWeekend` | пт + 1 календарный + `PREVIOUS_WORKDAY` → снова пятница |
