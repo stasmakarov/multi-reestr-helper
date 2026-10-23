@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
+import io.jmix.data.exception.UniqueConstraintViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -108,7 +108,7 @@ class ContractTermDueDateServiceTest {
             duplicate.setFixedDate(LocalDate.of(2026, 1, 11));
             duplicate.setTerm(null);
             assertThatThrownBy(() -> dataManager.save(duplicate))
-                    .isInstanceOf(DataIntegrityViolationException.class);
+                    .isInstanceOf(UniqueConstraintViolationException.class);
         } finally {
             dataManager.remove(dataManager.load(ContractTerm.class).id(saved.getId()).one());
         }

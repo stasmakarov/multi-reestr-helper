@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,9 +54,9 @@ public class ContractLookupService {
             return List.of();
         }
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("id", id);
-        params.addValue("contract_number", blankToNull(contractNumber));
-        params.addValue("purchase_number", blankToNull(purchaseNumber));
+        params.addValue("id", id, Types.INTEGER);
+        params.addValue("contract_number", blankToNull(contractNumber), Types.VARCHAR);
+        params.addValue("purchase_number", blankToNull(purchaseNumber), Types.VARCHAR);
         return legacyJdbc.query(sql, params, rowMapper);
     }
 
