@@ -84,8 +84,10 @@ class NoticeDetailViewTest {
 
         JmixButton checkBtn = UiTestUtils.getComponent(view, "checkBtn");
         JmixButton violationsBtn = UiTestUtils.getComponent(view, "violationsBtn");
+        JmixButton contractTermsBtn = UiTestUtils.getComponent(view, "contractTermsBtn");
         assertThat(checkBtn.isEnabled()).isTrue();
         assertThat(violationsBtn.isEnabled()).isTrue();
+        assertThat(contractTermsBtn.isEnabled()).isTrue();
     }
 
     @Test
@@ -101,6 +103,9 @@ class NoticeDetailViewTest {
         assertThat(cardBox.isVisible()).isTrue();
         assertThat(contractBox.isVisible()).isFalse();
         assertThat(noContractBox.isVisible()).isTrue();
+
+        JmixButton contractTermsBtn = UiTestUtils.getComponent(view, "contractTermsBtn");
+        assertThat(contractTermsBtn.isEnabled()).isFalse();
 
         DataGrid<ProtocolDto> protocolsGrid = UiTestUtils.getComponent(view, "protocolsGrid");
         assertThat(gridItems(protocolsGrid)).isEmpty();

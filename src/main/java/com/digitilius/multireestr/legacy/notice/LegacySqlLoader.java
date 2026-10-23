@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-final class LegacySqlLoader {
+public final class LegacySqlLoader {
 
     private LegacySqlLoader() {
     }

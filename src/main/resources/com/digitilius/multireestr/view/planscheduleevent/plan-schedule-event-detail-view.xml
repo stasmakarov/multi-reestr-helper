@@ -17,6 +17,7 @@
     </actions>
     <layout>
         <formLayout id="form" dataContainer="planScheduleEventDc">
+            <comboBox id="planScheduleHintField" label="msg://planScheduleHint.label" colspan="2"/>
             <integerField id="finYearField" property="finYear"/>
             <integerField id="planVersionField" property="planVersion"/>
             <integerField id="legacyPlanIdField" property="legacyPlanId"/>

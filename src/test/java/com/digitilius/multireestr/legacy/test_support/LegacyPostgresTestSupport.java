@@ -53,6 +53,14 @@ public final class LegacyPostgresTestSupport {
         registry.add("legacy.datasource.password", () -> RO_PASSWORD);
     }
 
+    public static Connection openAdminConnection() throws Exception {
+        return DriverManager.getConnection(
+                POSTGRES.getJdbcUrl(),
+                POSTGRES.getUsername(),
+                POSTGRES.getPassword()
+        );
+    }
+
     private static void prepareReadOnlySchema() {
         try (Connection connection = DriverManager.getConnection(
                 POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());

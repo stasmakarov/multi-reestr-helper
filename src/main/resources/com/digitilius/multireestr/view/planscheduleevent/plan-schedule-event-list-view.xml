@@ -50,7 +50,6 @@
             <columns resizable="true">
                 <column property="finYear"/>
                 <column property="planVersion"/>
-                <column property="legacyPlanId"/>
                 <column property="lboDate"/>
                 <column property="approvalDate"/>
                 <column property="basisDocument"/>

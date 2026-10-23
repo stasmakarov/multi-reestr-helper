@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<view xmlns="http://jmix.io/schema/flowui/view"
+      title="msg://contractLookupDialog.title"
+      focusComponent="queryField">
+    <data>
+        <collection id="contractsDc" class="com.digitilius.multireestr.entity.legacy.ContractDto"/>
+    </data>
+    <actions>
+        <action id="closeAction" type="view_close"/>
+    </actions>
+    <layout>
+        <hbox id="searchBox" width="100%" classNames="buttons-panel">
+            <textField id="queryField" label="msg://queryField.label" placeholder="msg://queryField.placeholder"
+                       width="24em"/>
+            <button id="searchButton" text="msg://searchButton.text"/>
+        </hbox>
+        <dataGrid id="contractsGrid"
+                  dataContainer="contractsDc"
+                  width="100%"
+                  minHeight="16em"
+                  columnReorderingAllowed="true">
+            <columns resizable="true">
+                <column property="id" autoWidth="true"/>
+                <column property="number" autoWidth="true"/>
+                <column property="purchaseNumber" autoWidth="true"/>
+                <column property="date" autoWidth="true"/>
+                <column property="price" autoWidth="true"/>
+            </columns>
+        </dataGrid>
+        <hbox id="buttonsPanel" classNames="buttons-panel">
+            <button id="selectButton" text="msg://selectButton.text" enabled="false"/>
+            <button id="closeButton" action="closeAction"/>
+        </hbox>
+    </layout>
+</view>

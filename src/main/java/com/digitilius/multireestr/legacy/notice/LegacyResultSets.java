@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-final class LegacyResultSets {
+public final class LegacyResultSets {
 
     private LegacyResultSets() {
     }
