@@ -1,5 +1,6 @@
 package com.digitilius.multireestr.legacy;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -95,6 +96,9 @@ public class LegacyDbInfo {
     public LegacyJdbcUrls.JdbcEndpoint currentEndpoint() {
         if (legacyDataSource instanceof SwappableLegacyDataSource swappable) {
             return LegacyJdbcUrls.parse(swappable.getCurrentJdbcUrl());
+        }
+        if (legacyDataSource instanceof HikariDataSource hikari) {
+            return LegacyJdbcUrls.parse(hikari.getJdbcUrl());
         }
         return LegacyJdbcUrls.parse(null);
     }

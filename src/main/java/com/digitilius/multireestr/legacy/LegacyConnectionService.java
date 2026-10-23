@@ -2,8 +2,6 @@ package com.digitilius.multireestr.legacy;
 
 import com.digitilius.multireestr.entity.LegacyConnectionSettings;
 import com.zaxxer.hikari.HikariDataSource;
-import io.jmix.core.DataManager;
-import io.jmix.core.SaveContext;
 import io.jmix.core.UnconstrainedDataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +36,6 @@ public class LegacyConnectionService {
     public record ScreenModel(LegacyConnectionSettings settings, Source source) {
     }
 
-    private final DataManager dataManager;
     private final UnconstrainedDataManager unconstrainedDataManager;
     private final LegacyDataSourceProperties properties;
     private final LegacyHikariFactory factory;
@@ -47,7 +44,6 @@ public class LegacyConnectionService {
     private final LegacyDbInfo legacyDbInfo;
 
     public LegacyConnectionService(
-            DataManager dataManager,
             UnconstrainedDataManager unconstrainedDataManager,
             LegacyDataSourceProperties properties,
             LegacyHikariFactory factory,
@@ -55,7 +51,6 @@ public class LegacyConnectionService {
             LegacySecretCipher cipher,
             LegacyDbInfo legacyDbInfo
     ) {
-        this.dataManager = dataManager;
         this.unconstrainedDataManager = unconstrainedDataManager;
         this.properties = properties;
         this.factory = factory;
@@ -69,7 +64,7 @@ public class LegacyConnectionService {
         if (stored.isPresent()) {
             return new ScreenModel(stored.get(), Source.DATABASE);
         }
-        LegacyConnectionSettings created = dataManager.create(LegacyConnectionSettings.class);
+        LegacyConnectionSettings created = unconstrainedDataManager.create(LegacyConnectionSettings.class);
         created.setCode(LegacyConnectionSettings.DEFAULT_CODE);
         fillFromProperties(created);
         created.setEnabled(hasPropertiesUrl());
@@ -201,14 +196,11 @@ public class LegacyConnectionService {
             message = message.substring(0, 1000);
         }
         settings.setLastCheckMessage(message);
-        dataManager.save(new SaveContext().saving(settings));
+        unconstrainedDataManager.save(settings);
     }
 
     private Optional<LegacyConnectionSettings> findDefault() {
-        return dataManager.load(LegacyConnectionSettings.class)
-                .query("select e from mtr_LegacyConnectionSettings e where e.code = :code")
-                .parameter("code", LegacyConnectionSettings.DEFAULT_CODE)
-                .optional();
+        return findDefaultUnconstrained();
     }
 
     private Optional<LegacyConnectionSettings> findDefaultUnconstrained() {
