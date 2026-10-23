@@ -14,7 +14,10 @@ import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import com.digitilius.multireestr.legacy.notice.NoticeCardService;
 import com.digitilius.multireestr.legacy.notice.NoticeExcelExporter;
 import com.digitilius.multireestr.legacy.notice.NoticeNumber;
+import com.digitilius.multireestr.rules.OnDemandCheckService;
+import com.digitilius.multireestr.view.checkresult.CheckResultDialog;
 import com.digitilius.multireestr.view.main.MainView;
+import com.digitilius.multireestr.view.violation.ViolationListView;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.AnchorTarget;
@@ -23,7 +26,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import io.jmix.flowui.DialogWindows;
+import io.jmix.flowui.Notifications;
 import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.component.grid.DataGrid;
 import io.jmix.flowui.download.DownloadFormat;
@@ -100,9 +106,19 @@ public class NoticeDetailView extends StandardView {
     private Span paidTotalValue;
     @ViewComponent
     private JmixButton excelBtn;
+    @ViewComponent
+    private JmixButton checkBtn;
+    @ViewComponent
+    private JmixButton violationsBtn;
 
     @Autowired
     private ViewNavigators viewNavigators;
+    @Autowired
+    private DialogWindows dialogWindows;
+    @Autowired
+    private Notifications notifications;
+    @Autowired
+    private OnDemandCheckService onDemandCheckService;
     @Autowired
     private Downloader downloader;
     @Autowired
@@ -121,12 +137,40 @@ public class NoticeDetailView extends StandardView {
     @Subscribe
     public void onBeforeShow(final BeforeShowEvent event) {
         setPageTitle(messageBundle.formatMessage("noticeDetailView.title", number));
+        checkBtn.setVisible(onDemandCheckService.canCheckOnDemand());
         loadCard();
     }
 
     @Subscribe("backBtn")
     public void onBackBtnClick(final ClickEvent<JmixButton> event) {
         viewNavigators.view(this, NoticeSearchView.class).navigate();
+    }
+
+    @Subscribe("checkBtn")
+    public void onCheckBtnClick(final ClickEvent<JmixButton> event) {
+        NoticeDto notice = noticeDc.getItemOrNull();
+        if (notice == null) {
+            return;
+        }
+        try {
+            OnDemandCheckService.OnDemandCheckResult result = onDemandCheckService.check(notice);
+            var window = dialogWindows.view(this, CheckResultDialog.class).build();
+            window.getView().setCheck(notice, result);
+            window.open();
+        } catch (RuntimeException e) {
+            notifications.create(e.getMessage() == null ? "" : e.getMessage()).show();
+        }
+    }
+
+    @Subscribe("violationsBtn")
+    public void onViolationsBtnClick(final ClickEvent<JmixButton> event) {
+        NoticeDto notice = noticeDc.getItemOrNull();
+        if (notice == null || notice.getNumber() == null) {
+            return;
+        }
+        viewNavigators.view(this, ViolationListView.class)
+                .withQueryParameters(QueryParameters.of("objectKey", notice.getNumber()))
+                .navigate();
     }
 
     @Subscribe("excelBtn")
@@ -176,12 +220,16 @@ public class NoticeDetailView extends StandardView {
         notFoundBox.setVisible(true);
         cardBox.setVisible(false);
         excelBtn.setEnabled(false);
+        checkBtn.setEnabled(false);
+        violationsBtn.setEnabled(false);
     }
 
     private void showNotice(NoticeDto notice) {
         notFoundBox.setVisible(false);
         cardBox.setVisible(true);
         excelBtn.setEnabled(true);
+        checkBtn.setEnabled(checkBtn.isVisible());
+        violationsBtn.setEnabled(true);
         noticeDc.setItem(notice);
         customerDc.setItem(notice.getCustomer());
         lotsDc.setItems(orEmpty(notice.getLots()));
