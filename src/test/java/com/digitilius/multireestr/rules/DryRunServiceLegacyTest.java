@@ -30,6 +30,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AuthenticatedAsAdmin.class)
 @ActiveProfiles("test")
 @RequireDocker
-@TestPropertySource(properties = "mtr.scan.notice-lookback-days=800")
+@TestPropertySource(properties = "mtr.scan.notice-lookback-days=1200")
 class DryRunServiceLegacyTest {
 
     @DynamicPropertySource
@@ -77,35 +78,32 @@ class DryRunServiceLegacyTest {
             assertThat(result.rows()).noneMatch(row ->
                     "0173100017024000008".equals(row.getObjectKey()) && "R03_PP1875".equals(row.getRuleCode()));
         } finally {
-            removeRun(run);
-            dataManager.remove(draft);
+            removeDraft(draft);
         }
     }
 
     @Test
     void enabledFalseStillRunsAndUnchangedWhenParamsSame() {
         RuleVersion draft = ruleVersionService.copyToDraft(loadActive("R03_PP1875"));
-        Rule rule = dataManager.load(Rule.class).id(draft.getRule().getId()).one();
-        boolean wasEnabled = Boolean.TRUE.equals(rule.getEnabled());
-        CheckRun run = null;
+        UUID ruleId = draft.getRule().getId();
         int violationsBefore = countViolations();
         try {
+            Rule rule = dataManager.load(Rule.class).id(ruleId).one();
             rule.setEnabled(false);
             dataManager.save(rule);
             DryRunService.DryRunResult result = dryRunService.run(
                     draft, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
-            run = result.checkRun();
-            assertThat(run.getStatus()).isIn(CheckRunStatus.SUCCESS, CheckRunStatus.PARTIAL);
+            assertThat(result.checkRun().getStatus()).isIn(CheckRunStatus.SUCCESS, CheckRunStatus.PARTIAL);
             assertThat(countViolations()).isEqualTo(violationsBefore);
             assertThat(result.rows())
                     .filteredOn(row -> "0173100017026000001".equals(row.getObjectKey()))
                     .isNotEmpty()
                     .allMatch(row -> row.getDiff() == DryRunDiff.UNCHANGED);
         } finally {
-            rule.setEnabled(wasEnabled);
+            Rule rule = dataManager.load(Rule.class).id(ruleId).one();
+            rule.setEnabled(true);
             dataManager.save(rule);
-            removeRun(run);
-            dataManager.remove(draft);
+            removeDraft(draft);
         }
     }
 
@@ -128,9 +126,8 @@ class DryRunServiceLegacyTest {
                     .isNotEmpty()
                     .allMatch(row -> row.getDiff() == DryRunDiff.UNCHANGED);
         } finally {
-            removeRun(run);
             dataManager.remove(overdue);
-            dataManager.remove(draft);
+            removeDraft(draft);
         }
     }
 
@@ -173,10 +170,26 @@ class DryRunServiceLegacyTest {
         return dataManager.load(Violation.class).all().list().size();
     }
 
-    private void removeRun(CheckRun run) {
-        if (run == null || run.getId() == null) {
+    private void removeDraft(RuleVersion draft) {
+        if (draft == null || draft.getId() == null) {
             return;
         }
-        dataManager.remove(run);
+        SaveContext saveContext = new SaveContext();
+        List<CheckRun> runs = dataManager.load(CheckRun.class)
+                .query("select e from mtr_CheckRun e where e.ruleVersion = :version")
+                .parameter("version", draft)
+                .list();
+        for (CheckRun run : runs) {
+            saveContext.removing(run);
+        }
+        List<RuleParameter> parameters = dataManager.load(RuleParameter.class)
+                .query("select e from mtr_RuleParameter e where e.ruleVersion = :version")
+                .parameter("version", draft)
+                .list();
+        for (RuleParameter parameter : parameters) {
+            saveContext.removing(parameter);
+        }
+        dataManager.save(saveContext);
+        dataManager.remove(dataManager.load(RuleVersion.class).id(draft.getId()).one());
     }
 }

@@ -4,12 +4,14 @@ import com.digitilius.multireestr.entity.CheckRun;
 import com.digitilius.multireestr.entity.CheckRunMode;
 import com.digitilius.multireestr.entity.CheckRunStatus;
 import com.digitilius.multireestr.entity.Rule;
+import com.digitilius.multireestr.entity.RuleParameter;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.RuleVersionStatus;
 import com.digitilius.multireestr.entity.User;
 import com.digitilius.multireestr.security.SpecialistRole;
 import com.digitilius.multireestr.test_support.AuthenticatedAsAdmin;
 import io.jmix.core.DataManager;
+import io.jmix.core.SaveContext;
 import io.jmix.core.security.SystemAuthenticator;
 import io.jmix.security.role.assignment.RoleAssignmentRoleType;
 import io.jmix.securitydata.entity.RoleAssignmentEntity;
@@ -21,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +59,7 @@ class DryRunServiceTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("365");
         } finally {
-            dataManager.remove(draft);
+            removeDraft(draft);
         }
     }
 
@@ -73,10 +76,7 @@ class DryRunServiceTest {
             assertThat(run.getErrorMessage()).contains("БД MultiReestr недоступна");
             assertThat(run.getRuleVersion().getId()).isEqualTo(draft.getId());
         } finally {
-            if (run != null) {
-                dataManager.remove(run);
-            }
-            dataManager.remove(draft);
+            removeDraft(draft);
         }
     }
 
@@ -98,7 +98,7 @@ class DryRunServiceTest {
                 systemAuthenticator.end();
             }
         } finally {
-            dataManager.remove(draft);
+            removeDraft(draft);
             if (assignment != null) {
                 dataManager.remove(assignment);
             }
@@ -106,6 +106,29 @@ class DryRunServiceTest {
                 dataManager.remove(specialist);
             }
         }
+    }
+
+    private void removeDraft(RuleVersion draft) {
+        if (draft == null || draft.getId() == null) {
+            return;
+        }
+        SaveContext saveContext = new SaveContext();
+        List<CheckRun> runs = dataManager.load(CheckRun.class)
+                .query("select e from mtr_CheckRun e where e.ruleVersion = :version")
+                .parameter("version", draft)
+                .list();
+        for (CheckRun run : runs) {
+            saveContext.removing(run);
+        }
+        List<RuleParameter> parameters = dataManager.load(RuleParameter.class)
+                .query("select e from mtr_RuleParameter e where e.ruleVersion = :version")
+                .parameter("version", draft)
+                .list();
+        for (RuleParameter parameter : parameters) {
+            saveContext.removing(parameter);
+        }
+        dataManager.save(saveContext);
+        dataManager.remove(dataManager.load(RuleVersion.class).id(draft.getId()).one());
     }
 
     private RuleVersion loadActive(String code) {
