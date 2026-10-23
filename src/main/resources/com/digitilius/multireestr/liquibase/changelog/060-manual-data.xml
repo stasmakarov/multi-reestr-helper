@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/060-manual-data.xml">
+
+    <changeSet id="1" author="multi-reestr" context="demo">
+        <insert tableName="MTR_PLAN_SCHEDULE_EVENT">
+            <column name="ID" value="a8888888-8888-4888-8888-888888888801"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="FIN_YEAR" valueNumeric="2025"/>
+            <column name="PLAN_VERSION" valueNumeric="1"/>
+            <column name="LBO_DATE" valueDate="2025-03-26"/>
+            <column name="APPROVAL_DATE" valueDate="2025-04-10"/>
+            <column name="BASIS_DOCUMENT" value="Уведомление о ЛБО"/>
+            <column name="NOTE" value="Замечание 1: 10 рабочих дней, срок 09.04.2025"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="MTR_CONTRACT_TERM">
+            <column name="ID" value="a8888888-8888-4888-8888-888888888802"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="CONTRACT_LEGACY_ID" valueNumeric="18"/>
+            <column name="CONTRACT_NUMBER" value="0173100017025000020"/>
+            <column name="PURCHASE_NUMBER" value="0173100017025000020"/>
+            <column name="TERM_TYPE" value="DELIVERY"/>
+            <column name="TERM_ANCHOR" value="CONTRACT_SIGNED"/>
+            <column name="TERM_OFFSET_VALUE" valueNumeric="30"/>
+            <column name="TERM_UNIT" value="CALENDAR_DAYS"/>
+            <column name="TERM_START_NEXT_DAY" valueBoolean="true"/>
+            <column name="TERM_SHIFT_RULE" value="NEXT_WORKDAY"/>
+            <column name="TERM_TARGET" value="DELIVERY_DOCUMENT"/>
+            <column name="TERM_COMPARE_OPERATOR" value="NOT_LATER"/>
+            <column name="SOURCE_CLAUSE" value="п.4.1"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -11,6 +11,7 @@ import com.digitilius.multireestr.entity.RuleParameter;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.Violation;
 import com.digitilius.multireestr.entity.legacy.CheckResultDto;
+import com.digitilius.multireestr.entity.legacy.PlanScheduleDto;
 import io.jmix.security.model.EntityAttributePolicyAction;
 import io.jmix.security.model.EntityPolicyAction;
 import io.jmix.security.role.annotation.EntityAttributePolicy;
@@ -34,7 +35,8 @@ public interface SpecialistRole {
             "mtr_CheckResultDialog",
             "mtr_CalendarDay.list", "mtr_CalendarDay.detail",
             "mtr_ContractTerm.list", "mtr_ContractTerm.detail",
-            "mtr_PlanScheduleEvent.list", "mtr_PlanScheduleEvent.detail"
+            "mtr_PlanScheduleEvent.list", "mtr_PlanScheduleEvent.detail",
+            "mtr_ContractLookupDialog"
     })
     @MenuPolicy(menuIds = {
             "rules", "control", "catalogs",
@@ -67,5 +69,7 @@ public interface SpecialistRole {
     @EntityAttributePolicy(entityClass = ContractTerm.class, attributes = "*", action = EntityAttributePolicyAction.MODIFY)
     @EntityPolicy(entityClass = PlanScheduleEvent.class, actions = EntityPolicyAction.ALL)
     @EntityAttributePolicy(entityClass = PlanScheduleEvent.class, attributes = "*", action = EntityAttributePolicyAction.MODIFY)
+    @EntityPolicy(entityClass = PlanScheduleDto.class, actions = EntityPolicyAction.READ)
+    @EntityAttributePolicy(entityClass = PlanScheduleDto.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     void entities();
 }

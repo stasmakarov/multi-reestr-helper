@@ -35,3 +35,18 @@ GRANT SELECT ON TABLE
     reestrprocedures,
     reestrprocexecutions
 TO reestr_ro;
+
+-- planzakuppackets есть в полной legacy-БД и отсутствует в тестовом наборе (данных).
+-- GRANT только если таблица уже создана, иначе скрипт на тестовом контейнере падает.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'planzakuppackets'
+    ) THEN
+        EXECUTE 'GRANT SELECT ON TABLE planzakuppackets TO reestr_ro';
+    END IF;
+END
+$$;

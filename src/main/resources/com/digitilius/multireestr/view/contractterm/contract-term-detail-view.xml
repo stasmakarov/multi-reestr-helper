@@ -18,12 +18,16 @@
     <layout>
         <formLayout id="form" dataContainer="contractTermDc">
             <integerField id="contractLegacyIdField" property="contractLegacyId"/>
+            <button id="findContractButton" text="msg://findContractButton.text"/>
             <textField id="contractNumberField" property="contractNumber"/>
             <textField id="purchaseNumberField" property="purchaseNumber"/>
             <comboBox id="termTypeField" property="termType"/>
             <datePicker id="fixedDateField" property="fixedDate"/>
+            <datePicker id="dueDateField" readOnly="true" label="msg://dueDateField.label"/>
             <textField id="sourceClauseField" property="sourceClause"/>
             <textArea id="noteField" property="note" colspan="2" height="6em"/>
+        </formLayout>
+        <formLayout id="termBox" dataContainer="contractTermDc">
             <comboBox id="termAnchorField" property="term.anchor"/>
             <integerField id="termOffsetValueField" property="term.offsetValue"/>
             <comboBox id="termUnitField" property="term.unit"/>

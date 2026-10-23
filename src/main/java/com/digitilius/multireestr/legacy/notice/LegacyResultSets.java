@@ -5,20 +5,20 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-final class LegacyResultSets {
+public final class LegacyResultSets {
 
     private LegacyResultSets() {
     }
 
-    static LocalDateTime localDateTime(ResultSet rs, String column) throws SQLException {
+    public static LocalDateTime localDateTime(ResultSet rs, String column) throws SQLException {
         return rs.getObject(column, LocalDateTime.class);
     }
 
-    static LocalDate localDate(ResultSet rs, String column) throws SQLException {
+    public static LocalDate localDate(ResultSet rs, String column) throws SQLException {
         return rs.getObject(column, LocalDate.class);
     }
 
-    static Integer integer(ResultSet rs, String column) throws SQLException {
+    public static Integer integer(ResultSet rs, String column) throws SQLException {
         Object value = rs.getObject(column);
         if (value == null) {
             return null;
@@ -29,7 +29,7 @@ final class LegacyResultSets {
         throw new SQLException("Ожидалось число в колонке " + column + ", получено " + value.getClass().getName());
     }
 
-    static Boolean flag(ResultSet rs, String column) throws SQLException {
+    public static Boolean flag(ResultSet rs, String column) throws SQLException {
         Integer value = integer(rs, column);
         if (value == null) {
             return null;

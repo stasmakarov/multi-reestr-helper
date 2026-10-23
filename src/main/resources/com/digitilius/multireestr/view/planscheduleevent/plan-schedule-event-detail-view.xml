@@ -7,6 +7,7 @@
             <fetchPlan extends="_base"/>
             <loader id="planScheduleEventDl"/>
         </instance>
+        <collection id="planHintsDc" class="com.digitilius.multireestr.entity.legacy.PlanScheduleDto"/>
     </data>
     <facets>
         <dataLoadCoordinator auto="true"/>
@@ -16,6 +17,11 @@
         <action id="closeAction" type="detail_close"/>
     </actions>
     <layout>
+        <comboBox id="planHintComboBox"
+                  label="msg://planHintComboBox.label"
+                  placeholder="msg://planHintComboBox.placeholder"
+                  itemsContainer="planHintsDc"
+                  width="100%"/>
         <formLayout id="form" dataContainer="planScheduleEventDc">
             <integerField id="finYearField" property="finYear"/>
             <integerField id="planVersionField" property="planVersion"/>
