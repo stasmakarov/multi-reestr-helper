@@ -2,10 +2,228 @@
 <view xmlns="http://jmix.io/schema/flowui/view"
       title="msg://noticeDetailView.title"
       focusComponent="backBtn">
+    <data readOnly="true">
+        <instance id="noticeDc" class="com.digitilius.multireestr.entity.legacy.NoticeDto">
+            <instance id="customerDc" property="customer"/>
+            <collection id="lotsDc" property="lots"/>
+            <collection id="financesDc" property="finances"/>
+            <collection id="documentsDc" property="documents"/>
+            <collection id="itemsDc" property="items">
+                <collection id="characteristicsDc" property="characteristics"/>
+            </collection>
+            <collection id="protocolsDc" property="protocols"/>
+            <instance id="contractDc" property="contract">
+                <instance id="supplierDc" property="supplier"/>
+                <collection id="contractItemsDc" property="items"/>
+                <collection id="executionsDc" property="executions"/>
+            </instance>
+        </instance>
+    </data>
     <layout>
         <hbox id="buttonsPanel" classNames="buttons-panel">
             <button id="backBtn" text="msg://backToSearch.text"/>
+            <button id="excelBtn" text="msg://excelBtn.text" enabled="false"/>
         </hbox>
-        <span id="numberSpan"/>
+        <vbox id="notFoundBox" width="100%" visible="false">
+            <span id="notFoundSpan" classNames="notice-empty-message"/>
+        </vbox>
+        <vbox id="cardBox" width="100%" padding="false" visible="false">
+            <vbox id="warningsBox" width="100%" visible="false" classNames="notice-warnings"/>
+            <formLayout id="headerForm" dataContainer="noticeDc" width="100%">
+                <textField id="numberField" property="number" readOnly="true"/>
+                <textField id="lawField" property="law" readOnly="true"/>
+                <textField id="methodNameField" property="methodName" readOnly="true"/>
+                <textField id="nmckField" property="nmck" readOnly="true"/>
+                <dateTimePicker id="publishedAtField" property="publishedAt" readOnly="true"/>
+                <integerField id="modifVersionField" property="modifVersion" readOnly="true"/>
+                <textField id="customerNameField" dataContainer="customerDc" property="name" readOnly="true"/>
+                <textField id="customerInnField" dataContainer="customerDc" property="inn" readOnly="true"/>
+                <textArea id="subjectField" property="subject" readOnly="true" colspan="2" height="5em"/>
+                <hbox id="eisUrlRow" colspan="2" alignItems="CENTER" classNames="eis-url-row">
+                    <span id="eisUrlCaption" text="msg://eisUrl.label"/>
+                    <anchor id="eisUrlAnchor"/>
+                </hbox>
+            </formLayout>
+            <tabSheet id="tabs" width="100%">
+                <tab id="noticeTab" label="msg://tab.notice">
+                    <vbox id="noticeTabBox" width="100%" padding="false">
+                        <formLayout id="noticeForm" dataContainer="noticeDc" width="100%">
+                            <textField id="ikzField" property="ikz" readOnly="true"/>
+                            <textField id="planPositionField" property="planPosition" readOnly="true"/>
+                            <dateTimePicker id="applicationsFromField" property="applicationsFrom" readOnly="true"/>
+                            <dateTimePicker id="applicationsToField" property="applicationsTo" readOnly="true"/>
+                            <datePicker id="biddingDateField" property="biddingDate" readOnly="true"/>
+                            <datePicker id="summarizingDateField" property="summarizingDate" readOnly="true"/>
+                            <textField id="appGuaranteeAmountField" property="appGuaranteeAmount" readOnly="true"/>
+                            <textField id="appGuaranteePctField" property="appGuaranteePct" readOnly="true"/>
+                            <textField id="contractGuaranteePctField" property="contractGuaranteePct" readOnly="true"/>
+                            <integerField id="executionTermDaysField" property="executionTermDays" readOnly="true"/>
+                            <datePicker id="executionEndDateField" property="executionEndDate" readOnly="true"/>
+                            <textField id="platformField" property="platform" readOnly="true"/>
+                            <textArea id="preferencesField" property="preferences" readOnly="true" colspan="2"
+                                      height="4em"/>
+                        </formLayout>
+                        <span id="lotsTitle" text="msg://lots.title" classNames="section-title"/>
+                        <dataGrid id="lotsGrid"
+                                  dataContainer="lotsDc"
+                                  width="100%"
+                                  minHeight="8em"
+                                  columnReorderingAllowed="true">
+                            <columns resizable="true">
+                                <column property="number" autoWidth="true"/>
+                                <column property="maxPrice" autoWidth="true"/>
+                                <column property="currency" autoWidth="true"/>
+                            </columns>
+                        </dataGrid>
+                        <span id="financesTitle" text="msg://finances.title" classNames="section-title"/>
+                        <dataGrid id="financesGrid"
+                                  dataContainer="financesDc"
+                                  width="100%"
+                                  minHeight="8em"
+                                  columnReorderingAllowed="true">
+                            <columns resizable="true">
+                                <column property="kbk" autoWidth="true"/>
+                                <column property="finYear" autoWidth="true"/>
+                                <column property="amount" autoWidth="true"/>
+                            </columns>
+                        </dataGrid>
+                        <span id="documentsTitle" text="msg://documents.title" classNames="section-title"/>
+                        <dataGrid id="documentsGrid"
+                                  dataContainer="documentsDc"
+                                  width="100%"
+                                  minHeight="8em"
+                                  columnReorderingAllowed="true">
+                            <columns resizable="true">
+                                <column property="name" flexGrow="1"/>
+                                <column property="url" flexGrow="1"/>
+                            </columns>
+                        </dataGrid>
+                    </vbox>
+                </tab>
+                <tab id="specificationTab" label="msg://tab.specification">
+                    <vbox id="specificationTabBox" width="100%" padding="false">
+                        <span id="itemsTitle" text="msg://items.title" classNames="section-title"/>
+                        <dataGrid id="itemsGrid"
+                                  dataContainer="itemsDc"
+                                  width="100%"
+                                  minHeight="16em"
+                                  columnReorderingAllowed="true">
+                            <columns resizable="true">
+                                <column property="pos" autoWidth="true"/>
+                                <column property="name" flexGrow="1"/>
+                                <column property="okpd2" autoWidth="true"/>
+                                <column property="ktru" autoWidth="true"/>
+                                <column property="qty" autoWidth="true"/>
+                                <column property="unit" autoWidth="true"/>
+                                <column property="price" autoWidth="true"/>
+                                <column property="amount" autoWidth="true"/>
+                                <column property="foreignBan" autoWidth="true"/>
+                                <column property="foreignRestriction" autoWidth="true"/>
+                                <column property="rfPreference" autoWidth="true"/>
+                                <column property="banImpossible" autoWidth="true"/>
+                                <column property="characteristicsText" flexGrow="1"/>
+                            </columns>
+                        </dataGrid>
+                        <span id="characteristicsTitle" text="msg://characteristics.title" classNames="section-title"/>
+                        <dataGrid id="characteristicsGrid"
+                                  dataContainer="characteristicsDc"
+                                  width="100%"
+                                  minHeight="10em"
+                                  columnReorderingAllowed="true">
+                            <columns resizable="true">
+                                <column property="name" flexGrow="1"/>
+                                <column property="value" flexGrow="1"/>
+                                <column property="fromEis" autoWidth="true"/>
+                                <column property="required" autoWidth="true"/>
+                            </columns>
+                        </dataGrid>
+                    </vbox>
+                </tab>
+                <tab id="protocolsTab" label="msg://tab.protocols">
+                    <vbox id="protocolsTabBox" width="100%" padding="false">
+                        <dataGrid id="protocolsGrid"
+                                  dataContainer="protocolsDc"
+                                  width="100%"
+                                  minHeight="16em"
+                                  columnReorderingAllowed="true">
+                            <columns resizable="true">
+                                <column property="number" autoWidth="true"/>
+                                <column property="date" autoWidth="true">
+                                    <localDateRenderer format="dd.MM.yyyy"/>
+                                </column>
+                                <column property="typeName" flexGrow="1"/>
+                            </columns>
+                        </dataGrid>
+                    </vbox>
+                </tab>
+                <tab id="contractTab" label="msg://tab.contract">
+                    <vbox id="contractTabBox" width="100%" padding="false">
+                        <vbox id="noContractBox" width="100%" visible="false">
+                            <span id="noContractSpan" text="msg://noContract" classNames="notice-empty-message"/>
+                        </vbox>
+                        <vbox id="contractBox" width="100%" padding="false" visible="false">
+                            <formLayout id="contractForm" dataContainer="contractDc" width="100%">
+                                <textField id="contractNumberField" property="number" readOnly="true"/>
+                                <textField id="registryNumberField" property="registryNumber" readOnly="true"/>
+                                <datePicker id="contractDateField" property="date" readOnly="true"/>
+                                <datePicker id="contractEndDateField" property="endDate" readOnly="true"/>
+                                <textField id="contractPriceField" property="price" readOnly="true"/>
+                                <textField id="reductionPctField" property="reductionPct" readOnly="true"/>
+                                <textField id="paidTotalField" property="paidTotal" readOnly="true"/>
+                                <textField id="supplierNameField" dataContainer="supplierDc" property="name"
+                                           readOnly="true"/>
+                                <textField id="supplierInnField" dataContainer="supplierDc" property="inn"
+                                           readOnly="true"/>
+                            </formLayout>
+                            <span id="contractItemsTitle" text="msg://contractItems.title" classNames="section-title"/>
+                            <dataGrid id="contractItemsGrid"
+                                      dataContainer="contractItemsDc"
+                                      width="100%"
+                                      minHeight="10em"
+                                      columnReorderingAllowed="true">
+                                <columns resizable="true">
+                                    <column property="name" flexGrow="1"/>
+                                    <column property="okpd2" autoWidth="true"/>
+                                    <column property="ktru" autoWidth="true"/>
+                                    <column property="qty" autoWidth="true"/>
+                                    <column property="unit" autoWidth="true"/>
+                                    <column property="price" autoWidth="true"/>
+                                    <column property="amount" autoWidth="true"/>
+                                </columns>
+                            </dataGrid>
+                            <span id="executionsTitle" text="msg://executions.title" classNames="section-title"/>
+                            <dataGrid id="executionsGrid"
+                                      dataContainer="executionsDc"
+                                      width="100%"
+                                      minHeight="12em"
+                                      columnReorderingAllowed="true">
+                                <columns resizable="true">
+                                    <column property="kind" autoWidth="true"/>
+                                    <column property="stageNumber" autoWidth="true"/>
+                                    <column property="stageEndDate" autoWidth="true">
+                                        <localDateRenderer format="dd.MM.yyyy"/>
+                                    </column>
+                                    <column property="docName" autoWidth="true"/>
+                                    <column property="docNumber" autoWidth="true"/>
+                                    <column property="docDate" autoWidth="true">
+                                        <localDateRenderer format="dd.MM.yyyy"/>
+                                    </column>
+                                    <column property="acceptDate" autoWidth="true">
+                                        <localDateRenderer format="dd.MM.yyyy"/>
+                                    </column>
+                                    <column property="amount" autoWidth="true"/>
+                                    <column property="penaltyInfo" flexGrow="1"/>
+                                    <column property="improperExecution" flexGrow="1"/>
+                                </columns>
+                            </dataGrid>
+                            <hbox id="paidTotalRow" alignItems="CENTER" classNames="paid-total-row">
+                                <span id="paidTotalLabel" text="msg://paidTotal.label"/>
+                                <span id="paidTotalValue"/>
+                            </hbox>
+                        </vbox>
+                    </vbox>
+                </tab>
+            </tabSheet>
+        </vbox>
     </layout>
 </view>
