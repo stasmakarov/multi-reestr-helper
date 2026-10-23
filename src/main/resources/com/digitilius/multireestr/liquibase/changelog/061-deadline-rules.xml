@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/061-deadline-rules.xml">
+
+    <changeSet id="1" author="multi-reestr">
+        <insert tableName="MTR_RULE">
+            <column name="ID" value="c6666666-6666-4666-8666-666666666666"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="CODE" value="R09_DELIVERY"/>
+            <column name="NAME" value="Срок поставки по контракту"/>
+            <column name="TEMPLATE_TYPE" value="DEADLINE"/>
+            <column name="OBJECT_TYPE" value="CONTRACT"/>
+            <column name="SEVERITY" value="ERROR"/>
+            <column name="LEGAL_REF" value="срок поставки по контракту (замечание 9)"/>
+            <column name="EXPLANATION_TEMPLATE" value="Срок поставки {due}: факт {fact}, отклонение {days} дн."/>
+            <column name="ENABLED" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="Плановый контроль ContractTerm DELIVERY"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="MTR_RULE">
+            <column name="ID" value="c7777777-7777-4777-8777-777777777777"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="CODE" value="R10_ACCEPTANCE"/>
+            <column name="NAME" value="Срок приёмки по контракту"/>
+            <column name="TEMPLATE_TYPE" value="DEADLINE"/>
+            <column name="OBJECT_TYPE" value="CONTRACT"/>
+            <column name="SEVERITY" value="ERROR"/>
+            <column name="LEGAL_REF" value="срок приёмки по контракту (замечание 10)"/>
+            <column name="EXPLANATION_TEMPLATE" value="Срок приёмки {due}: факт {fact}, отклонение {days} дн."/>
+            <column name="ENABLED" valueBoolean="true"/>
+            <column name="DESCRIPTION" value="Плановый контроль ContractTerm ACCEPTANCE"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="MTR_RULE_VERSION">
+            <column name="ID" value="d9999999-9999-4999-8999-999999999999"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="RULE_ID" value="c6666666-6666-4666-8666-666666666666"/>
+            <column name="VERSION_NUMBER" valueNumeric="1"/>
+            <column name="STATUS" valueNumeric="20"/>
+            <column name="VALID_FROM" valueDate="2024-01-01"/>
+            <column name="CHANGE_NOTE" value="Начальная версия"/>
+            <column name="APPROVED_BY" value="system"/>
+            <column name="APPROVED_AT" valueDate="2026-01-01T00:00:00"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+        <insert tableName="MTR_RULE_VERSION">
+            <column name="ID" value="daaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"/>
+            <column name="VERSION" valueNumeric="1"/>
+            <column name="RULE_ID" value="c7777777-7777-4777-8777-777777777777"/>
+            <column name="VERSION_NUMBER" valueNumeric="1"/>
+            <column name="STATUS" valueNumeric="20"/>
+            <column name="VALID_FROM" valueDate="2024-01-01"/>
+            <column name="CHANGE_NOTE" value="Начальная версия"/>
+            <column name="APPROVED_BY" value="system"/>
+            <column name="APPROVED_AT" valueDate="2026-01-01T00:00:00"/>
+            <column name="CREATED_BY" value="system"/>
+            <column name="CREATED_DATE" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

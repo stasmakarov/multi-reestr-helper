@@ -103,6 +103,22 @@ class ViolationMergeTest {
     }
 
     @Test
+    void applyDeadlineSetsDueFactAndDeviation() {
+        Violation created = new Violation();
+        ViolationMerge.initNew(
+                created, hit(), rule(), version(), 18, "контракт 18", run(),
+                OffsetDateTime.parse("2026-02-01T10:00:00Z"));
+        ViolationMerge.applyDeadline(created, java.time.LocalDate.of(2026, 1, 22),
+                java.time.LocalDate.of(2026, 1, 23), 1);
+
+        assertThat(created.getLegacyId()).isEqualTo(18);
+        assertThat(created.getObjectCaption()).isEqualTo("контракт 18");
+        assertThat(created.getDueDate()).isEqualTo(java.time.LocalDate.of(2026, 1, 22));
+        assertThat(created.getFactDate()).isEqualTo(java.time.LocalDate.of(2026, 1, 23));
+        assertThat(created.getDeviationDays()).isEqualTo(1);
+    }
+
+    @Test
     void falsePositiveIsNotMarkedFixedWhenHitGone() {
         Violation existing = acknowledged();
         existing.setStatus(ViolationStatus.FALSE_POSITIVE);

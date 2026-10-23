@@ -26,12 +26,14 @@ public class NoticeLookupService {
 
     private static final String BY_NUMBER_SQL = "classpath:sql/legacy/notice-candidates-by-number.sql";
     private static final String BY_DATE_SUBJECT_SQL = "classpath:sql/legacy/notice-candidates-by-date-subject.sql";
+    private static final String BY_PERIOD_SQL = "classpath:sql/legacy/notice-candidates-by-publish-period.sql";
 
     private final NamedParameterJdbcTemplate legacyJdbc;
     private final NoticeCandidateRowMapper rowMapper;
     private final NoticeOriginalSelector selector;
     private final String byNumberSql;
     private final String byDateSubjectSql;
+    private final String byPeriodSql;
 
     public NoticeLookupService(
             @Qualifier("legacyJdbc") NamedParameterJdbcTemplate legacyJdbc,
@@ -43,6 +45,7 @@ public class NoticeLookupService {
         this.selector = new NoticeOriginalSelector();
         this.byNumberSql = LegacySqlLoader.load(resourceLoader, BY_NUMBER_SQL);
         this.byDateSubjectSql = LegacySqlLoader.load(resourceLoader, BY_DATE_SUBJECT_SQL);
+        this.byPeriodSql = LegacySqlLoader.load(resourceLoader, BY_PERIOD_SQL);
     }
 
     public List<NoticeCandidateDto> findByNumber(NoticeNumber number) {
@@ -52,6 +55,25 @@ public class NoticeLookupService {
                 rowMapper
         );
         return selector.markAndSort(candidates);
+    }
+
+    public List<NoticeCandidateDto> findOriginalsPublishedBetween(LocalDate from, LocalDate to, int max) {
+        if (from == null || to == null) {
+            throw new IllegalArgumentException("Нужен период публикации");
+        }
+        if (max <= 0) {
+            return List.of();
+        }
+        int maxGroups = max;
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("fromDate", from);
+        params.addValue("toDate", to);
+        params.addValue("maxGroups", maxGroups);
+        List<NoticeCandidateDto> candidates = legacyJdbc.query(byPeriodSql, params, rowMapper);
+        return markByNumberGroups(selector, candidates).stream()
+                .filter(candidate -> Boolean.TRUE.equals(candidate.getChosen()))
+                .limit(maxGroups)
+                .toList();
     }
 
     public DateSubjectLookup findByDateAndSubject(LocalDate date, String subjectFragment) {

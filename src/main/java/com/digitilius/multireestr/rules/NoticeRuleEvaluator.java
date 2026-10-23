@@ -73,7 +73,7 @@ public class NoticeRuleEvaluator {
         return new NoticeCheckOutcome(List.copyOf(results), Set.copyOf(evaluatedRuleIds), Map.copyOf(bindings));
     }
 
-    static RuleVersion activeVersionOn(Rule rule, LocalDate date) {
+    public static RuleVersion activeVersionOn(Rule rule, LocalDate date) {
         if (rule.getVersions() == null) {
             return null;
         }
