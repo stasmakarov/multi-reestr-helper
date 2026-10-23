@@ -153,30 +153,18 @@ public class LegacyDataSourceProperties {
         private long initializationFailTimeout = -1;
 ```
 
-**Почему так.** Пустой `url` по умолчанию означает «legacy не настроена»: на этом построено условное создание бинов (шаг 4.3). `initializationFailTimeout = -1` говорит Hikari не проверять соединение при создании пула, поэтому приложение стартует и без legacy.
+**Почему так.** Пустой `url` по умолчанию означает «пула нет»: бины `legacy` / `legacyJdbc` всё равно есть (обёртка без целевого Hikari, шаг 4.3 и раздел 11). `initializationFailTimeout = -1` говорит Hikari не проверять соединение при создании пула, поэтому приложение стартует и без legacy.
 
 ### 4.3. Пул и шаблон: `LegacyDataSourceConfiguration`
 
 ```java
 @Configuration
-@ConditionalOnExpression("'${legacy.datasource.url:}'.length() > 0")
 @EnableConfigurationProperties(LegacyDataSourceProperties.class)
 public class LegacyDataSourceConfiguration {
 
     @Bean("legacy")
-    DataSource legacyDataSource(LegacyDataSourceProperties properties) {
-        HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(properties.getUrl());
-        ...
-        dataSource.setReadOnly(true);
-        dataSource.addDataSourceProperty("readOnly", "true");
-        dataSource.addDataSourceProperty("readOnlyMode", "always");
-
-        LegacyDataSourceProperties.Hikari hikari = properties.getHikari();
-        dataSource.setReadOnly(hikari.isReadOnly());
-        ...
-        dataSource.setInitializationFailTimeout(hikari.getInitializationFailTimeout());
-        return dataSource;
+    SwappableLegacyDataSource legacyDataSource(...) {
+        // всегда: обёртка DelegatingDataSource над сменяемым Hikari-пулом (или без пула)
     }
 
     @Bean("legacyJdbc")
@@ -188,7 +176,7 @@ public class LegacyDataSourceConfiguration {
 
 Что здесь важно:
 
-- **`@ConditionalOnExpression`**: если URL пуст, бинов `legacy` и `legacyJdbc` в контексте нет вообще.
+- **Бины `legacy` и `legacyJdbc` создаются всегда.** Если URL пуст и нет включённой записи настроек, у обёртки нет целевого пула: `getConnection()` даёт «БД MultiReestr не настроена». Так пул можно создать или заменить из UI без перезапуска (раздел 11).
 - **Параметры драйвера `readOnly` / `readOnlyMode` заданы в Java** через `addDataSourceProperty`, а не в URL. Так их невозможно «забыть» в конфиге конкретного стенда.
 - **Пул не помечен `@Primary`.** Основным остаётся DataSource `main`, который сгенерировал Studio. Поэтому Jmix создаёт JPA и Liquibase только для main.
 - **`legacy` не прописан в `jmix.core.additional-stores`**: для Jmix это просто Spring-бин, а не хранилище.
@@ -211,12 +199,12 @@ legacy.datasource.hikari.initialization-fail-timeout=-1
 
 ### 4.5. Информация о подключении: `LegacyDbInfo` и `LegacyDbStatus`
 
-`LegacyDbInfo` получает `legacyJdbc` как **необязательную** зависимость, потому что бина может не быть:
+`LegacyDbInfo` всегда получает `legacyJdbc` и обёртку `legacy`. Хост и порт берёт из текущего JDBC-URL обёртки, а не через `instanceof HikariDataSource`. Если пула нет, `check()` возвращает `ok=false` и `"Legacy DataSource is not configured"`:
 
 ```java
 public LegacyDbInfo(
-        @Autowired(required = false) @Qualifier("legacyJdbc") NamedParameterJdbcTemplate legacyJdbc,
-        @Autowired(required = false) @Qualifier("legacy") DataSource legacyDataSource
+        @Qualifier("legacyJdbc") NamedParameterJdbcTemplate legacyJdbc,
+        @Qualifier("legacy") DataSource legacyDataSource
 ) {
 ```
 
@@ -229,15 +217,15 @@ select version() as server_version,
        current_setting('transaction_read_only') as tx_read_only
 ```
 
-Результат складывается в record `LegacyDbStatus(ok, serverVersion, currentUser, database, host, port, readOnly, responseMs, error)`. Метод **никогда не бросает исключение**: ошибка подключения превращается в `ok=false` и текст `error`. Пароль в тексте ошибки маскируется (`password=***`). Если бина `legacyJdbc` нет, в `error` попадает строка `"Legacy DataSource is not configured"`.
+Результат складывается в record `LegacyDbStatus(ok, serverVersion, currentUser, database, host, port, readOnly, responseMs, error, privilegeWarning)`. Метод **никогда не бросает исключение**: ошибка подключения превращается в `ok=false` и текст `error`. Пароль в тексте ошибки маскируется (`password=***`). Если пула нет, в `error` попадает строка `"Legacy DataSource is not configured"`.
 
 ### 4.6. Предупреждение при старте: `LegacyAvailabilityListener`
 
 ```java
 @EventListener
 public void onApplicationStarted(ApplicationStartedEvent event) {
-    String url = environment.getProperty("legacy.datasource.url", "");
-    if (url.isBlank()) {
+    legacyConnectionService.applyPersistedSettingsIfPresent();
+    if (!legacyDbInfo.hasPool()) {
         log.warn("Legacy MultiReestr database is not configured (...). Application continues without it.");
         return;
     }
@@ -258,6 +246,7 @@ public void onApplicationStarted(ApplicationStartedEvent event) {
 
 ```xml
 <menu id="administration" title="msg://com.digitilius.multireestr/menu.administration.title" opened="true">
+    <item view="mtr_User.list" title="msg://com.digitilius.multireestr.view.user/UserListView.title"/>
     <item view="mtr_LegacyConnectionView"
           title="msg://com.digitilius.multireestr.view.legacyconnection/legacyConnectionView.title"/>
 </menu>
@@ -319,8 +308,10 @@ public void onCheckButtonClick(final ClickEvent<JmixButton> event) {
 |---|---|
 | `LegacyDataSourceIntegrationTest` (`@SpringBootTest`, профиль `test`) | Поднимает контейнер 9.6, создаёт роль `reestr_ro` и таблицу `legacy_probe`, подставляет URL через `@DynamicPropertySource`. Проверяет, что `version()` содержит «9.6», что `INSERT` через `legacyJdbc` падает (`read-only` / `cannot execute`) и что `CREATE TABLE` падает (`read-only` / `permission denied`) |
 | `LegacyDbInfoCheckTest` (без Spring) | `check()` на контейнере 9.6 возвращает `ok`, `readOnly = true`, версию 9.6, хост, порт и имя БД. На недоступном хосте `127.0.0.1:1` `check()` **не бросает исключение**, а возвращает `ok=false` с текстом ошибки |
-| `LegacyOptionalStartupTest` | Контекст Jmix стартует без legacy: бина `legacyJdbc` нет, `fetchPostgresVersion()` пустой |
-| `LegacyConnectionViewUiTest` (`@UiTest`) | Экран открывается, нажатие кнопки без legacy не роняет UI: «Статус» и «Ошибка» заполнены |
+| `LegacyOptionalStartupTest` | Контекст Jmix стартует без URL: бины `legacy` / `legacyJdbc` есть, пула нет, `check()` = «не настроено» |
+| `LegacyConnectionViewUiTest` (`@UiTest`) | Экран с формой открывается, нажатие «Проверить подключение» без пула не роняет UI: «Статус» и «Ошибка» заполнены |
+| `LegacySecretCipherTest` | Шифрование и расшифровка; без ключа сохранить пароль нельзя |
+| `LegacyPoolSwapIntegrationTest` | Переключение пула между двумя контейнерами `postgres:9.6` без перезапуска; `INSERT` по-прежнему read-only; «Сохранить и применить» пишет зашифрованный пароль |
 
 Фрагмент подготовки роли в интеграционном тесте:
 
@@ -331,14 +322,14 @@ statement.execute("CREATE TABLE legacy_probe(id int)");
 statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
 ```
 
-> Обратите внимание: `LegacyOptionalStartupTest` и `LegacyConnectionViewUiTest` рассчитаны на запуск **без** legacy. Если `legacy.datasource.url` прописан в основном `application.properties`, профиль `test` должен его переопределить пустым значением, иначе бины legacy создадутся и тесты упадут.
+> Обратите внимание: `LegacyOptionalStartupTest` и `LegacyConnectionViewUiTest` рассчитаны на запуск **без** пула. Если `legacy.datasource.url` прописан в основном `application.properties`, профиль `test` должен его переопределить пустым значением, иначе при старте появится пул из свойств.
 
 ## 8. Типичные ошибки
 
 | Симптом | Причина | Что делать |
 |---|---|---|
 | `docker: ... port is already allocated` / `bind: address already in use` | Порт занят локальным Postgres или другим контейнером | `lsof -i :5435`; выберите свободный порт в `-p` и поправьте `legacy.datasource.url` |
-| На экране «Ошибка: Legacy DataSource is not configured» | `legacy.datasource.url` пуст, и бины не создались (`@ConditionalOnExpression`) | Проверьте `application.properties` и активный профиль, который мог переопределить URL пустым значением |
+| На экране «Ошибка: Legacy DataSource is not configured» | Пула нет: пустой URL, нет включённой записи настроек, или `enabled = false` и свойств тоже нет | Проверьте экран «Подключение к MultiReestr», `application.properties` и активный профиль |
 | `Connection refused` / timeout | Контейнер не запущен или ещё стартует | `dev/legacy/legacy-db.sh status`, затем `dev/legacy/legacy-db.sh up` |
 | `password authentication failed for user "reestr_ro"` | Роль не создана или у неё другой пароль | Выполните раздел 3 `LEGACY_DOCKER.md` |
 | `permission denied for relation ...` при **чтении** | Новый SQL читает таблицу, которой нет в `dev/legacy/grant-readonly.sql` (`SELECT` выдаётся только на таблицы из `sql/legacy/**`) | Добавьте таблицу в `grant-readonly.sql` и выполните `dev/legacy/legacy-db.sh grant`. `GRANT SELECT ON ALL TABLES` не используйте |
@@ -362,7 +353,7 @@ statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
 - [ ] Роль `reestr_ro` создана, `DELETE` под ней даёт `permission denied`.
 - [ ] Права роли выданы через `dev/legacy/grant-readonly.sql`: `SELECT` только на 19 таблиц, `SELECT count(*) FROM userinfo` под `reestr_ro` даёт `permission denied`.
 - [ ] `application.properties`: main на HSQLDB, legacy на `localhost:5435/reestrdb`.
-- [ ] Бины `legacy` и `legacyJdbc` создаются только при непустом URL; `@Primary` остался у main.
+- [ ] Бины `legacy` и `legacyJdbc` создаются всегда (обёртка над сменяемым пулом); без URL и без включённой записи пула нет, приложение стартует; `@Primary` остался у main.
 - [ ] Драйвер получает `readOnly=true` и `readOnlyMode=always` из Java; Hikari `read-only=true`.
 - [ ] Приложение стартует при остановленном контейнере (в логе есть `WARN ... continues without it`).
 - [ ] Экран «Администрирование → Подключение к MultiReestr» показывает `OK`, `reestr_ro`, «Только чтение: да».

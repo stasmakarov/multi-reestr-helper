@@ -2,10 +2,9 @@ package com.digitilius.multireestr.legacy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.env.Environment;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -15,19 +14,22 @@ public class LegacyAvailabilityListener {
 
     private static final Logger log = LoggerFactory.getLogger(LegacyAvailabilityListener.class);
 
-    private final Environment environment;
+    private final LegacyConnectionService legacyConnectionService;
     private final LegacyDbInfo legacyDbInfo;
 
-    @Autowired
-    public LegacyAvailabilityListener(Environment environment, LegacyDbInfo legacyDbInfo) {
-        this.environment = environment;
+    public LegacyAvailabilityListener(
+            LegacyConnectionService legacyConnectionService,
+            LegacyDbInfo legacyDbInfo
+    ) {
+        this.legacyConnectionService = legacyConnectionService;
         this.legacyDbInfo = legacyDbInfo;
     }
 
     @EventListener
+    @Order(0)
     public void onApplicationStarted(ApplicationStartedEvent event) {
-        String url = environment.getProperty("legacy.datasource.url", "");
-        if (url.isBlank()) {
+        legacyConnectionService.applyPersistedSettingsIfPresent();
+        if (!legacyDbInfo.hasPool()) {
             log.warn("Legacy MultiReestr database is not configured. Application continues without it.");
             return;
         }
@@ -36,7 +38,7 @@ public class LegacyAvailabilityListener {
             if (version.isPresent()) {
                 log.info("Connected to legacy MultiReestr database: {}", version.get());
             } else {
-                log.warn("Legacy MultiReestr database is configured but JDBC is not available. Application continues without it.");
+                log.warn("Legacy MultiReestr database is configured but not available. Application continues without it.");
             }
         } catch (Exception e) {
             log.warn("Legacy MultiReestr database is configured but not available: {}. Application continues without it.",

@@ -19,5 +19,10 @@ cp dev/deploy/*.ps1 "$OUT/"
 cp dev/deploy/application-windows.properties.example "$OUT/config/"
 cp dev/legacy/grant-readonly.sql "$OUT/sql/"
 
+if jar tf "$OUT/multi-reestr.jar" | grep -q vaadin-dev; then
+  echo "Ошибка: production-jar содержит vaadin-dev" >&2
+  exit 1
+fi
+
 echo "Готово: $OUT"
 echo "Скопируйте папку на Windows-машину в C:\\multi-reestr (см. docs/deploy-windows.md)."
