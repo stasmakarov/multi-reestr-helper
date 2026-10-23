@@ -7,6 +7,8 @@
 -- Никаких GRANT ... ON ALL TABLES и ALTER DEFAULT PRIVILEGES: остальные таблицы дампа
 -- (в том числе userinfo с учётными данными) роли не видны.
 -- Новый запрос читает ещё одну таблицу → добавьте её в список ниже и выполните скрипт заново.
+-- planzakuppackets есть на живой MultiReestr; в тестовом дампе таблицы нет —
+-- Testcontainers создаёт пустую оболочку только чтобы GRANT не падал.
 -- Скрипт идемпотентен: сначала снимает все табличные права роли, затем выдаёт список заново.
 
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM reestr_ro;
@@ -33,5 +35,6 @@ GRANT SELECT ON TABLE
     reestr,
     reestrspec,
     reestrprocedures,
-    reestrprocexecutions
+    reestrprocexecutions,
+    planzakuppackets
 TO reestr_ro;

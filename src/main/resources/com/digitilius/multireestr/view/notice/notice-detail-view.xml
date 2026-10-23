@@ -25,6 +25,7 @@
             <button id="excelBtn" text="msg://excelBtn.text" enabled="false"/>
             <button id="checkBtn" text="msg://checkBtn.text" enabled="false"/>
             <button id="violationsBtn" text="msg://violationsBtn.text" enabled="false"/>
+            <button id="contractTermsBtn" text="msg://contractTermsBtn.text" enabled="false"/>
         </hbox>
         <vbox id="notFoundBox" width="100%" visible="false">
             <span id="notFoundSpan" classNames="notice-empty-message"/>

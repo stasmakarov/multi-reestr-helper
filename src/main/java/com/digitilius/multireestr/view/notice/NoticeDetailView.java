@@ -16,6 +16,7 @@ import com.digitilius.multireestr.legacy.notice.NoticeExcelExporter;
 import com.digitilius.multireestr.legacy.notice.NoticeNumber;
 import com.digitilius.multireestr.rules.OnDemandCheckService;
 import com.digitilius.multireestr.view.checkresult.CheckResultDialog;
+import com.digitilius.multireestr.view.contractterm.ContractTermListView;
 import com.digitilius.multireestr.view.main.MainView;
 import com.digitilius.multireestr.view.violation.ViolationListView;
 import com.vaadin.flow.component.ClickEvent;
@@ -110,6 +111,8 @@ public class NoticeDetailView extends StandardView {
     private JmixButton checkBtn;
     @ViewComponent
     private JmixButton violationsBtn;
+    @ViewComponent
+    private JmixButton contractTermsBtn;
 
     @Autowired
     private ViewNavigators viewNavigators;
@@ -173,6 +176,17 @@ public class NoticeDetailView extends StandardView {
                 .navigate();
     }
 
+    @Subscribe("contractTermsBtn")
+    public void onContractTermsBtnClick(final ClickEvent<JmixButton> event) {
+        ContractDto contract = contractDc.getItemOrNull();
+        if (contract == null || contract.getId() == null) {
+            return;
+        }
+        viewNavigators.view(this, ContractTermListView.class)
+                .withQueryParameters(QueryParameters.of("contractLegacyId", String.valueOf(contract.getId())))
+                .navigate();
+    }
+
     @Subscribe("excelBtn")
     public void onExcelBtnClick(final ClickEvent<JmixButton> event) {
         NoticeDto notice = noticeDc.getItemOrNull();
@@ -222,6 +236,7 @@ public class NoticeDetailView extends StandardView {
         excelBtn.setEnabled(false);
         checkBtn.setEnabled(false);
         violationsBtn.setEnabled(false);
+        contractTermsBtn.setEnabled(false);
     }
 
     private void showNotice(NoticeDto notice) {
@@ -241,6 +256,7 @@ public class NoticeDetailView extends StandardView {
         showEisUrl(notice.getEisUrl());
 
         ContractDto contract = notice.getContract();
+        contractTermsBtn.setEnabled(contract != null && contract.getId() != null);
         if (contract == null) {
             contractBox.setVisible(false);
             noContractBox.setVisible(true);

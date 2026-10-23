@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-final class LegacySqlLoader {
+public final class LegacySqlLoader {
 
     private LegacySqlLoader() {
     }
 
-    static String load(ResourceLoader resourceLoader, String location) {
+    public static String load(ResourceLoader resourceLoader, String location) {
         Resource resource = resourceLoader.getResource(location);
         try {
             return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
