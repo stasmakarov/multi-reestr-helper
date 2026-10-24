@@ -6,14 +6,12 @@ import com.digitilius.multireestr.entity.CheckRunStatus;
 import com.digitilius.multireestr.entity.RuleObjectType;
 import com.digitilius.multireestr.entity.Violation;
 import com.digitilius.multireestr.entity.ViolationStatus;
-import com.digitilius.multireestr.entity.legacy.CheckResultDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
 import com.digitilius.multireestr.security.MultiReestrSpecifics;
 import io.jmix.core.DataManager;
 import io.jmix.core.FetchPlan;
 import io.jmix.core.FetchPlans;
 import io.jmix.core.Metadata;
-import io.jmix.core.SaveContext;
 import io.jmix.core.UnconstrainedDataManager;
 import io.jmix.core.accesscontext.SpecificOperationAccessContext;
 import io.jmix.core.AccessManager;
@@ -22,11 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.LinkedHashMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -37,6 +30,7 @@ public class OnDemandCheckService {
     private final FetchPlans fetchPlans;
     private final Metadata metadata;
     private final NoticeRuleEvaluator noticeRuleEvaluator;
+    private final ViolationRegistryService violationRegistryService;
     private final AccessManager accessManager;
     private final CurrentAuthentication currentAuthentication;
 
@@ -46,6 +40,7 @@ public class OnDemandCheckService {
             FetchPlans fetchPlans,
             Metadata metadata,
             NoticeRuleEvaluator noticeRuleEvaluator,
+            ViolationRegistryService violationRegistryService,
             AccessManager accessManager,
             CurrentAuthentication currentAuthentication
     ) {
@@ -54,6 +49,7 @@ public class OnDemandCheckService {
         this.fetchPlans = fetchPlans;
         this.metadata = metadata;
         this.noticeRuleEvaluator = noticeRuleEvaluator;
+        this.violationRegistryService = violationRegistryService;
         this.accessManager = accessManager;
         this.currentAuthentication = currentAuthentication;
     }
@@ -98,46 +94,7 @@ public class OnDemandCheckService {
     @Transactional
     public void saveToRegistry(CheckRun checkRun, NoticeDto notice, NoticeCheckOutcome outcome) {
         requireCheckPermission();
-        if (checkRun == null || checkRun.getId() == null) {
-            throw new IllegalArgumentException("Нет запуска проверки");
-        }
-        if (notice == null) {
-            throw new IllegalArgumentException("Нет извещения для записи в реестр");
-        }
-        NoticeCheckOutcome safe = outcome == null ? NoticeCheckOutcome.empty() : outcome;
-        CheckRun run = dataManager.load(CheckRun.class).id(checkRun.getId()).one();
-        OffsetDateTime now = OffsetDateTime.now();
-        List<Violation> existing = loadForObject(RuleObjectType.NOTICE, notice.getNumber());
-        Map<String, Violation> byFingerprint = new HashMap<>();
-        for (Violation violation : existing) {
-            byFingerprint.put(violation.getFingerprint(), violation);
-        }
-        Map<String, CheckResultDto> uniqueHits = uniqueHitsByFingerprint(safe.hits());
-        uniqueHits.entrySet().removeIf(entry -> safe.bindings().get(entry.getKey()) == null);
-        Set<String> currentFingerprints = uniqueHits.keySet();
-        SaveContext saveContext = new SaveContext();
-        for (CheckResultDto hit : uniqueHits.values()) {
-            NoticeCheckOutcome.HitBinding binding = safe.bindings().get(hit.getFingerprint());
-            if (binding == null) {
-                continue;
-            }
-            Violation violation = byFingerprint.get(hit.getFingerprint());
-            if (violation == null) {
-                violation = metadata.create(Violation.class);
-                ViolationMerge.initNew(violation, hit, binding.rule(), binding.version(), notice, run, now);
-            } else {
-                ViolationMerge.applyExistingHit(
-                        violation, hit, binding.rule(), binding.version(), notice, run, now);
-            }
-            saveContext.saving(violation);
-        }
-        for (Violation violation : existing) {
-            if (ViolationMerge.shouldMarkFixed(violation, safe.evaluatedRuleIds(), currentFingerprints)) {
-                ViolationMerge.markFixed(violation, now);
-                saveContext.saving(violation);
-            }
-        }
-        unconstrainedDataManager.save(saveContext);
+        violationRegistryService.mergeNotice(checkRun, notice, outcome);
     }
 
     @Transactional
@@ -167,31 +124,6 @@ public class OnDemandCheckService {
         loaded.setComment(comment);
         loaded.setStatus(ViolationStatus.FALSE_POSITIVE);
         return unconstrainedDataManager.save(loaded);
-    }
-
-    private static Map<String, CheckResultDto> uniqueHitsByFingerprint(List<CheckResultDto> hits) {
-        Map<String, CheckResultDto> unique = new LinkedHashMap<>();
-        for (CheckResultDto hit : hits) {
-            if (hit.getFingerprint() == null || hit.getFingerprint().isBlank()) {
-                continue;
-            }
-            unique.putIfAbsent(hit.getFingerprint(), hit);
-        }
-        return unique;
-    }
-
-    private List<Violation> loadForObject(RuleObjectType objectType, String objectKey) {
-        FetchPlan fetchPlan = fetchPlans.builder(Violation.class)
-                .addFetchPlan(FetchPlan.BASE)
-                .add("rule", FetchPlan.BASE)
-                .add("ruleVersion", FetchPlan.BASE)
-                .build();
-        return dataManager.load(Violation.class)
-                .query("select e from mtr_Violation e where e.objectType = :type and e.objectKey = :key")
-                .parameter("type", objectType)
-                .parameter("key", objectKey)
-                .fetchPlan(fetchPlan)
-                .list();
     }
 
     private Violation reload(UUID id) {

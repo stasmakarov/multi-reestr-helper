@@ -26,8 +26,8 @@ class RulesLiquibaseCoverageTest {
 
     static final int REFERENCE_LIST_COUNT = 2;
     static final int REFERENCE_LIST_ITEM_COUNT = 15;
-    static final int RULE_COUNT = 3;
-    static final int ACTIVE_VERSION_COUNT = 3;
+    static final int RULE_COUNT = 5;
+    static final int ACTIVE_VERSION_COUNT = 5;
     static final int PARAMETER_COUNT = 2;
 
     @Autowired
@@ -42,7 +42,9 @@ class RulesLiquibaseCoverageTest {
         assertThat(dataManager.load(ReferenceListItem.class).all().list()).hasSize(REFERENCE_LIST_ITEM_COUNT);
         List<Rule> rules = dataManager.load(Rule.class).all().list();
         assertThat(rules).extracting(Rule::getCode)
-                .containsExactlyInAnyOrder("R03_PP1875", "R05_KTRU_CHARS", "R07_NO_DESCRIPTION");
+                .containsExactlyInAnyOrder(
+                        "R03_PP1875", "R05_KTRU_CHARS", "R07_NO_DESCRIPTION",
+                        "R09_DELIVERY", "R10_ACCEPTANCE");
         assertThat(rules).hasSize(RULE_COUNT);
         List<RuleVersion> versions = dataManager.load(RuleVersion.class).all().list();
         assertThat(versions).hasSize(ACTIVE_VERSION_COUNT);

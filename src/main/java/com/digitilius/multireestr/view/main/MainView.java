@@ -1,6 +1,7 @@
 package com.digitilius.multireestr.view.main;
 
 import com.digitilius.multireestr.entity.User;
+import com.digitilius.multireestr.scan.NewViolationCountService;
 import com.digitilius.multireestr.view.about.AboutView;
 import com.google.common.base.Strings;
 import com.vaadin.flow.component.Component;
@@ -8,15 +9,20 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 import io.jmix.core.Messages;
 import io.jmix.core.usersubstitution.CurrentUserSubstitution;
 import io.jmix.flowui.DialogWindows;
 import io.jmix.flowui.UiComponents;
 import io.jmix.flowui.app.main.StandardMainView;
+import io.jmix.flowui.component.main.JmixListMenu;
 import io.jmix.flowui.kit.action.ActionPerformedEvent;
+import io.jmix.flowui.kit.component.main.ListMenu;
 import io.jmix.flowui.view.Install;
 import io.jmix.flowui.view.Subscribe;
+import io.jmix.flowui.view.ViewComponent;
 import io.jmix.flowui.view.ViewController;
 import io.jmix.flowui.view.ViewDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +31,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Route("")
 @ViewController(id = "mtr_MainView")
 @ViewDescriptor(path = "main-view.xml")
-public class MainView extends StandardMainView {
+public class MainView extends StandardMainView implements AfterNavigationObserver {
 
     @Autowired
     private Messages messages;
@@ -35,10 +41,40 @@ public class MainView extends StandardMainView {
     private CurrentUserSubstitution currentUserSubstitution;
     @Autowired
     private DialogWindows dialogWindows;
+    @Autowired
+    private NewViolationCountService newViolationCountService;
+
+    @ViewComponent
+    private JmixListMenu menu;
 
     @Subscribe("aboutAction")
     public void onAboutAction(final ActionPerformedEvent event) {
         dialogWindows.view(this, AboutView.class).open();
+    }
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        refreshNewViolationBadge();
+    }
+
+    private void refreshNewViolationBadge() {
+        if (menu == null) {
+            return;
+        }
+        ListMenu.MenuItem item = menu.getMenuItem("mtr_Violation.list");
+        if (item == null) {
+            return;
+        }
+        int count = newViolationCountService.countNew();
+        if (count <= 0) {
+            item.setSuffixComponent(null);
+            return;
+        }
+        Span badge = uiComponents.create(Span.class);
+        badge.setText(String.valueOf(count));
+        badge.getElement().getThemeList().add("badge");
+        badge.getElement().getThemeList().add("error");
+        item.setSuffixComponent(badge);
     }
 
     @Install(to = "userMenu", subject = "buttonRenderer")

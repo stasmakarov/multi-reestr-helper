@@ -35,12 +35,23 @@ public final class ViolationMerge {
             RuleVersion version,
             NoticeDto notice
     ) {
+        copyHitFields(target, hit, rule, version, notice.getId(), objectCaption(notice));
+    }
+
+    public static void copyHitFields(
+            Violation target,
+            CheckResultDto hit,
+            Rule rule,
+            RuleVersion version,
+            Integer legacyId,
+            String caption
+    ) {
         target.setRule(rule);
         target.setRuleVersion(version);
         target.setObjectType(hit.getObjectType());
         target.setObjectKey(hit.getObjectKey());
-        target.setLegacyId(notice.getId());
-        target.setObjectCaption(objectCaption(notice));
+        target.setLegacyId(legacyId);
+        target.setObjectCaption(caption == null ? null : truncate(caption));
         target.setDetail(hit.getDetail());
         target.setFingerprint(hit.getFingerprint());
         target.setSeverity(hit.getSeverity());
@@ -57,7 +68,20 @@ public final class ViolationMerge {
             CheckRun run,
             OffsetDateTime now
     ) {
-        copyHitFields(existing, hit, rule, version, notice);
+        applyExistingHit(existing, hit, rule, version, notice.getId(), objectCaption(notice), run, now);
+    }
+
+    public static void applyExistingHit(
+            Violation existing,
+            CheckResultDto hit,
+            Rule rule,
+            RuleVersion version,
+            Integer legacyId,
+            String caption,
+            CheckRun run,
+            OffsetDateTime now
+    ) {
+        copyHitFields(existing, hit, rule, version, legacyId, caption);
         existing.setLastDetectedAt(now);
         existing.setLastCheckRun(run);
         if (existing.getStatus() == ViolationStatus.FIXED) {
@@ -77,11 +101,35 @@ public final class ViolationMerge {
             CheckRun run,
             OffsetDateTime now
     ) {
-        copyHitFields(created, hit, rule, version, notice);
+        initNew(created, hit, rule, version, notice.getId(), objectCaption(notice), run, now);
+    }
+
+    public static void initNew(
+            Violation created,
+            CheckResultDto hit,
+            Rule rule,
+            RuleVersion version,
+            Integer legacyId,
+            String caption,
+            CheckRun run,
+            OffsetDateTime now
+    ) {
+        copyHitFields(created, hit, rule, version, legacyId, caption);
         created.setStatus(ViolationStatus.NEW);
         created.setFirstDetectedAt(now);
         created.setLastDetectedAt(now);
         created.setLastCheckRun(run);
+    }
+
+    public static void applyDeadline(
+            Violation target,
+            java.time.LocalDate dueDate,
+            java.time.LocalDate factDate,
+            Integer deviationDays
+    ) {
+        target.setDueDate(dueDate);
+        target.setFactDate(factDate);
+        target.setDeviationDays(deviationDays);
     }
 
     public static boolean shouldMarkFixed(
