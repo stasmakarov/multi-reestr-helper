@@ -25,6 +25,21 @@ if command -v git >/dev/null 2>&1 && [[ -d .git ]]; then
   )
 fi
 
+# Сначала postgres (том не трогаем). Иначе recreate только app падает, если БД ещё не поднимали.
+docker compose up -d postgres
+if ! docker compose up -d --wait postgres 2>/dev/null; then
+  for _ in $(seq 1 36); do
+    if docker compose exec -T postgres pg_isready -q; then
+      break
+    fi
+    sleep 2
+  done
+  docker compose exec -T postgres pg_isready -q || {
+    echo "PostgreSQL 16 не поднялся (служба postgres)." >&2
+    exit 1
+  }
+fi
+
 # Только app пересобирается из Dockerfile + src; postgres и его том остаются.
 docker compose build "${build_args[@]}" app
 docker compose up -d --no-deps --force-recreate app

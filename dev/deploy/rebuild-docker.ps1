@@ -16,6 +16,19 @@ if (-not (Test-Path (Join-Path $Root ".env"))) {
 docker info *> $null
 if ($LASTEXITCODE -ne 0) { throw "Docker не запущен" }
 
+docker compose up -d postgres
+if ($LASTEXITCODE -ne 0) { throw "Не удалось запустить postgres" }
+docker compose up -d --wait postgres *> $null
+if ($LASTEXITCODE -ne 0) {
+    $ready = $false
+    for ($i = 0; $i -lt 36; $i++) {
+        docker compose exec -T postgres pg_isready -q *> $null
+        if ($LASTEXITCODE -eq 0) { $ready = $true; break }
+        Start-Sleep -Seconds 2
+    }
+    if (-not $ready) { throw "PostgreSQL 16 не поднялся (служба postgres)." }
+}
+
 $buildArgs = @()
 if (Get-Command git -ErrorAction SilentlyContinue) {
     if (Test-Path (Join-Path $Root ".git")) {

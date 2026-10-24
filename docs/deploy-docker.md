@@ -70,7 +70,7 @@ dev/deploy/rebuild-docker.sh
 
 Windows (клон репо, Docker Desktop): `.\dev\deploy\rebuild-docker.ps1`
 
-Скрипт требует `.env` (иначе сразу ошибка), пересобирает только `app` и пересоздаёт его контейнер. Том `multireestr-pg16` не удаляется. То же вручную:
+Скрипт требует `.env` (иначе сразу ошибка), поднимает `postgres` и ждёт healthy, затем пересобирает только `app` и пересоздаёт его контейнер. Том `multireestr-pg16` не удаляется. То же вручную:
 
 ```bash
 docker compose build app
