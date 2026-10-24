@@ -2,6 +2,8 @@
 
 > Документ-инструкция без кода приложения. Разработка ведётся на Mac, приложение работает на Windows-машине пользователя рядом с живой БД MultiReestr. Модель данных — [model/OVERVIEW.md §8](model/OVERVIEW.md#8-развёртывание-и-базы-данных), экран настроек — [UI.md, «Подключение к MultiReestr»](UI.md#35-администрирование), урок — 1 ([LESSONS.md](LESSONS.md), [lessons/lesson-01-legacy.md §11–12](lessons/lesson-01-legacy.md#11-подключение-из-интерфейса-администратора)).
 > Пометка **проверить** — то, что нужно подтвердить на Jmix 3.0.3 или на машине пользователя. **Требует кода (урок 1, §11)** — шаг заработает только после реализации [LegacyConnectionSettings](model/entities/LegacyConnectionSettings.md).
+>
+> Дополнительный путь (один образ и compose на Mac и Windows, без HSQLDB в контейнерах) описан в плане [deploy-docker-plan.md](deploy-docker-plan.md). Этот документ (`java -jar`, при желании только PostgreSQL 16 через `main-db-docker.ps1`) остаётся действующим.
 
 ## Содержание
 

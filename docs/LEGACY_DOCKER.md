@@ -1,5 +1,7 @@
 # Legacy-БД `reestrdb` в Docker (PostgreSQL 9.6)
 
+Учебный контейнер дампа на машине разработчика (`reestr-pg96`, порт хоста `5436`). Живую продуктивную MultiReestr сюда не переносим. План контейнеризации приложения (`app` + PostgreSQL 16, legacy только через JDBC с хоста) — [deploy-docker-plan.md](deploy-docker-plan.md).
+
 Файл дампа: `reestrdb.dump` (custom-формат `pg_dump -Fc -O -x`, без владельцев и прав, ~4.5 МБ).
 SHA-256: `25f12e8fd12bce77c02cecd72d3b7467fb7b94098785397d0da7bbcb2986ffc3`
 
