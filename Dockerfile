@@ -14,6 +14,14 @@ RUN chmod +x gradlew
 COPY src/main ./src/main
 
 # Tests are not part of the image. Vaadin frontend is packed into the jar.
+# .git stays out of the context; generateGitProperties writes an empty file if git is missing.
+# Optional: --build-arg GIT_BRANCH / GIT_COMMIT / GIT_COMMIT_TIME for «О программе».
+ARG GIT_BRANCH=
+ARG GIT_COMMIT=
+ARG GIT_COMMIT_TIME=
+ENV GIT_BRANCH=$GIT_BRANCH \
+    GIT_COMMIT=$GIT_COMMIT \
+    GIT_COMMIT_TIME=$GIT_COMMIT_TIME
 # Spring Boot writes a boot jar and a -plain.jar; only the boot jar is runnable.
 RUN ./gradlew --no-daemon bootJar -Pvaadin.productionMode=true -x test \
     && JAR="$(ls build/libs/*.jar | grep -v -- '-plain.jar' | head -n 1)" \
