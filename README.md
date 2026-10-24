@@ -35,6 +35,8 @@ The default user credentials are:
 
 ## Подключение к MultiReestr
 
+Сценарии использования (поиск, проверка, реестр, правила) — в [docs/USAGE.md](docs/USAGE.md).
+
 Приложение читает извещения и связанные данные из унаследованной базы MultiReestr (`reestrdb` на PostgreSQL 9.6) через отдельный JDBC DataSource `legacy`. Это не хранилище Jmix: без JPA и Liquibase, только `NamedParameterJdbcTemplate` с квалификатором `legacyJdbc`.
 
 Основная база приложения (Jmix store `main`) в продуктиве — **отдельный PostgreSQL 16+** на другом порту (например `localhost:5433`, БД `multireestr`). В разработке main остаётся на HSQLDB. Jmix 3 не работает с PostgreSQL 9.6, поэтому main нельзя размещать на сервере MultiReestr.
