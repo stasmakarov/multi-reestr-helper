@@ -35,7 +35,7 @@ The default user credentials are:
 
 ## Подключение к MultiReestr
 
-Сценарии использования (поиск, проверка, реестр, правила) — в [docs/USAGE.md](docs/USAGE.md).
+Сценарии использования (поиск, проверка, реестр, правила) — в [docs/USAGE.md](docs/USAGE.md). Установка на Windows (`java -jar`) — [docs/deploy-windows.md](docs/deploy-windows.md). План Docker (один образ и compose на Mac и Windows) — [docs/deploy-docker-plan.md](docs/deploy-docker-plan.md).
 
 Приложение читает извещения и связанные данные из унаследованной базы MultiReestr (`reestrdb` на PostgreSQL 9.6) через отдельный JDBC DataSource `legacy`. Это не хранилище Jmix: без JPA и Liquibase, только `NamedParameterJdbcTemplate` с квалификатором `legacyJdbc`.
 
