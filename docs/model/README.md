@@ -49,9 +49,10 @@
 |---|---|---|---|---|
 | [LegacyConnectionSettings](entities/LegacyConnectionSettings.md) | JPA | MTR_LEGACY_CONNECTION_SETTINGS | 1 | Параметры подключения к legacy-БД, задаваемые администратором в UI (одна запись, пароль зашифрован) |
 | [OrganizationDto](entities/OrganizationDto.md) | DTO | — (не хранится) | 2 | Организация из `owners`: заказчик извещения/контракта и поставщик (`reestr |
-| [NoticeCandidateDto](entities/NoticeCandidateDto.md) | DTO | — (не хранится) | 2 | Строка списка кандидатов при поиске (дубли по номеру, поиск по дате/названию) |
+| [NoticeCandidateDto](entities/NoticeCandidateDto.md) | DTO | — (не хранится) | 2 | Строка поиска: в гриде оригинал номера (фрагмент/маска, интервал дат) |
 | [NoticeDto](entities/NoticeDto.md) | DTO | — (не хранится) | 2 | Карточка извещения 44-ФЗ (Q3–Q11 из notice_lookup_spec |
 | [LotDto](entities/LotDto.md) | DTO | — (не хранится) | 2 | Лот извещения |
+| [NoticeFinanceDto](entities/NoticeFinanceDto.md) | DTO | — (не хранится) | 3 | Финансирование извещения (КБК, год, сумма) |
 | [SpecPositionDto](entities/SpecPositionDto.md) | DTO | — (не хранится) | 2 | Позиция спецификации извещения; вход для правил ПП 1875, КТРУ, описания (замечания 3, 4, 5, 7) |
 | [KtruCharacteristicDto](entities/KtruCharacteristicDto.md) | DTO | — (не хранится) | 2 | Характеристика позиции (КТРУ или заказчика) со значением; вход для правила «доп |
 | [NoticeDocumentDto](entities/NoticeDocumentDto.md) | DTO | — (не хранится) | 2 | Документ извещения (ссылка на filestore ЕИС) |
@@ -142,6 +143,7 @@ erDiagram
 classDiagram
     NoticeDto --> OrganizationDto : customer
     NoticeDto *-- LotDto : lots
+    NoticeDto *-- NoticeFinanceDto : finances
     NoticeDto *-- SpecPositionDto : items
     SpecPositionDto *-- KtruCharacteristicDto : characteristics
     NoticeDto *-- NoticeDocumentDto : documents
@@ -168,3 +170,19 @@ classDiagram
 | 8 вид договора | CONTRACT_KIND_MISMATCH | NoticeDto + ReferenceList (KEYWORD/OKPD2) |
 | 9 неустойка | LATE_DELIVERY_PENALTY | ContractDto, ExecutionDto, ContractTerm DELIVERY |
 | 10 приёмка | DEADLINE | ExecutionDto, ContractTerm ACCEPTANCE |
+
+## Начальные данные
+
+Начальные данные загружаются Liquibase-ченджсетами из CSV в репо (`loadData`), без обращения в интернет.
+
+| Данные | Урок | Вид | Источник |
+|---|---|---|---|
+| `CalendarDay` за годы тестового набора данных | 4 | обязательные | CSV, сгенерированный скриптом из xmlcalendar.ru; дальше кнопка «Загрузить год» |
+| `ReferenceList` / `ReferenceListItem`: ПП 1875 прил. 1 (ОКПД2), КТРУ | 6 | обязательные | CSV; дальше импорт из Excel в UI |
+| `Rule` / `RuleVersion` / `RuleParameter`: стартовый набор под 10 замечаний аудита | 6 | обязательные | CSV / ченджсет |
+| Пользователи: admin, специалист, администратор правил | 6 | обязательные (кроме демо-пользователей) | ченджсет |
+| `ContractTerm`, `PlanScheduleEvent` для «золотых» извещений | 8 | демо | ченджсет с `context="demo"` |
+
+Правило: обязательные данные — ченджсеты без контекста; демо-данные — ченджсеты с `context="demo"`, на проде контекст `demo` не включается.
+
+Не требуют начальных данных: все DTO (читаются из legacy), `Violation`, `CheckRun` (создаются при работе), перечисления (в коде).

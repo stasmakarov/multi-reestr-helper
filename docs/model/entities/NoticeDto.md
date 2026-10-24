@@ -42,6 +42,7 @@
 | `executionEndDate` | LocalDate | `LocalDate` |  |  |  |  |  | Дата окончания исполнения | `noticecustomerrequirements.nonrelativeenddate` |
 | `preferences` | String | `String` |  |  | 1000 |  |  | Преференции/требования строкой («код 56116975; ET44; TR442») | `noticepurchaseprefs + sppurchasepreferences` |
 | `customer` | Association | [OrganizationDto](OrganizationDto.md) |  |  |  | many-to-one |  | Заказчик | `notices.ownerid → owners` |
+| `finances` | Composition | List<[NoticeFinanceDto](NoticeFinanceDto.md)> |  |  |  | one-to-many |  | Финансирование (КБК, год, сумма) | `noticefinances` |
 | `lots` | Composition | List<[LotDto](LotDto.md)> |  |  |  | one-to-many |  | Лоты | `noticelots` |
 | `items` | Composition | List<[SpecPositionDto](SpecPositionDto.md)> |  |  |  | one-to-many |  | Позиции спецификации | `noticespec` |
 | `documents` | Composition | List<[NoticeDocumentDto](NoticeDocumentDto.md)> |  |  |  | one-to-many |  | Документы | `noticeextdocs` |
@@ -53,6 +54,7 @@
 
 - `customer` → [OrganizationDto](OrganizationDto.md) (many-to-one)
 - `lots` → List<[LotDto](LotDto.md)> (one-to-many, composition)
+- `finances` → List<[NoticeFinanceDto](NoticeFinanceDto.md)> (one-to-many, composition)
 - `items` → List<[SpecPositionDto](SpecPositionDto.md)> (one-to-many, composition)
 - `documents` → List<[NoticeDocumentDto](NoticeDocumentDto.md)> (one-to-many, composition)
 - `protocols` → List<[ProtocolDto](ProtocolDto.md)> (one-to-many, composition)
