@@ -24,12 +24,14 @@
     <layout>
         <formLayout id="form" dataContainer="ruleVersionDc">
             <integerField id="versionNumberField" property="versionNumber"/>
-            <comboBox id="statusField" property="status"/>
+            <comboBox id="statusField" property="status" readOnly="true"/>
             <datePicker id="validFromField" property="validFrom"/>
             <datePicker id="validToField" property="validTo"/>
-            <textField id="approvedByField" property="approvedBy"/>
-            <dateTimePicker id="approvedAtField" property="approvedAt"/>
+            <textField id="approvedByField" property="approvedBy" readOnly="true"/>
+            <dateTimePicker id="approvedAtField" property="approvedAt" readOnly="true"/>
             <textArea id="changeNoteField" property="changeNote" colspan="2" height="6em"/>
+        </formLayout>
+        <formLayout id="deadlineBox" dataContainer="ruleVersionDc" visible="false">
             <comboBox id="deadlineAnchorField" property="deadline.anchor"/>
             <integerField id="deadlineOffsetValueField" property="deadline.offsetValue"/>
             <comboBox id="deadlineUnitField" property="deadline.unit"/>
@@ -66,6 +68,8 @@
             </columns>
         </dataGrid>
         <hbox id="detailActions">
+            <button id="activateButton" text="msg://activateButton.text"/>
+            <button id="archiveButton" text="msg://archiveButton.text"/>
             <button id="saveAndCloseButton" action="saveCloseAction"/>
             <button id="closeButton" action="closeAction"/>
         </hbox>

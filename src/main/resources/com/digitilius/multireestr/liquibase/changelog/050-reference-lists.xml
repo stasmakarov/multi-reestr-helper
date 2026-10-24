@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/050-reference-lists.xml">
+
+    <changeSet id="1" author="multi-reestr">
+        <loadData tableName="MTR_REFERENCE_LIST"
+                  file="com/digitilius/multireestr/liquibase/data/mtr-reference-list.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="ID" type="UUID"/>
+            <column name="VERSION" type="NUMERIC"/>
+            <column name="CODE" type="STRING"/>
+            <column name="NAME" type="STRING"/>
+            <column name="KIND" type="STRING"/>
+            <column name="LEGAL_REF" type="STRING"/>
+            <column name="DESCRIPTION" type="STRING"/>
+            <column name="CREATED_BY" type="STRING"/>
+            <column name="CREATED_DATE" type="DATETIME"/>
+            <column name="LAST_MODIFIED_BY" type="STRING"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="2" author="multi-reestr">
+        <loadData tableName="MTR_REFERENCE_LIST_ITEM"
+                  file="com/digitilius/multireestr/liquibase/data/mtr-reference-list-item.csv"
+                  separator=","
+                  encoding="UTF-8">
+            <column name="ID" type="UUID"/>
+            <column name="VERSION" type="NUMERIC"/>
+            <column name="LIST_ID" type="UUID"/>
+            <column name="VALUE_" type="STRING"/>
+            <column name="PREFIX_MATCH" type="BOOLEAN"/>
+            <column name="EXCLUDED" type="BOOLEAN"/>
+            <column name="GROUP_CODE" type="STRING"/>
+            <column name="CAPTION" type="STRING"/>
+            <column name="VALID_FROM" type="DATE"/>
+            <column name="VALID_TO" type="DATE"/>
+            <column name="CREATED_BY" type="STRING"/>
+            <column name="CREATED_DATE" type="DATETIME"/>
+            <column name="LAST_MODIFIED_BY" type="STRING"/>
+            <column name="LAST_MODIFIED_DATE" type="DATETIME"/>
+        </loadData>
+    </changeSet>
+
+</databaseChangeLog>
