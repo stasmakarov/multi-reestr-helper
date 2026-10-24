@@ -69,6 +69,7 @@
         </dataGrid>
         <hbox id="detailActions">
             <button id="activateButton" text="msg://activateButton.text"/>
+            <button id="dryRunButton" text="msg://dryRunButton.text"/>
             <button id="archiveButton" text="msg://archiveButton.text"/>
             <button id="saveAndCloseButton" action="saveCloseAction"/>
             <button id="closeButton" action="closeAction"/>

@@ -4,13 +4,17 @@ import com.digitilius.multireestr.entity.Rule;
 import com.digitilius.multireestr.entity.RuleTemplateType;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.RuleVersionStatus;
+import com.digitilius.multireestr.rules.DryRunService;
 import com.digitilius.multireestr.rules.RuleVersionService;
+import com.digitilius.multireestr.view.dryrun.DryRunView;
 import com.digitilius.multireestr.view.main.MainView;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import io.jmix.core.EntityStates;
 import io.jmix.flowui.Notifications;
+import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.component.grid.DataGrid;
 import io.jmix.flowui.kit.component.button.JmixButton;
 import io.jmix.flowui.view.DialogMode;
@@ -37,6 +41,8 @@ public class RuleVersionDetailView extends StandardDetailView<RuleVersion> {
     @ViewComponent
     private JmixButton activateButton;
     @ViewComponent
+    private JmixButton dryRunButton;
+    @ViewComponent
     private JmixButton archiveButton;
     @ViewComponent
     private DataGrid<?> parametersDataGrid;
@@ -49,6 +55,10 @@ public class RuleVersionDetailView extends StandardDetailView<RuleVersion> {
     private RuleVersionService ruleVersionService;
     @Autowired
     private Notifications notifications;
+    @Autowired
+    private ViewNavigators viewNavigators;
+    @Autowired
+    private DryRunService dryRunService;
 
     @Subscribe
     public void onInitEntity(final InitEntityEvent<RuleVersion> event) {
@@ -83,6 +93,8 @@ public class RuleVersionDetailView extends StandardDetailView<RuleVersion> {
         }
         boolean persisted = !entityStates.isNew(version);
         activateButton.setVisible(persisted && version.getStatus() == RuleVersionStatus.DRAFT);
+        dryRunButton.setVisible(persisted && version.getStatus() == RuleVersionStatus.DRAFT
+                && dryRunService.canDryRun());
         archiveButton.setVisible(persisted && version.getStatus() == RuleVersionStatus.ACTIVE);
         parametersDataGrid.setEnabled(!locked);
     }
@@ -96,6 +108,17 @@ public class RuleVersionDetailView extends StandardDetailView<RuleVersion> {
         } catch (RuntimeException e) {
             notifications.create(e.getMessage()).show();
         }
+    }
+
+    @Subscribe("dryRunButton")
+    public void onDryRunButtonClick(final ClickEvent<JmixButton> event) {
+        RuleVersion version = getEditedEntity();
+        if (version.getId() == null) {
+            return;
+        }
+        viewNavigators.view(this, DryRunView.class)
+                .withQueryParameters(QueryParameters.of("versionId", version.getId().toString()))
+                .navigate();
     }
 
     @Subscribe("archiveButton")

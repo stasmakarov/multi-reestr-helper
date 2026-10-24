@@ -2,12 +2,17 @@ package com.digitilius.multireestr.view.rule;
 
 import com.digitilius.multireestr.entity.Rule;
 import com.digitilius.multireestr.entity.RuleVersion;
+import com.digitilius.multireestr.entity.RuleVersionStatus;
+import com.digitilius.multireestr.rules.DryRunService;
 import com.digitilius.multireestr.rules.RuleVersionService;
+import com.digitilius.multireestr.view.dryrun.DryRunView;
 import com.digitilius.multireestr.view.main.MainView;
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import io.jmix.core.EntityStates;
 import io.jmix.flowui.Notifications;
+import io.jmix.flowui.ViewNavigators;
 import io.jmix.flowui.component.combobox.JmixComboBox;
 import io.jmix.flowui.component.grid.DataGrid;
 import io.jmix.flowui.kit.component.button.JmixButton;
@@ -34,6 +39,8 @@ public class RuleDetailView extends StandardDetailView<Rule> {
     @ViewComponent
     private DataGrid<RuleVersion> versionsDataGrid;
     @ViewComponent
+    private JmixButton dryRunButton;
+    @ViewComponent
     private MessageBundle messageBundle;
 
     @Autowired
@@ -42,6 +49,10 @@ public class RuleDetailView extends StandardDetailView<Rule> {
     private RuleVersionService ruleVersionService;
     @Autowired
     private Notifications notifications;
+    @Autowired
+    private ViewNavigators viewNavigators;
+    @Autowired
+    private DryRunService dryRunService;
 
     @Subscribe
     public void onInitEntity(final InitEntityEvent<Rule> event) {
@@ -51,6 +62,19 @@ public class RuleDetailView extends StandardDetailView<Rule> {
     @Subscribe
     public void onReady(final ReadyEvent event) {
         templateTypeField.setReadOnly(!entityStates.isNew(getEditedEntity()));
+        dryRunButton.setVisible(dryRunService.canDryRun());
+    }
+
+    @Subscribe("dryRunButton")
+    public void onDryRunButtonClick(final ClickEvent<JmixButton> event) {
+        RuleVersion source = versionsDataGrid.getSingleSelectedItem();
+        if (source == null || source.getId() == null || source.getStatus() != RuleVersionStatus.DRAFT) {
+            notifications.create(messageBundle.getMessage("dryRunNeedsDraft")).show();
+            return;
+        }
+        viewNavigators.view(this, DryRunView.class)
+                .withQueryParameters(QueryParameters.of("versionId", source.getId().toString()))
+                .navigate();
     }
 
     @Subscribe("copyVersionButton")
