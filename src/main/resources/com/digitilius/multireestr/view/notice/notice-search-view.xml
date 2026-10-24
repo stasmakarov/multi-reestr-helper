@@ -31,6 +31,7 @@
         </hbox>
         <hbox id="buttonsPanel" classNames="buttons-panel" width="100%">
             <button id="openBtn" text="msg://openBtn.text" enabled="false"/>
+            <button id="excelBtn" text="msg://excelBtn.text" enabled="false"/>
             <simplePagination id="pagination"
                               dataLoader="candidatesDl"
                               itemsPerPageDefaultValue="20"

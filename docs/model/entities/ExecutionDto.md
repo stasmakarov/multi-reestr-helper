@@ -22,7 +22,7 @@
 | `stageNumber` | Integer | `Integer` |  |  |  |  |  | Номер этапа | `reestrprocedures.ordinalnumber` |
 | `stageEndDate` | LocalDate | `LocalDate` |  |  |  |  |  | Окончание этапа | `reestrprocedures.stageenddate` |
 | `penaltyInfo` | String | `String` |  |  | 2000 |  |  | Сведения о неустойке по этапу | `reestrprocedures.penaltyinfo` |
-| `docName` | String | `String` |  |  | 1000 |  |  | Документ | `pd_documentname (оплата)` |
+| `docName` | String | `String` |  |  | 1000 |  |  | Документ | `pd_documentname` (для всех строк; у приёмок обычно пусто) |
 | `docNumber` | String | `String` |  |  | 100 |  |  | Номер документа | `de_documentnum / pd_documentnum` |
 | `docDate` | LocalDate | `LocalDate` |  |  |  |  |  | Дата документа | `de_documentdate / pd_documentdate` |
 | `acceptDate` | LocalDate | `LocalDate` |  |  |  |  |  | Дата приёмки | `de_deliveryacceptdate` |
@@ -36,4 +36,6 @@
 ## Примечания
 
 - Для замечания 9 дата поставки — `docDate` приёмки, **не** дата платёжного поручения.
-- Приёмки на 0,00 показывать, в суммы не включать.
+- Вид: оплата — только `executiontype = 1`, все остальные строки (включая `NULL`) — приёмка.
+- Приёмки с нулевой суммой остаются в списке исполнения и учитываются в колонке Excel «Документов приёмки».
+- «Оплачено» (`ContractDto.paidTotal`) — `sum(paid)` только по `executiontype = 1`; суммы приёмок в него не входят.
