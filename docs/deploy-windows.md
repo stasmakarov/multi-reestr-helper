@@ -191,6 +191,7 @@ cd C:\multi-reestr-helper
 | `create-legacy-ro.ps1` | Windows | `reestr_ro` на живой 9.6 + `grant-readonly.sql`, повторный запуск безопасен |
 | `set-env.ps1` | Windows | пароли и `MTR_SECRET_KEY` в переменные пользователя |
 | `start-app.ps1` | Windows | `java -jar` из папки установки, UTF-8, часовой пояс Москвы |
+| `rebuild-docker.sh` / `rebuild-docker.ps1` | Mac / Windows, клон репо | пересборка контейнера `app` из исходников; том Postgres не трогает ([deploy-docker.md](deploy-docker.md)) |
 
 Скрипты `*.ps1` сохранены в UTF-8 **с BOM**: без BOM Windows PowerShell 5.1 читает файл как ANSI и портит русские сообщения. При правке сохранять так же. Если политика выполнения блокирует скрипты: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` и `Unblock-File .\*.ps1` (файлы, скопированные с другой машины, помечены как скачанные).
 
@@ -215,3 +216,5 @@ docker compose up --build
 ```
 
 Legacy MultiReestr из контейнера: в UI хост `host.docker.internal`, порт живой 9.6 (обычно `5432`). Пароль legacy в `.env` не кладётся.
+
+Пересборка из исходников IDE: `.\dev\deploy\rebuild-docker.ps1` (см. [deploy-docker.md](deploy-docker.md#пересборка-из-ide)).

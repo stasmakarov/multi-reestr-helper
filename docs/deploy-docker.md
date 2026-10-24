@@ -60,6 +60,25 @@ docker compose --profile legacy-pg96 up --build
 
 По-прежнему: `dev/deploy/main-db-docker.ps1` и `java -jar` — [deploy-windows.md §3.3](deploy-windows.md#33-postgresql-16--docker-альтернатива). Не поднимайте одновременно тот скрипт и службу `postgres` этого compose: оба занимают `5435`.
 
+## Пересборка из IDE
+
+Образ `app` собирается из текущего дерева репозитория (не из ранее скачанного jar). После правок в Studio / IDE, из корня:
+
+```bash
+dev/deploy/rebuild-docker.sh
+```
+
+Windows (клон репо, Docker Desktop): `.\dev\deploy\rebuild-docker.ps1`
+
+Скрипт требует `.env` (иначе сразу ошибка), пересобирает только `app` и пересоздаёт его контейнер. Том `multireestr-pg16` не удаляется. То же вручную:
+
+```bash
+docker compose build app
+docker compose up -d --no-deps --force-recreate app
+```
+
+Не используйте `docker compose down -v` — это сотрёт основную БД.
+
 ## Переменные `.env`
 
 Только то, что в `.env.example`: `MTR_SECRET_KEY`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`. Compose пробрасывает их в `MAIN_DATASOURCE_*` для `app`.

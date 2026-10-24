@@ -4,6 +4,8 @@
 # Start:
 #   cp .env.example .env   # fill MTR_SECRET_KEY and POSTGRES_PASSWORD
 #   docker compose up --build
+# Rebuild app from current sources (keeps Postgres volume):
+#   dev/deploy/rebuild-docker.sh   /   .\\dev\\deploy\\rebuild-docker.ps1
 #
 # App: http://localhost:8080
 # Main DB on the host: localhost:5435 (same port as docs/deploy-windows.md and main-db-docker.ps1)
