@@ -1,0 +1,84 @@
+# multi-reestr: app + PostgreSQL 16 (Jmix main DB).
+# Same file on Mac and Windows. Do not put MultiReestr (legacy) password or JDBC URL here.
+#
+# Start:
+#   cp .env.example .env   # fill MTR_SECRET_KEY and POSTGRES_PASSWORD
+#   docker compose up --build
+#
+# App: http://localhost:8080
+# Main DB on the host: localhost:5435 (same port as docs/deploy-windows.md and main-db-docker.ps1)
+#
+# Legacy MultiReestr is NOT a core service. After login, set it in the admin UI:
+#   Администрирование → «Подключение к MultiReestr»
+# From the app container, localhost is the container itself. Use host.docker.internal:
+#   Windows (live 9.6):  host.docker.internal : 5432 / reestrdb / reestr_ro
+#   Mac (dump in reestr-pg96): host.docker.internal : 5436 / reestrdb / reestr_ro
+# extra_hosts below makes host.docker.internal resolve on Linux and Docker Desktop.
+#
+# Optional Mac/lesson 9.6 (not for live MultiReestr):
+#   docker compose --profile legacy-pg96 up --build
+# Restore the dump with dev/legacy/legacy-db.sh (or docs/LEGACY_DOCKER.md) if the volume is empty.
+# If reestr-pg96 is already running from legacy-db.sh, do not enable this profile.
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: multireestr-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-multireestr}
+      POSTGRES_USER: ${POSTGRES_USER:-multireestr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "5435:5432"
+    volumes:
+      - multireestr-pg16:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: multi-reestr:latest
+    container_name: multi-reestr-app
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+    environment:
+      MAIN_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-multireestr}
+      MAIN_DATASOURCE_USERNAME: ${POSTGRES_USER:-multireestr}
+      MAIN_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      MTR_SECRET_KEY: ${MTR_SECRET_KEY:?Set MTR_SECRET_KEY in .env (64 hex chars)}
+      MAIN_LIQUIBASE_CONTEXTS: "!demo"
+      UI_LOGIN_DEFAULTUSERNAME: ""
+      UI_LOGIN_DEFAULTPASSWORD: ""
+      TZ: Europe/Moscow
+    volumes:
+      - app-jmix:/app/.jmix
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Lesson dump only. Same ports/name as docs/LEGACY_DOCKER.md and legacy-db.sh.
+  reestr-pg96:
+    profiles: ["legacy-pg96"]
+    image: postgres:9.6
+    container_name: reestr-pg96
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - reestr-pg96:/var/lib/postgresql/data
+
+volumes:
+  multireestr-pg16:
+  app-jmix:
+  reestr-pg96:

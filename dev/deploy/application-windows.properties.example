@@ -10,8 +10,8 @@ main.datasource.password=
 
 # Legacy-БД MultiReestr: PostgreSQL 9.6, обычно порт 5432. Только для первого старта:
 # после сохранения настроек на экране «Подключение к MultiReestr» действуют они.
-# ВАЖНО: значение по умолчанию в jar указывает на localhost:5435 (dev-стенд на Mac) —
-# на Windows это была бы БД Jmix, поэтому URL обязательно переопределить.
+# ВАЖНО: значение по умолчанию в jar указывает на localhost:5436 (dev-стенд Mac, reestr-pg96) —
+# на Windows URL обязательно переопределить на живую 9.6 (:5432).
 legacy.datasource.url=jdbc:postgresql://localhost:5432/reestrdb
 legacy.datasource.username=reestr_ro
 legacy.datasource.password=

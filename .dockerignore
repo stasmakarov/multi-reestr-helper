@@ -1,0 +1,15 @@
+.git
+.idea
+.jmix
+.gradle
+build
+out
+target
+node_modules
+src/main/frontend/generated
+src/main/bundles
+src/test
+dev/legacy/*.dump
+.env
+*.iml
+.DS_Store

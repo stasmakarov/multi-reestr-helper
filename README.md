@@ -39,7 +39,9 @@ The default user credentials are:
 
 Приложение читает извещения и связанные данные из унаследованной базы MultiReestr (`reestrdb` на PostgreSQL 9.6) через отдельный JDBC DataSource `legacy`. Это не хранилище Jmix: без JPA и Liquibase, только `NamedParameterJdbcTemplate` с квалификатором `legacyJdbc`.
 
-Основная база приложения (Jmix store `main`) в продуктиве — **отдельный PostgreSQL 16+** на другом порту (например `localhost:5433`, БД `multireestr`). В разработке main остаётся на HSQLDB. Jmix 3 не работает с PostgreSQL 9.6, поэтому main нельзя размещать на сервере MultiReestr.
+Основная база приложения (Jmix store `main`) в продуктиве — **отдельный PostgreSQL 16+** на порту `localhost:5435`, БД `multireestr`. В разработке main остаётся на HSQLDB. Jmix 3 не работает с PostgreSQL 9.6, поэтому main нельзя размещать на сервере MultiReestr.
+
+Развёртывание: [docs/deploy-windows.md](docs/deploy-windows.md) (`java -jar`) и [docs/deploy-docker.md](docs/deploy-docker.md) (один compose на Mac и Windows).
 
 Параметры `legacy.datasource.*` задаются в `application.properties`. В разработке: `jdbc:postgresql://localhost:5436/reestrdb`, пользователь `reestr_ro` (пароль — профиль `dev` или `LEGACY_DATASOURCE_PASSWORD`). В продуктиве URL — `jdbc:postgresql://localhost:5432/reestrdb`.
 
