@@ -10,11 +10,13 @@ import com.digitilius.multireestr.entity.Rule;
 import com.digitilius.multireestr.entity.RuleParameter;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.Violation;
+import com.digitilius.multireestr.entity.legacy.CheckResultDto;
 import io.jmix.security.model.EntityAttributePolicyAction;
 import io.jmix.security.model.EntityPolicyAction;
 import io.jmix.security.role.annotation.EntityAttributePolicy;
 import io.jmix.security.role.annotation.EntityPolicy;
 import io.jmix.security.role.annotation.ResourceRole;
+import io.jmix.security.role.annotation.SpecificPolicy;
 import io.jmix.securityflowui.role.annotation.MenuPolicy;
 import io.jmix.securityflowui.role.annotation.ViewPolicy;
 
@@ -29,6 +31,7 @@ public interface SpecialistRole {
             "mtr_ReferenceList.list", "mtr_ReferenceList.detail", "mtr_ReferenceListItem.detail",
             "mtr_Violation.list", "mtr_Violation.detail",
             "mtr_CheckRun.list", "mtr_CheckRun.detail",
+            "mtr_CheckResultDialog",
             "mtr_CalendarDay.list", "mtr_CalendarDay.detail",
             "mtr_ContractTerm.list", "mtr_ContractTerm.detail",
             "mtr_PlanScheduleEvent.list", "mtr_PlanScheduleEvent.detail"
@@ -53,8 +56,15 @@ public interface SpecialistRole {
     @EntityAttributePolicy(entityClass = ReferenceListItem.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     @EntityPolicy(entityClass = Violation.class, actions = EntityPolicyAction.READ)
     @EntityAttributePolicy(entityClass = Violation.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
-    @EntityPolicy(entityClass = CheckRun.class, actions = EntityPolicyAction.READ)
-    @EntityAttributePolicy(entityClass = CheckRun.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
+    @EntityAttributePolicy(entityClass = Violation.class, attributes = "comment", action = EntityAttributePolicyAction.MODIFY)
+    @EntityPolicy(entityClass = CheckRun.class, actions = {EntityPolicyAction.CREATE, EntityPolicyAction.READ, EntityPolicyAction.UPDATE})
+    @EntityAttributePolicy(entityClass = CheckRun.class, attributes = "*", action = EntityAttributePolicyAction.MODIFY)
+    @EntityPolicy(entityClass = CheckResultDto.class, actions = EntityPolicyAction.READ)
+    @EntityAttributePolicy(entityClass = CheckResultDto.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
+    @SpecificPolicy(resources = {
+            MultiReestrSpecifics.CHECK_ON_DEMAND,
+            MultiReestrSpecifics.VIOLATION_TRIAGE
+    })
     @EntityPolicy(entityClass = CalendarDay.class, actions = EntityPolicyAction.READ)
     @EntityAttributePolicy(entityClass = CalendarDay.class, attributes = "*", action = EntityAttributePolicyAction.VIEW)
     @EntityPolicy(entityClass = ContractTerm.class, actions = EntityPolicyAction.ALL)

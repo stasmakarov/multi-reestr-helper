@@ -16,15 +16,19 @@
         <dataLoadCoordinator auto="true"/>
     </facets>
     <actions>
-        <action id="saveCloseAction" type="detail_saveClose"/>
         <action id="closeAction" type="detail_close"/>
     </actions>
     <layout>
+        <hbox id="buttonsPanel" classNames="buttons-panel">
+            <button id="acknowledgeButton" text="msg://acknowledgeButton.text"/>
+            <button id="falsePositiveButton" text="msg://falsePositiveButton.text"/>
+            <button id="openObjectButton" text="msg://openObjectButton.text"/>
+        </hbox>
         <formLayout id="form" dataContainer="violationDc">
-            <comboBox id="statusField" property="status"/>
+            <comboBox id="statusField" property="status" readOnly="true"/>
             <textField id="acknowledgedByField" property="acknowledgedBy"
-                       label="msg://acknowledgedMark.label"/>
-            <dateTimePicker id="acknowledgedAtField" property="acknowledgedAt"/>
+                       label="msg://acknowledgedMark.label" readOnly="true"/>
+            <dateTimePicker id="acknowledgedAtField" property="acknowledgedAt" readOnly="true"/>
             <textArea id="commentField" property="comment" colspan="2" height="6em"/>
             <entityPicker id="ruleField" property="rule" readOnly="true"/>
             <entityPicker id="ruleVersionField" property="ruleVersion" readOnly="true"/>
@@ -34,7 +38,6 @@
             <integerField id="legacyIdField" property="legacyId" readOnly="true"/>
             <textField id="objectCaptionField" property="objectCaption" readOnly="true"/>
             <textField id="detailField" property="detail" readOnly="true"/>
-            <textField id="fingerprintField" property="fingerprint" readOnly="true"/>
             <comboBox id="severityField" property="severity" readOnly="true"/>
             <textArea id="messageField" property="message" readOnly="true" colspan="2" height="6em"/>
             <textField id="legalRefField" property="legalRef" readOnly="true" colspan="2"/>
@@ -46,7 +49,6 @@
             <dateTimePicker id="resolvedAtField" property="resolvedAt" readOnly="true"/>
         </formLayout>
         <hbox id="detailActions">
-            <button id="saveAndCloseButton" action="saveCloseAction"/>
             <button id="closeButton" action="closeAction"/>
         </hbox>
     </layout>

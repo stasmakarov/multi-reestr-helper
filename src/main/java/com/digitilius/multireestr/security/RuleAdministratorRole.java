@@ -21,7 +21,8 @@ public interface RuleAdministratorRole {
 
     @ViewPolicy(viewIds = {
             "mtr_CalendarYearLoadDialog",
-            "mtr_ReferenceListExcelImportDialog"
+            "mtr_ReferenceListExcelImportDialog",
+            "mtr_CheckResultDialog"
     })
     void screens();
 
@@ -39,7 +40,8 @@ public interface RuleAdministratorRole {
     @EntityAttributePolicy(entityClass = CalendarDay.class, attributes = "*", action = EntityAttributePolicyAction.MODIFY)
     @SpecificPolicy(resources = {
             MultiReestrSpecifics.RULE_ACTIVATE,
-            MultiReestrSpecifics.REFERENCE_LIST_IMPORT
+            MultiReestrSpecifics.REFERENCE_LIST_IMPORT,
+            MultiReestrSpecifics.CHECK_ON_DEMAND
     })
     void entities();
 }

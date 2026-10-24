@@ -14,8 +14,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Component
 public class NoticeRuleEvaluator {
@@ -39,10 +43,16 @@ public class NoticeRuleEvaluator {
     }
 
     public List<CheckResultDto> evaluate(NoticeDto notice) {
-        List<CheckResultDto> results = new ArrayList<>();
+        return evaluateAll(notice).hits();
+    }
+
+    public NoticeCheckOutcome evaluateAll(NoticeDto notice) {
         if (notice == null || notice.getPublishedAt() == null) {
-            return results;
+            return NoticeCheckOutcome.empty();
         }
+        List<CheckResultDto> results = new ArrayList<>();
+        Set<UUID> evaluatedRuleIds = new LinkedHashSet<>();
+        Map<String, NoticeCheckOutcome.HitBinding> bindings = new LinkedHashMap<>();
         LocalDate date = notice.getPublishedAt().toLocalDate();
         for (Rule rule : loadEnabledRules()) {
             RuleVersion version = activeVersionOn(rule, date);
@@ -53,9 +63,14 @@ public class NoticeRuleEvaluator {
             if (evaluator == null) {
                 continue;
             }
-            results.addAll(evaluator.evaluate(notice, rule, version, new RuleEvalParams(version.getParameters())));
+            evaluatedRuleIds.add(rule.getId());
+            List<CheckResultDto> hits = evaluator.evaluate(notice, rule, version, new RuleEvalParams(version.getParameters()));
+            for (CheckResultDto hit : hits) {
+                results.add(hit);
+                bindings.put(hit.getFingerprint(), new NoticeCheckOutcome.HitBinding(rule, version));
+            }
         }
-        return results;
+        return new NoticeCheckOutcome(List.copyOf(results), Set.copyOf(evaluatedRuleIds), Map.copyOf(bindings));
     }
 
     static RuleVersion activeVersionOn(Rule rule, LocalDate date) {
