@@ -17,11 +17,15 @@
     </actions>
     <layout>
         <formLayout id="form" dataContainer="contractTermDc">
-            <integerField id="contractLegacyIdField" property="contractLegacyId"/>
+            <hbox id="contractIdRow" colspan="2" alignItems="END" classNames="buttons-panel">
+                <integerField id="contractLegacyIdField" property="contractLegacyId"/>
+                <button id="findContractBtn" text="msg://findContractBtn.text"/>
+            </hbox>
             <textField id="contractNumberField" property="contractNumber"/>
             <textField id="purchaseNumberField" property="purchaseNumber"/>
             <comboBox id="termTypeField" property="termType"/>
             <datePicker id="fixedDateField" property="fixedDate"/>
+            <datePicker id="dueDateField" label="msg://dueDateField.label" readOnly="true"/>
             <textField id="sourceClauseField" property="sourceClause"/>
             <textArea id="noteField" property="note" colspan="2" height="6em"/>
             <comboBox id="termAnchorField" property="term.anchor"/>

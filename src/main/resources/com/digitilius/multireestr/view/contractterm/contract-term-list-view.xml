@@ -48,9 +48,9 @@
                 <action id="removeAction" type="list_remove"/>
             </actions>
             <columns resizable="true">
-                <column property="contractLegacyId"/>
                 <column property="contractNumber"/>
                 <column property="purchaseNumber"/>
+                <column property="contractLegacyId"/>
                 <column property="termType"/>
                 <column property="fixedDate"/>
                 <column property="sourceClause"/>
