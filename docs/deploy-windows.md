@@ -52,7 +52,7 @@ dev/deploy/build-jar.sh
 Скрипт собирает jar в production-режиме Vaadin (фронтенд упакован в jar) и раскладывает папку `build/deploy/multi-reestr/` (jar, `*.ps1`, `config\…example`, `sql\grant-readonly.sql`). Эту папку целиком копируем на Windows (флешка, общий диск) в `C:\multi-reestr`.
 
 Проверить перед переносом:
-- В `build.gradle` стоит `vaadin { productionMode = false }` (локальная разработка) и `developmentOnly 'com.vaadin:vaadin-dev'`. Флаг `-Pvaadin.productionMode=true` в `build-jar.sh` собирает фронтенд в jar. Проверка: `jar tf build/libs/*.jar | grep vaadin-dev` не должен ничего показать.
+- В `build.gradle` стоит `vaadin { productionMode = false }` (локальная разработка). `vaadin-dev` подключается только если нет `-Pvaadin.productionMode=true` (`developmentOnly` всё равно тащит dev-модули в jar). Флаг в `build-jar.sh` собирает фронтенд в jar. Проверка: `jar tf build/libs/*.jar | grep vaadin-dev` не должен ничего показать.
 - Jar с HSQLDB и PostgreSQL-драйвером: оба уже в `runtimeOnly`.
 - Версия и коммит попадают в jar (`generateGitProperties`) — их показывает экран «О программе». Собирать из чистого рабочего дерева на нужном теге.
 

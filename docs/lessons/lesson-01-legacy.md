@@ -137,6 +137,14 @@ testImplementation 'org.testcontainers:testcontainers-postgresql'
 
 Драйвер PostgreSQL нужен только во время выполнения. Версии берутся из BOM Spring Boot / Jmix. Testcontainers понадобится в тестах (раздел 7).
 
+`vaadin-dev` не кладём в production-jar: при `-Pvaadin.productionMode=true` зависимость не подключаем. `developmentOnly` для этого недостаточно — dev-модули Vaadin всё равно попадают в сборку. Проверка: `jar tf build/libs/*.jar | grep vaadin-dev` пуст.
+
+```groovy
+if (!project.hasProperty('vaadin.productionMode') || project.property('vaadin.productionMode') != 'true') {
+    implementation 'com.vaadin:vaadin-dev'
+}
+```
+
 ### 4.2. Настройки: `LegacyDataSourceProperties`
 
 Все параметры legacy собраны в одном классе с префиксом `legacy.datasource`. В нём же заданы безопасные значения по умолчанию:
@@ -360,6 +368,7 @@ statement.execute("GRANT SELECT ON legacy_probe TO " + RO_USER);
 - [ ] Драйвер получает `readOnly=true` и `readOnlyMode=always` из Java; Hikari всегда read-only (false в конфиге игнорируется).
 - [ ] Приложение стартует при остановленном контейнере (в логе есть `WARN ... continues without it`).
 - [ ] Экран «Администрирование → Подключение к MultiReestr» показывает `OK`, `reestr_ro`, «Только чтение: да».
+- [ ] Production-jar без `vaadin-dev` (`./gradlew bootJar -Pvaadin.productionMode=true`).
 - [ ] `./gradlew test` зелёный.
 - [ ] `dev/legacy/*.dump` не попал в git (`git status`).
 - [ ] Коммит и тег:

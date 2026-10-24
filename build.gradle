@@ -38,7 +38,10 @@ dependencies {
     implementation 'io.jmix.datatools:jmix-datatools-flowui-starter'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    developmentOnly 'com.vaadin:vaadin-dev'
+    // В production-сборке (-Pvaadin.productionMode=true) dev-модули Vaadin не нужны.
+    if (!project.hasProperty('vaadin.productionMode') || project.property('vaadin.productionMode') != 'true') {
+        implementation 'com.vaadin:vaadin-dev'
+    }
 
     runtimeOnly 'org.hsqldb:hsqldb'
     runtimeOnly 'org.postgresql:postgresql'
