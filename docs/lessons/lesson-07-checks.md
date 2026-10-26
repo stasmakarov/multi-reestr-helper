@@ -1,6 +1,6 @@
 # Урок 7. Проверка по запросу и реестр нарушений
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §5, карточки [CheckResultDto](../model/entities/CheckResultDto.md), [CheckRun](../model/entities/CheckRun.md), [Violation](../model/entities/Violation.md); перечисления [CheckRunMode](../model/enums/CheckRunMode.md), [CheckRunStatus](../model/enums/CheckRunStatus.md), [ViolationStatus](../model/enums/ViolationStatus.md).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §5, карточки [CheckResultDto](../model/entities/CheckResultDto.md), [CheckRun](../model/entities/CheckRun.md), [Violation](../model/entities/Violation.md); перечисления [CheckRunMode](../model/enums/CheckRunMode.md), [CheckRunStatus](../model/enums/CheckRunStatus.md), [ViolationStatus](../model/enums/ViolationStatus.md).
 > Предыдущий урок: [lesson-06-rules.md](lesson-06-rules.md). Тег в конце урока: `lesson-07`.
 
 ## Зачем этот урок

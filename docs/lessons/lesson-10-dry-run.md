@@ -1,6 +1,6 @@
 # Урок 10. Dry-run правил на исторических данных; финал
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §5, карточки [CheckResultDto](../model/entities/CheckResultDto.md), [CheckRun](../model/entities/CheckRun.md), [RuleVersion](../model/entities/RuleVersion.md); перечисления [CheckRunMode](../model/enums/CheckRunMode.md), [DryRunDiff](../model/enums/DryRunDiff.md), [RuleVersionStatus](../model/enums/RuleVersionStatus.md). Скан: [lesson-09-scheduled.md](lesson-09-scheduled.md). Реестр: [lesson-07-checks.md](lesson-07-checks.md). Развёртывание: [../deploy-windows.md](../deploy-windows.md).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §5, карточки [CheckResultDto](../model/entities/CheckResultDto.md), [CheckRun](../model/entities/CheckRun.md), [RuleVersion](../model/entities/RuleVersion.md); перечисления [CheckRunMode](../model/enums/CheckRunMode.md), [DryRunDiff](../model/enums/DryRunDiff.md), [RuleVersionStatus](../model/enums/RuleVersionStatus.md). Скан: [lesson-09-scheduled.md](lesson-09-scheduled.md). Реестр: [lesson-07-checks.md](lesson-07-checks.md). Развёртывание: [../deploy-windows.md](../deploy-windows.md).
 > Предыдущий урок: [lesson-09-scheduled.md](lesson-09-scheduled.md). Тег в конце урока: `lesson-10`.
 
 ## Зачем этот урок
@@ -175,7 +175,7 @@ Legacy недоступна после создания журнала → `FAIL
 
 1. Собрать jar с тега `lesson-10`.
 2. Остановить приложение, `pg_dump` БД `multireestr` на PostgreSQL 16 `:5435`.
-3. Заменить `multi-reestr.jar`, не затирать `config\application.properties` (`main.liquibase.contexts=!demo`).
+3. Заменить `multi-reestr-helper.jar`, не затирать `config\application.properties` (`main.liquibase.contexts=!demo`).
 4. `.\start-app.ps1` — Liquibase (для этого урока новых ченджсетов нет). `grant-readonly.sql` не менялся.
 5. Рядом: MultiReestr на PG 9.6 `:5432`, роль `reestr_ro`; main — отдельный PostgreSQL 16 `:5435`.
 

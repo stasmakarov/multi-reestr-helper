@@ -7,8 +7,8 @@
 #>
 param(
     [int]$Port = 5435,
-    [string]$Name = "multireestr-pg16",
-    [string]$Volume = "multireestr-pg16"
+    [string]$Name = "multireestr-helper-pg16",
+    [string]$Volume = "multireestr-helper-pg16"
 )
 $ErrorActionPreference = "Stop"
 docker info *> $null

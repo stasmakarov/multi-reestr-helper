@@ -1,4 +1,4 @@
-# Модель данных MultiReestr (Jmix 3.0.3)
+# Модель данных multi-reestr-helper (Jmix 3.0.3)
 
 > Общая картина модели, диаграммы и ключевые решения описаны в [OVERVIEW.md](OVERVIEW.md).
 

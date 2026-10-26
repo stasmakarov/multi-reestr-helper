@@ -1,4 +1,4 @@
-# Multi Reestr
+# Multi Reestr Helper
 
 This is a web application based on the [Jmix](https://www.jmix.io) framework.
 
@@ -19,7 +19,7 @@ Use the following resources to learn more about Jmix:
 
 ## Running
 
-To start the application, use the **Multi Reestr Jmix Application** run configuration in your IDE, or run the following command in the project root directory:
+To start the application, use the **Multi Reestr Helper Jmix Application** run configuration in your IDE, or run the following command in the project root directory:
 
 ```bash
 ./gradlew bootRun

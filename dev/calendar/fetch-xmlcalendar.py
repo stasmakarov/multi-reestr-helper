@@ -14,7 +14,7 @@ from pathlib import Path
 
 DEFAULT_YEARS = (2024, 2025, 2026, 2027)
 URL_TEMPLATE = "https://xmlcalendar.ru/data/ru/{year}/calendar.xml"
-USER_AGENT = "multi-reestr-calendar"
+USER_AGENT = "multi-reestr-helper-calendar"
 CREATED_BY = "system"
 CREATED_DATE = "2026-01-01T00:00:00"
 SOURCE = "XMLCALENDAR"

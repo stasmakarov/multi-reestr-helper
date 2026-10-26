@@ -2,7 +2,7 @@
 <project version="4">
   <component name="JmixDataStoreSettingsManager">
     <moduleSettings>
-      <entry key="com.digitilius.multi-reestr.main">
+      <entry key="com.digitilius.multi-reestr-helper.main">
         <ModuleSettings>
           <option name="dataStoreOptionsV2">
             <map>

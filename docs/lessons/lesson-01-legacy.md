@@ -1,6 +1,6 @@
 # Урок 1. Проект и подключение legacy-БД (read-only)
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md). Docker-стенд legacy: [../LEGACY_DOCKER.md](../LEGACY_DOCKER.md).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md). Docker-стенд legacy: [../LEGACY_DOCKER.md](../LEGACY_DOCKER.md).
 > Тег в конце урока: `lesson-01`.
 
 ## О чём этот курс
@@ -9,7 +9,7 @@
 
 **Проблема.** При проверках у заказчика находят одни и те же нарушения: пропущенные сроки, ошибки в извещениях, незакрытые этапы исполнения. Правила, по которым эти нарушения можно поймать заранее, в головах у специалистов есть, а в системе их нет.
 
-**Что мы строим.** Мы делаем приложение multi-reestr на Jmix 3.0.3. Оно:
+**Что мы строим.** Мы делаем приложение multi-reestr-helper на Jmix 3.0.3. Оно:
 
 - **читает** базу MultiReestr и ничего в неё не пишет. Старая программа остаётся главной, мы к ней надстраиваемся;
 - даёт **поиск и карточку закупки**: по номеру или по дате и названию, с выбором настоящего оригинала среди дублей и копий, со всеми блоками от извещения до оплат, с выгрузкой в Excel;
@@ -55,7 +55,7 @@
 flowchart LR
     B["Браузер"] -->|"HTTP :8080"| APP
     subgraph DEV["Машина разработчика"]
-        APP["multi-reestr<br/>Jmix 3.0.3 / Spring Boot"]
+        APP["multi-reestr-helper<br/>Jmix 3.0.3 / Spring Boot"]
         H[("main: HSQLDB<br/>.jmix/hsqldb/mtr<br/>JPA + Liquibase")]
         subgraph DOCKER["Docker"]
             L[("reestr-pg96<br/>PostgreSQL 9.6<br/>localhost:5436 / reestrdb<br/>роль reestr_ro")]

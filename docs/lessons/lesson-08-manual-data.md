@@ -1,6 +1,6 @@
 # Урок 8. Ручные данные: условия контрактов, даты ЛБО/ПГ
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md), карточки [ContractTerm](../model/entities/ContractTerm.md), [PlanScheduleEvent](../model/entities/PlanScheduleEvent.md), [PlanScheduleDto](../model/entities/PlanScheduleDto.md), [DeadlineSpec](../model/entities/DeadlineSpec.md); перечисления [ContractTermType](../model/enums/ContractTermType.md), [DeadlineAnchor](../model/enums/DeadlineAnchor.md). Движок срока: [lesson-05-deadlines.md](lesson-05-deadlines.md).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md), карточки [ContractTerm](../model/entities/ContractTerm.md), [PlanScheduleEvent](../model/entities/PlanScheduleEvent.md), [PlanScheduleDto](../model/entities/PlanScheduleDto.md), [DeadlineSpec](../model/entities/DeadlineSpec.md); перечисления [ContractTermType](../model/enums/ContractTermType.md), [DeadlineAnchor](../model/enums/DeadlineAnchor.md). Движок срока: [lesson-05-deadlines.md](lesson-05-deadlines.md).
 > Предыдущий урок: [lesson-07-checks.md](lesson-07-checks.md). Тег в конце урока: `lesson-08`.
 
 ## Зачем этот урок
