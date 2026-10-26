@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Пересборка контейнера app из текущего дерева исходников (IDE / git checkout).
-# Том PostgreSQL 16 не трогает. Нужен .env в корне репозитория.
+# Пересборка контейнера app (образ multi-reestr-helper:latest, контейнер multi-reestr-helper-app)
+# из текущего дерева исходников (IDE / git checkout).
+# Том PostgreSQL 16 (multireestr-helper-pg16) не трогает. Нужен .env в корне репозитория.
 # Использование: dev/deploy/rebuild-docker.sh
 set -euo pipefail
 

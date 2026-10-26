@@ -1,4 +1,4 @@
-# План: Docker-развёртывание multi-reestr (Mac и Windows)
+# План: Docker-развёртывание multi-reestr-helper (Mac и Windows)
 
 > **Статус: реализовано.** Инструкция по запуску: [deploy-docker.md](deploy-docker.md). Файлы: `Dockerfile`, `docker-compose.yml`, `.env.example` в корне репозитория.
 >
@@ -37,7 +37,7 @@
 | `app` | **один** свой образ (multi-stage Dockerfile от production-jar) | Jmix 3 / Spring Boot, порт `8080` |
 | `postgres` | официальный `postgres:16` | основная БД Jmix (`multireestr`), публикация на хост **`5435`** — как [deploy-windows.md §3](deploy-windows.md#3-подготовка-windows-jdk-21-и-postgresql-16-порт-5435) и `main-db-docker.ps1` |
 
-Имена роли и БД — те же, что уже в скриптах: пользователь `multireestr`, БД `multireestr`, контейнер/том в духе `multireestr-pg16` (точное имя службы в compose — на шаге реализации, смысл не менять).
+Имена роли и БД — те же, что уже в скриптах: пользователь `multireestr`, БД `multireestr`. Контейнер и том PostgreSQL 16 в compose: `multireestr-helper-pg16`. Образ приложения: `multi-reestr-helper:latest`, контейнер: `multi-reestr-helper-app`.
 
 Необязательный профиль compose (для учеников на Mac, **не** для живого продукта): служба вроде `reestr-pg96` по [LEGACY_DOCKER.md](LEGACY_DOCKER.md) / `dev/legacy/legacy-db.sh` (дамп `reestrdb`, порт хоста **`5436`**). Профиль не меняет службы `app` и `postgres` и не делает «mac-compose» отдельно от Windows.
 

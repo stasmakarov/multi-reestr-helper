@@ -1,4 +1,4 @@
-# Production image for multi-reestr (Jmix 3 / Spring Boot).
+# Production image for multi-reestr-helper (Jmix 3 / Spring Boot).
 # Build: docker compose build
 # Same image on Mac and Windows. Main DB is PostgreSQL 16 (compose service postgres).
 # HSQLDB is not used in this path: MAIN_DATASOURCE_URL must point at Postgres.

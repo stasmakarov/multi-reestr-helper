@@ -1,4 +1,4 @@
-# Развёртывание multi-reestr в Docker (Mac и Windows)
+# Развёртывание multi-reestr-helper в Docker (Mac и Windows)
 
 > Один `Dockerfile` и один `docker-compose.yml` на обе ОС. Путь `java -jar` на Windows не отменяется: [deploy-windows.md](deploy-windows.md).
 >
@@ -8,8 +8,8 @@
 
 | Служба | Образ | Порт на хосте | Назначение |
 |---|---|---|---|
-| `app` | свой multi-stage образ (JDK 21 / Gradle → JRE 21 + jar) | `8080` | Jmix 3 |
-| `postgres` | `postgres:16` | `5435` | основная БД Jmix (`multireestr`) |
+| `app` (`multi-reestr-helper-app`) | `multi-reestr-helper:latest` (JDK 21 / Gradle → JRE 21 + jar) | `8080` | Jmix 3 |
+| `postgres` (`multireestr-helper-pg16`) | `postgres:16` | `5435` | основная БД Jmix (`multireestr`) |
 
 HSQLDB в этом пути не используется. Пароль и JDBC URL MultiReestr в `.env` и compose **не** задаются.
 
@@ -29,7 +29,7 @@ docker compose up --build
 
 Открыть http://localhost:8080 , войти `admin` / `admin`, сразу сменить пароль администратора.
 
-Остановка: `docker compose down`. Том `multireestr-pg16` сохраняет БД. Полный сброс: `docker compose down -v`.
+Остановка: `docker compose down`. Том `multireestr-helper-pg16` сохраняет БД. Полный сброс: `docker compose down -v`.
 
 ## Подключение к MultiReestr из контейнера
 
@@ -70,7 +70,7 @@ dev/deploy/rebuild-docker.sh
 
 Windows (клон репо, Docker Desktop): `.\dev\deploy\rebuild-docker.ps1`
 
-Скрипт требует `.env` (иначе сразу ошибка), поднимает `postgres` и ждёт healthy, затем пересобирает только `app` и пересоздаёт его контейнер. Том `multireestr-pg16` не удаляется. То же вручную:
+Скрипт требует `.env` (иначе сразу ошибка), поднимает `postgres` и ждёт healthy, затем пересобирает только `app` (`multi-reestr-helper:latest` / `multi-reestr-helper-app`) и пересоздаёт его контейнер. Том `multireestr-helper-pg16` не удаляется. То же вручную:
 
 ```bash
 docker compose build app

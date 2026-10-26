@@ -1,4 +1,4 @@
-# multi-reestr: app + PostgreSQL 16 (Jmix main DB).
+# multi-reestr-helper: app + PostgreSQL 16 (Jmix main DB).
 # Same file on Mac and Windows. Do not put MultiReestr (legacy) password or JDBC URL here.
 #
 # Start:
@@ -25,7 +25,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: multireestr-pg16
+    container_name: multireestr-helper-pg16
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-multireestr}
@@ -34,7 +34,7 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - multireestr-pg16:/var/lib/postgresql/data
+      - multireestr-helper-pg16:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
@@ -45,8 +45,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: multi-reestr:latest
-    container_name: multi-reestr-app
+    image: multi-reestr-helper:latest
+    container_name: multi-reestr-helper-app
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -81,6 +81,6 @@ services:
       - reestr-pg96:/var/lib/postgresql/data
 
 volumes:
-  multireestr-pg16:
+  multireestr-helper-pg16:
   app-jmix:
   reestr-pg96:
