@@ -1,6 +1,6 @@
 # Урок 10. Dry-run правил на исторических данных; финал
 
-> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §5, карточки [CheckResultDto](../model/entities/CheckResultDto.md), [CheckRun](../model/entities/CheckRun.md), [RuleVersion](../model/entities/RuleVersion.md); перечисления [CheckRunMode](../model/enums/CheckRunMode.md), [DryRunDiff](../model/enums/DryRunDiff.md), [RuleVersionStatus](../model/enums/RuleVersionStatus.md). Скан: [lesson-09-scheduled.md](lesson-09-scheduled.md). Реестр: [lesson-07-checks.md](lesson-07-checks.md). Развёртывание: [../deploy-windows.md](../deploy-windows.md).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §5, карточки [CheckResultDto](../model/entities/CheckResultDto.md), [CheckRun](../model/entities/CheckRun.md), [RuleVersion](../model/entities/RuleVersion.md); перечисления [CheckRunMode](../model/enums/CheckRunMode.md), [DryRunDiff](../model/enums/DryRunDiff.md), [RuleVersionStatus](../model/enums/RuleVersionStatus.md). Скан: [lesson-09-scheduled.md](lesson-09-scheduled.md). Реестр: [lesson-07-checks.md](lesson-07-checks.md). Развёртывание: [../deploy-windows.md](../deploy-windows.md), Docker: [../deploy-docker.md](../deploy-docker.md).
 > Предыдущий урок: [lesson-09-scheduled.md](lesson-09-scheduled.md). Тег в конце урока: `lesson-10`.
 
 ## Зачем этот урок
@@ -171,6 +171,8 @@ Legacy недоступна после создания журнала → `FAIL
 
 Сборка jar на Mac: `dev/deploy/build-jar.sh` (`./gradlew clean bootJar -Pvaadin.productionMode=true`).
 
+Если приложение крутится в Docker и вы правите код в IDE: `dev/deploy/rebuild-docker.sh` (Windows — `.\dev\deploy\rebuild-docker.ps1`). Пересобирает контейнер `app` из текущего дерева, том Postgres не сбрасывает. Нужен `.env`. Подробнее: [deploy-docker.md, «Пересборка из IDE»](../deploy-docker.md#пересборка-из-ide).
+
 Обновление Windows — не первая установка (она в уроке 1), а [deploy-windows.md](../deploy-windows.md) §8:
 
 1. Собрать jar с тега `lesson-10`.
@@ -190,7 +192,7 @@ Legacy недоступна после создания журнала → `FAIL
 - [ ] Роль: `mtr.check.dryrun` только у администратора правил.
 - [ ] Нет Liquibase после 061. Тексты — «тестовый набор (данных)», без ПДн.
 - [ ] Docker, `./gradlew test` зелёный.
-- [ ] Сквозной сценарий и обновление по deploy-windows.md описаны.
+- [ ] Сквозной сценарий и обновление по deploy-windows.md описаны. Пересборка Docker из IDE — [deploy-docker.md](../deploy-docker.md#пересборка-из-ide).
 - [ ] Коммит и тег:
 
 ```bash

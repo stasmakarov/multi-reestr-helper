@@ -15,7 +15,10 @@ JAR="$(ls build/libs/*.jar | grep -v -- '-plain.jar' | head -n 1)"
 rm -rf "$OUT"
 mkdir -p "$OUT/sql" "$OUT/config"
 cp "$JAR" "$OUT/multi-reestr-helper.jar"
-cp dev/deploy/*.ps1 "$OUT/"
+for f in dev/deploy/*.ps1; do
+  case "$(basename "$f")" in rebuild-docker.ps1) continue ;; esac
+  cp "$f" "$OUT/"
+done
 cp dev/deploy/application-windows.properties.example "$OUT/config/"
 cp dev/legacy/grant-readonly.sql "$OUT/sql/"
 

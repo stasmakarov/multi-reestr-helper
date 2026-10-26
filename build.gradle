@@ -94,21 +94,36 @@ tasks.register('generateGitProperties') {
     def out = generatedGitDir.map { it.file('git.properties') }
     outputs.file(out)
     doLast {
+        // Docker build has no git binary and no .git (see .dockerignore). Local bootJar still uses git.
         def runGit = { String... args ->
-            def process = new ProcessBuilder(['git', *args])
-                    .directory(rootDir)
-                    .redirectError(ProcessBuilder.Redirect.DISCARD)
-                    .start()
-            def text = process.inputStream.getText('UTF-8').trim()
-            process.waitFor()
-            process.exitValue() == 0 ? text : ''
+            try {
+                def process = new ProcessBuilder(['git', *args])
+                        .directory(rootDir)
+                        .redirectError(ProcessBuilder.Redirect.DISCARD)
+                        .start()
+                def text = process.inputStream.getText('UTF-8').trim()
+                process.waitFor()
+                return process.exitValue() == 0 ? text : ''
+            } catch (IOException ignored) {
+                return ''
+            }
+        }
+        def branch = System.getenv('GIT_BRANCH') ?: runGit('rev-parse', '--abbrev-ref', 'HEAD')
+        def commit = System.getenv('GIT_COMMIT') ?: runGit('rev-parse', '--short', 'HEAD')
+        def time = System.getenv('GIT_COMMIT_TIME') ?: runGit('log', '-1', '--format=%cI')
+        def lines = []
+        if (branch) {
+            lines << "git.branch=${branch}"
+        }
+        if (commit) {
+            lines << "git.commit.id.abbrev=${commit}"
+        }
+        if (time) {
+            lines << "git.commit.time=${time}"
         }
         def file = out.get().asFile
         file.parentFile.mkdirs()
-        file.write("""git.branch=${runGit('rev-parse', '--abbrev-ref', 'HEAD')}
-git.commit.id.abbrev=${runGit('rev-parse', '--short', 'HEAD')}
-git.commit.time=${runGit('log', '-1', '--format=%cI')}
-""", 'UTF-8')
+        file.write(lines ? lines.join('\n') + '\n' : '', 'UTF-8')
     }
 }
 

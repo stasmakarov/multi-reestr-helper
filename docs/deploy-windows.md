@@ -2,6 +2,8 @@
 
 > Документ-инструкция без кода приложения. Разработка ведётся на Mac, приложение работает на Windows-машине пользователя рядом с живой БД MultiReestr. Модель данных — [model/OVERVIEW.md §8](model/OVERVIEW.md#8-развёртывание-и-базы-данных), экран настроек — [UI.md, «Подключение к MultiReestr»](UI.md#35-администрирование), урок — 1 ([LESSONS.md](LESSONS.md), [lessons/lesson-01-legacy.md §11–12](lessons/lesson-01-legacy.md#11-подключение-из-интерфейса-администратора)).
 > Пометка **проверить** — то, что нужно подтвердить на Jmix 3.0.3 или на машине пользователя. **Требует кода (урок 1, §11)** — шаг заработает только после реализации [LegacyConnectionSettings](model/entities/LegacyConnectionSettings.md).
+>
+> Дополнительный путь — приложение и PostgreSQL 16 в Docker: [deploy-docker.md](deploy-docker.md). Этот документ описывает установку `java -jar`.
 
 ## Содержание
 
@@ -15,6 +17,7 @@
 8. [Обновление версии](#8-обновление-версии)
 9. [Скрипты dev/deploy](#9-скрипты-devdeploy)
 10. [Неполадки](#10-неполадки)
+11. [Путь Docker (приложение + PostgreSQL 16)](#11-путь-docker-приложение--postgresql-16)
 
 ## 1. Схема установки
 
@@ -77,6 +80,8 @@ dev/deploy/build-jar.sh
 ### 3.3. PostgreSQL 16 — Docker (альтернатива)
 
 Если на машине уже есть Docker Desktop: `.\main-db-docker.ps1` поднимает `postgres:16` с `--restart unless-stopped`, порт `127.0.0.1:5435`. Минус: Docker Desktop стартует только после входа пользователя в Windows, поэтому приложение нельзя запускать раньше, чем поднимется контейнер. Для живой БД MultiReestr Docker не используем.
+
+Полный стек `app` + PostgreSQL 16 (без `java -jar`) — [deploy-docker.md](deploy-docker.md). Не запускайте одновременно `main-db-docker.ps1` и службу `postgres` из compose: оба слушают `5435`.
 
 ## 4. Роль reestr_ro на живой БД 9.6
 
@@ -186,6 +191,7 @@ cd C:\multi-reestr-helper
 | `create-legacy-ro.ps1` | Windows | `reestr_ro` на живой 9.6 + `grant-readonly.sql`, повторный запуск безопасен |
 | `set-env.ps1` | Windows | пароли и `MTR_SECRET_KEY` в переменные пользователя |
 | `start-app.ps1` | Windows | `java -jar` из папки установки, UTF-8, часовой пояс Москвы |
+| `rebuild-docker.sh` / `rebuild-docker.ps1` | Mac / Windows, клон репо | пересборка контейнера `app` из исходников; том Postgres не трогает ([deploy-docker.md](deploy-docker.md)) |
 
 Скрипты `*.ps1` сохранены в UTF-8 **с BOM**: без BOM Windows PowerShell 5.1 читает файл как ANSI и портит русские сообщения. При правке сохранять так же. Если политика выполнения блокирует скрипты: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` и `Unblock-File .\*.ps1` (файлы, скопированные с другой машины, помечены как скачанные).
 
@@ -199,3 +205,16 @@ cd C:\multi-reestr-helper
 | «Проверить подключение» показывает read-only «нет» | Подключились не под `reestr_ro` или драйвер без `readOnlyMode=always`; приложение всё равно не пишет, но роль нужно проверить |
 | Кракозябры в консоли | `chcp 65001` перед запуском или смотреть `logs\multi-reestr-helper.log` |
 | Белая страница / ошибка про dev-сервер Vaadin | jar собран без `-Pvaadin.productionMode=true` |
+
+## 11. Путь Docker (приложение + PostgreSQL 16)
+
+Этот документ — установка `java -jar` и отдельного PostgreSQL 16. Чтобы поднять **и приложение, и** PostgreSQL 16 одним compose (тот же файл на Mac и Windows): [deploy-docker.md](deploy-docker.md).
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Legacy MultiReestr из контейнера: в UI хост `host.docker.internal`, порт живой 9.6 (обычно `5432`). Пароль legacy в `.env` не кладётся.
+
+Пересборка из исходников IDE: `.\dev\deploy\rebuild-docker.ps1` (см. [deploy-docker.md](deploy-docker.md#пересборка-из-ide)).

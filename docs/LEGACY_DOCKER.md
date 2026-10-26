@@ -1,5 +1,7 @@
 # Legacy-БД `reestrdb` в Docker (PostgreSQL 9.6)
 
+> Учебный дамп для Mac / разработки. Живую БД MultiReestr в compose приложения не переносим. Путь `app` + PostgreSQL 16: [deploy-docker.md](deploy-docker.md). Из контейнера `app` хост дампа — `host.docker.internal:5436`.
+
 Файл дампа: `reestrdb.dump` (custom-формат `pg_dump -Fc -O -x`, без владельцев и прав, ~4.5 МБ).
 SHA-256: `25f12e8fd12bce77c02cecd72d3b7467fb7b94098785397d0da7bbcb2986ffc3`
 

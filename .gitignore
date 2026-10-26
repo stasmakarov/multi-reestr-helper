@@ -32,3 +32,6 @@ webpack.generated.js
 
 # Legacy DB dump (dev only)
 dev/legacy/*.dump
+
+# Docker Compose local secrets
+.env
