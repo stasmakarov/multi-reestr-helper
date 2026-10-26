@@ -27,7 +27,7 @@ import javax.sql.DataSource;
 @StyleSheet(Aura.STYLESHEET)
 @StyleSheet(JmixAura.STYLESHEET)
 @StyleSheet("themes/multi-reestr-aura/styles.css")
-@PWA(name = "Multi Reestr", shortName = "Multi Reestr", offline = false)
+@PWA(name = "Multi Reestr Helper", shortName = "MR Helper", offline = false)
 @SpringBootApplication
 public class MultiReestrApplication implements AppShellConfigurator {
 

@@ -1,5 +1,5 @@
 # Пример config\application.properties для Windows-машины пользователя.
-# Скопируйте в C:\multi-reestr\config\application.properties (Spring Boot читает ./config/ рядом с jar)
+# Скопируйте в C:\multi-reestr-helper\config\application.properties (Spring Boot читает ./config/ рядом с jar)
 # и заполните пароли. Пароли можно не писать сюда, а задать переменными окружения
 # MAIN_DATASOURCE_PASSWORD, LEGACY_DATASOURCE_PASSWORD, MTR_SECRET_KEY (они сильнее файла).
 
@@ -31,4 +31,4 @@ main.liquibase.contexts=!demo
 
 # Цвета ANSI в консоли Windows не нужны.
 spring.output.ansi.enabled=never
-logging.file.name=logs/multi-reestr.log
+logging.file.name=logs/multi-reestr-helper.log

@@ -1,6 +1,6 @@
 # Урок 5. Движок сроков (ст. 191–193 ГК)
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md) (новый экран в этом уроке не появляется). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §6, [DeadlineSpec](../model/entities/DeadlineSpec.md), [DayCountUnit](../model/enums/DayCountUnit.md), [ShiftRule](../model/enums/ShiftRule.md), [DeadlineAnchor](../model/enums/DeadlineAnchor.md), [CompareOperator](../model/enums/CompareOperator.md). Календарь, на который опирается расчёт: [CalendarDay](../model/entities/CalendarDay.md), урок [lesson-04-calendar.md](lesson-04-calendar.md).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md) (новый экран в этом уроке не появляется). Модель: [../model/OVERVIEW.md](../model/OVERVIEW.md) §6, [DeadlineSpec](../model/entities/DeadlineSpec.md), [DayCountUnit](../model/enums/DayCountUnit.md), [ShiftRule](../model/enums/ShiftRule.md), [DeadlineAnchor](../model/enums/DeadlineAnchor.md), [CompareOperator](../model/enums/CompareOperator.md). Календарь, на который опирается расчёт: [CalendarDay](../model/entities/CalendarDay.md), урок [lesson-04-calendar.md](lesson-04-calendar.md).
 > Предыдущий урок: [lesson-04-calendar.md](lesson-04-calendar.md). Тег в конце урока: `lesson-05`.
 
 ## Зачем этот урок

@@ -1,6 +1,6 @@
 # Урок 4. Производственный календарь
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md), сущность: [CalendarDay](../model/entities/CalendarDay.md), перечисления: [DayType](../model/enums/DayType.md), [CalendarSource](../model/enums/CalendarSource.md). Начальные данные: [../model/README.md](../model/README.md#начальные-данные).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md), сущность: [CalendarDay](../model/entities/CalendarDay.md), перечисления: [DayType](../model/enums/DayType.md), [CalendarSource](../model/enums/CalendarSource.md). Начальные данные: [../model/README.md](../model/README.md#начальные-данные).
 > Предыдущий урок: [lesson-03-notice-card.md](lesson-03-notice-card.md). Тег в конце урока: `lesson-04`.
 
 ## Зачем этот урок
@@ -223,7 +223,7 @@ if (from != null) {
 
 Проверки разбора: корневой элемент должен быть `<calendar>`, атрибут `year` должен совпадать с запрошенным годом («Год в XML 2025 не совпадает с запрошенным 2024»), элемент `<days>` обязателен, а `h` должен ссылаться на существующий праздник. Внешние сущности XML не раскрываются (`setExpandEntityReferences(false)`).
 
-`XmlCalendarClient` скачивает `https://xmlcalendar.ru/data/ru/%d/calendar.xml` через `java.net.http.HttpClient`: таймаут соединения 15 с, запроса 30 с, `User-Agent: multi-reestr-calendar`. Ответ не 200 превращается в `IllegalStateException("xmlcalendar.ru вернул HTTP …")`.
+`XmlCalendarClient` скачивает `https://xmlcalendar.ru/data/ru/%d/calendar.xml` через `java.net.http.HttpClient`: таймаут соединения 15 с, запроса 30 с, `User-Agent: multi-reestr-helper-calendar`. Ответ не 200 превращается в `IllegalStateException("xmlcalendar.ru вернул HTTP …")`.
 
 ### 4.6. Скрипт `dev/calendar` и CSV
 

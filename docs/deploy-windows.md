@@ -1,4 +1,4 @@
-# Развёртывание multi-reestr на Windows 10/11
+# Развёртывание multi-reestr-helper на Windows 10/11
 
 > Документ-инструкция без кода приложения. Разработка ведётся на Mac, приложение работает на Windows-машине пользователя рядом с живой БД MultiReestr. Модель данных — [model/OVERVIEW.md §8](model/OVERVIEW.md#8-развёртывание-и-базы-данных), экран настроек — [UI.md, «Подключение к MultiReestr»](UI.md#35-администрирование), урок — 1 ([LESSONS.md](LESSONS.md), [lessons/lesson-01-legacy.md §11–12](lessons/lesson-01-legacy.md#11-подключение-из-интерфейса-администратора)).
 > Пометка **проверить** — то, что нужно подтвердить на Jmix 3.0.3 или на машине пользователя. **Требует кода (урок 1, §11)** — шаг заработает только после реализации [LegacyConnectionSettings](model/entities/LegacyConnectionSettings.md).
@@ -23,15 +23,15 @@
 | MultiReestr (существующая система) | Windows-машина пользователя | — | — |
 | PostgreSQL 9.6 MultiReestr (живая БД, **не трогаем**, кроме создания `reestr_ro`) | та же машина | `5432` (уточнить на месте) | `reestrdb`, роль `reestr_ro` только с `SELECT` |
 | PostgreSQL 16 для Jmix (main) | та же машина, отдельная установка | `5435` | `multireestr`, владелец `multireestr` |
-| multi-reestr (`java -jar`, без службы Windows) | папка `C:\multi-reestr` | `8080` | — |
+| multi-reestr-helper (`java -jar`, без службы Windows) | папка `C:\multi-reestr-helper` | `8080` | — |
 
 Почему отдельный PostgreSQL 16: Jmix 3 не поддерживает PostgreSQL 9.6, а размещать свои таблицы в БД MultiReestr нельзя. Порт `5435` выбран, чтобы не пересечься с 9.6 на `5432`.
 
 > На Mac dev-контейнер `reestr-pg96` (legacy, см. `dev/legacy/legacy-db.sh`) слушает **5436**, и в `application.properties` по умолчанию `legacy.datasource.url=jdbc:postgresql://localhost:5436/reestrdb`. На Windows на `5435` стоит PostgreSQL 16 для Jmix. Порты больше не пересекаются, но **legacy URL на Windows всё равно переопределяется** на живую 9.6 (`:5432`, раздел 5).
 
 ```
-C:\multi-reestr\
-  multi-reestr.jar
+C:\multi-reestr-helper\
+  multi-reestr-helper.jar
   config\application.properties     ← из application-windows.properties.example
   sql\grant-readonly.sql             ← копия dev/legacy/grant-readonly.sql
   *.ps1                              ← скрипты из dev/deploy
@@ -49,7 +49,7 @@ dev/deploy/build-jar.sh
 ./gradlew clean bootJar -Pvaadin.productionMode=true
 ```
 
-Скрипт собирает jar в production-режиме Vaadin (фронтенд упакован в jar) и раскладывает папку `build/deploy/multi-reestr/` (jar, `*.ps1`, `config\…example`, `sql\grant-readonly.sql`). Эту папку целиком копируем на Windows (флешка, общий диск) в `C:\multi-reestr`.
+Скрипт собирает jar в production-режиме Vaadin (фронтенд упакован в jar) и раскладывает папку `build/deploy/multi-reestr-helper/` (jar, `*.ps1`, `config\…example`, `sql\grant-readonly.sql`). Эту папку целиком копируем на Windows (флешка, общий диск) в `C:\multi-reestr-helper`.
 
 Проверить перед переносом:
 - В `build.gradle` стоит `vaadin { productionMode = false }` (локальная разработка). `vaadin-dev` подключается только если нет `-Pvaadin.productionMode=true` (`developmentOnly` всё равно тащит dev-модули в jar). Флаг в `build-jar.sh` собирает фронтенд в jar. Проверка: `jar tf build/libs/*.jar | grep vaadin-dev` не должен ничего показать.
@@ -87,7 +87,7 @@ dev/deploy/build-jar.sh
 **Вариант A — скрипт PowerShell (рекомендуется):**
 
 ```powershell
-cd C:\multi-reestr
+cd C:\multi-reestr-helper
 .\create-legacy-ro.ps1 -Port 5432 -Database reestrdb
 ```
 
@@ -112,7 +112,7 @@ $env:PGCLIENTENCODING = "UTF8"
 Источники настроек (сильнее — выше):
 
 1. Переменные окружения Windows (пользователя, от имени которого запускается jar).
-2. `C:\multi-reestr\config\application.properties` — Spring Boot сам читает `config\` рядом с текущей папкой.
+2. `C:\multi-reestr-helper\config\application.properties` — Spring Boot сам читает `config\` рядом с текущей папкой.
 3. `application.properties` внутри jar (значения для разработки на Mac).
 
 Для legacy, кроме этого, после урока 1 (§11) есть запись [LegacyConnectionSettings](model/entities/LegacyConnectionSettings.md) в БД Jmix: если она есть и включена, она сильнее пунктов 1–3 (**требует кода (урок 1, §11)**). Пункты 1–3 остаются запасным вариантом для первого старта.
@@ -132,29 +132,29 @@ $env:PGCLIENTENCODING = "UTF8"
 Шаги:
 
 ```powershell
-cd C:\multi-reestr
+cd C:\multi-reestr-helper
 Copy-Item .\config\application-windows.properties.example .\config\application.properties
 notepad .\config\application.properties     # проверить порты и логины, пароли оставить пустыми
 .\set-env.ps1                               # пароли и MTR_SECRET_KEY → переменные пользователя
 ```
 
-Права на папку: доступ к `C:\multi-reestr` — только у учётной записи, под которой запускается приложение, и у администраторов (`config\` и `.jmix\` содержат настройки и файлы).
+Права на папку: доступ к `C:\multi-reestr-helper` — только у учётной записи, под которой запускается приложение, и у администраторов (`config\` и `.jmix\` содержат настройки и файлы).
 
 Тип СУБД main Jmix определяет по URL; отдельное свойство вроде `main.datasource.studio.*` для jar не нужно — **проверить** на первом запуске (в логе Liquibase должны создаваться таблицы `MTR_*` в PostgreSQL).
 
 ## 6. Первый запуск
 
 ```powershell
-cd C:\multi-reestr
+cd C:\multi-reestr-helper
 .\start-app.ps1
 ```
 
-1. В логе (`logs\multi-reestr.log` и консоль): Liquibase создаёт таблицы в `multireestr` на `:5435`, затем `Connected to legacy MultiReestr database: PostgreSQL 9.6…`. Если legacy недоступна — предупреждение `…not available… Application continues without it`, приложение продолжает работать.
+1. В логе (`logs\multi-reestr-helper.log` и консоль): Liquibase создаёт таблицы в `multireestr` на `:5435`, затем `Connected to legacy MultiReestr database: PostgreSQL 9.6…`. Если legacy недоступна — предупреждение `…not available… Application continues without it`, приложение продолжает работать.
 2. Открыть `http://localhost:8080`, войти `admin` / `admin` и **сразу сменить пароль** admin (Администрирование → Пользователи).
 3. Администрирование → «Подключение к MultiReestr» → «Проверить подключение»: статус «Подключено», пользователь `reestr_ro`, read-only «да».
 4. Поиск извещения по известному номеру — карточка открывается, Excel выгружается.
 
-Окно PowerShell должно оставаться открытым: закрыли окно — остановили приложение (служба Windows по требованию не используется). Для автозапуска можно положить ярлык на `powershell.exe -File C:\multi-reestr\start-app.ps1` в `shell:startup` (**предложение**); при Docker-варианте PostgreSQL 16 — с задержкой.
+Окно PowerShell должно оставаться открытым: закрыли окно — остановили приложение (служба Windows по требованию не используется). Для автозапуска можно положить ярлык на `powershell.exe -File C:\multi-reestr-helper\start-app.ps1` в `shell:startup` (**предложение**); при Docker-варианте PostgreSQL 16 — с задержкой.
 
 ## 7. Подключение к MultiReestr из интерфейса
 
@@ -171,7 +171,7 @@ cd C:\multi-reestr
 
 1. На Mac: `git checkout <тег>` → `dev/deploy/build-jar.sh`.
 2. На Windows: остановить приложение (Ctrl+C в окне), резервная копия БД Jmix: `pg_dump -h localhost -p 5435 -U multireestr -Fc multireestr > backup\multireestr-<дата>.dump`.
-3. Заменить `multi-reestr.jar` (и при необходимости `*.ps1`, `sql\grant-readonly.sql`). `config\application.properties` не перезаписывать.
+3. Заменить `multi-reestr-helper.jar` (и при необходимости `*.ps1`, `sql\grant-readonly.sql`). `config\application.properties` не перезаписывать.
 4. Если в новой версии изменился `grant-readonly.sql` (новые таблицы в запросах) — повторить `.\create-legacy-ro.ps1` (пароль можно ввести прежний).
 5. `.\start-app.ps1` — Liquibase применит новые ченджсеты.
 
@@ -179,7 +179,7 @@ cd C:\multi-reestr
 
 | Файл | Где запускать | Что делает |
 |---|---|---|
-| `build-jar.sh` | Mac | production-сборка и папка `build/deploy/multi-reestr/` для переноса |
+| `build-jar.sh` | Mac | production-сборка и папка `build/deploy/multi-reestr-helper/` для переноса |
 | `application-windows.properties.example` | — | шаблон `config\application.properties` |
 | `init-main-db.ps1` | Windows | роль и БД `multireestr` в PostgreSQL 16 (`:5435`) |
 | `main-db-docker.ps1` | Windows | альтернатива: `postgres:16` в Docker на `127.0.0.1:5435` |
@@ -197,5 +197,5 @@ cd C:\multi-reestr
 | `Connection refused` на `:5435` при старте | Не запущена служба `postgresql-x64-16` или контейнер Docker ещё не поднялся |
 | `permission denied for relation …` в legacy | Новый запрос читает таблицу, которой нет в `grant-readonly.sql`: добавить её туда (в репо) и повторить `create-legacy-ro.ps1` |
 | «Проверить подключение» показывает read-only «нет» | Подключились не под `reestr_ro` или драйвер без `readOnlyMode=always`; приложение всё равно не пишет, но роль нужно проверить |
-| Кракозябры в консоли | `chcp 65001` перед запуском или смотреть `logs\multi-reestr.log` |
+| Кракозябры в консоли | `chcp 65001` перед запуском или смотреть `logs\multi-reestr-helper.log` |
 | Белая страница / ошибка про dev-сервер Vaadin | jar собран без `-Pvaadin.productionMode=true` |

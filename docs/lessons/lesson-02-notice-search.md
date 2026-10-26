@@ -1,6 +1,6 @@
 # Урок 2. DTO-модель извещения и поиск
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md). Спецификация поиска: [../legacy/notice_lookup_spec.md](../legacy/notice_lookup_spec.md), эталон: [../legacy/notice_golden.md](../legacy/notice_golden.md), запросы: [../legacy/notice_lookup.sql](../legacy/notice_lookup.sql).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md). Спецификация поиска: [../legacy/notice_lookup_spec.md](../legacy/notice_lookup_spec.md), эталон: [../legacy/notice_golden.md](../legacy/notice_golden.md), запросы: [../legacy/notice_lookup.sql](../legacy/notice_lookup.sql).
 > Предыдущий урок: [lesson-01-legacy.md](lesson-01-legacy.md). Тег в конце урока: `lesson-02`.
 
 ## Зачем этот урок

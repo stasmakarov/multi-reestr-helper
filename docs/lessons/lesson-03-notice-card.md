@@ -1,6 +1,6 @@
 # Урок 3. Карточка извещения и выгрузка в Excel
 
-> Курс multi-reestr, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md), DTO урока: [ProtocolDto](../model/entities/ProtocolDto.md), [ContractDto](../model/entities/ContractDto.md), [ContractItemDto](../model/entities/ContractItemDto.md), [ExecutionDto](../model/entities/ExecutionDto.md). Спецификация запросов: [../legacy/notice_lookup_spec.md](../legacy/notice_lookup_spec.md), эталон: [../legacy/notice_golden.md](../legacy/notice_golden.md), запросы: [../legacy/notice_lookup.sql](../legacy/notice_lookup.sql).
+> Курс multi-reestr-helper, Jmix 3.0.3. План уроков: [../LESSONS.md](../LESSONS.md). Экраны: [../UI.md](../UI.md). Модель данных: [../model/OVERVIEW.md](../model/OVERVIEW.md), DTO урока: [ProtocolDto](../model/entities/ProtocolDto.md), [ContractDto](../model/entities/ContractDto.md), [ContractItemDto](../model/entities/ContractItemDto.md), [ExecutionDto](../model/entities/ExecutionDto.md). Спецификация запросов: [../legacy/notice_lookup_spec.md](../legacy/notice_lookup_spec.md), эталон: [../legacy/notice_golden.md](../legacy/notice_golden.md), запросы: [../legacy/notice_lookup.sql](../legacy/notice_lookup.sql).
 > Предыдущий урок: [lesson-02-notice-search.md](lesson-02-notice-search.md). Тег в конце урока: `lesson-03`.
 
 ## Зачем этот урок

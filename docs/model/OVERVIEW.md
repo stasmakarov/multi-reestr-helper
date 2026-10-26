@@ -1,4 +1,4 @@
-# Обзор модели данных multi-reestr
+# Обзор модели данных multi-reestr-helper
 
 > Учебный проект на Jmix 3.0.3: пакет `com.digitilius.multireestr`, префикс сущностей `mtr_`. Документ даёт общую картину и показывает, как части модели связаны между собой. Подробности по каждому атрибуту приведены в [README.md](README.md), [entities/](entities/) и [enums/](enums/). Экраны и навигация описаны в [../UI.md](../UI.md).
 
@@ -417,7 +417,7 @@ Jmix 3 не работает с PostgreSQL 9.6, поэтому основная 
 flowchart LR
     U["Браузер пользователя"] -->|"HTTP"| APP
     subgraph HOST["Машина пользователя MultiReestr"]
-        APP["multi-reestr (Jmix 3.0.3, Spring Boot)"]
+        APP["multi-reestr-helper (Jmix 3.0.3, Spring Boot)"]
         M[("PostgreSQL 16+ :5435<br/>БД multireestr<br/>JPA + Liquibase")]
         L[("PostgreSQL 9.6 :5432<br/>БД reestrdb<br/>роль reestr_ro")]
         MR["MultiReestr (существующая система)"]

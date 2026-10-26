@@ -1,4 +1,4 @@
-# Сценарии использования multi-reestr
+# Сценарии использования multi-reestr-helper
 
 Документ для пользователя приложения (состояние курса — тег `lesson-10`). Каталог экранов — [UI.md](UI.md), план уроков — [LESSONS.md](LESSONS.md), установка на Windows — [deploy-windows.md](deploy-windows.md). Здесь нет кода, сущностей и инструкций разработки.
 

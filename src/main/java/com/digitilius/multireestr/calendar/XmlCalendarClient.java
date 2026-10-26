@@ -22,7 +22,7 @@ public class XmlCalendarClient {
         String url = URL_TEMPLATE.formatted(year);
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
                 .timeout(Duration.ofSeconds(30))
-                .header("User-Agent", "multi-reestr-calendar")
+                .header("User-Agent", "multi-reestr-helper-calendar")
                 .GET()
                 .build();
         try {
