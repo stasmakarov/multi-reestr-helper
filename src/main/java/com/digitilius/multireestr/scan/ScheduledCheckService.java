@@ -7,6 +7,7 @@ import com.digitilius.multireestr.entity.ContractTerm;
 import com.digitilius.multireestr.entity.ContractTermType;
 import com.digitilius.multireestr.entity.PlanScheduleEvent;
 import com.digitilius.multireestr.entity.Rule;
+import com.digitilius.multireestr.entity.RuleEnabled;
 import com.digitilius.multireestr.entity.RuleObjectType;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.legacy.CheckResultDto;
@@ -264,8 +265,9 @@ public class ScheduledCheckService {
                 .add("versions", FetchPlan.BASE)
                 .build();
         List<Rule> rules = dataManager.load(Rule.class)
-                .query("select e from mtr_Rule e where e.code in :codes and e.enabled = true")
+                .query("select e from mtr_Rule e where e.code in :codes and e.enabled = :enabled")
                 .parameter("codes", List.of(ContractTermDeadlineScan.R09_DELIVERY, ContractTermDeadlineScan.R10_ACCEPTANCE))
+                .parameter("enabled", RuleEnabled.YES)
                 .fetchPlan(fetchPlan)
                 .list();
         Map<String, BoundRule> result = new LinkedHashMap<>();

@@ -7,6 +7,7 @@ import com.digitilius.multireestr.entity.ContractTerm;
 import com.digitilius.multireestr.entity.ContractTermType;
 import com.digitilius.multireestr.entity.DryRunDiff;
 import com.digitilius.multireestr.entity.Rule;
+import com.digitilius.multireestr.entity.RuleEnabled;
 import com.digitilius.multireestr.entity.RuleParameter;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.RuleVersionStatus;
@@ -89,7 +90,7 @@ class DryRunServiceLegacyTest {
         int violationsBefore = countViolations();
         try {
             Rule rule = dataManager.load(Rule.class).id(ruleId).one();
-            rule.setEnabled(false);
+            rule.setEnabled(RuleEnabled.NO);
             dataManager.save(rule);
             DryRunService.DryRunResult result = dryRunService.run(
                     draft, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
@@ -101,7 +102,7 @@ class DryRunServiceLegacyTest {
                     .allMatch(row -> row.getDiff() == DryRunDiff.UNCHANGED);
         } finally {
             Rule rule = dataManager.load(Rule.class).id(ruleId).one();
-            rule.setEnabled(true);
+            rule.setEnabled(RuleEnabled.YES);
             dataManager.save(rule);
             removeDraft(draft);
         }

@@ -31,7 +31,7 @@
                     <comboBox id="templateTypeField" property="templateType"/>
                     <comboBox id="objectTypeField" property="objectType"/>
                     <comboBox id="severityField" property="severity"/>
-                    <checkbox id="enabledField" property="enabled"/>
+                    <comboBox id="enabledField" property="enabled"/>
                     <textField id="legalRefField" property="legalRef" colspan="2"/>
                     <textArea id="explanationTemplateField" property="explanationTemplate" colspan="2"
                               height="8em"/>

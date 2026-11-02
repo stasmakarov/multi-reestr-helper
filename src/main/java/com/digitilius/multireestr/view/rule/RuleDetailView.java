@@ -1,6 +1,7 @@
 package com.digitilius.multireestr.view.rule;
 
 import com.digitilius.multireestr.entity.Rule;
+import com.digitilius.multireestr.entity.RuleEnabled;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.RuleVersionStatus;
 import com.digitilius.multireestr.rules.DryRunService;
@@ -56,7 +57,7 @@ public class RuleDetailView extends StandardDetailView<Rule> {
 
     @Subscribe
     public void onInitEntity(final InitEntityEvent<Rule> event) {
-        event.getEntity().setEnabled(true);
+        event.getEntity().setEnabled(RuleEnabled.YES);
     }
 
     @Subscribe

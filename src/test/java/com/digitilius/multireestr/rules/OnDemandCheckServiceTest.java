@@ -4,6 +4,7 @@ import com.digitilius.multireestr.entity.CheckRun;
 import com.digitilius.multireestr.entity.CheckRunMode;
 import com.digitilius.multireestr.entity.CheckRunStatus;
 import com.digitilius.multireestr.entity.Rule;
+import com.digitilius.multireestr.entity.RuleEnabled;
 import com.digitilius.multireestr.entity.RuleObjectType;
 import com.digitilius.multireestr.entity.RuleTemplateType;
 import com.digitilius.multireestr.entity.RuleVersion;
@@ -208,7 +209,7 @@ class OnDemandCheckServiceTest {
         stub.setTemplateType(RuleTemplateType.DOCUMENT_STRUCTURE_MISMATCH);
         stub.setObjectType(RuleObjectType.NOTICE);
         stub.setSeverity(Severity.ERROR);
-        stub.setEnabled(true);
+        stub.setEnabled(RuleEnabled.YES);
         stub = dataManager.save(stub);
 
         Violation planted = dataManager.create(Violation.class);

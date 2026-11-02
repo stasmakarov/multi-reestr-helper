@@ -193,7 +193,7 @@ erDiagram
         string TEMPLATE_TYPE
         string OBJECT_TYPE
         string SEVERITY
-        boolean ENABLED
+        string ENABLED
     }
     MTR_RULE_VERSION {
         uuid ID PK
@@ -286,7 +286,7 @@ erDiagram
 ## 5. Как работают правила: от правила до нарушения
 
 1. **Шаблон** (`RuleTemplateType`) — это не сущность, а enum плюс Java-бин с логикой проверки, например `OKPD2_FOREIGN_BAN` или `DEADLINE`.
-2. **Rule** — экземпляр шаблона, который создаёт специалист. У него есть код (`R03_PP1875`), объект проверки (`RuleObjectType`), серьёзность, норма (`legalRef`) и шаблон пояснения с `{плейсхолдерами}`. Правило отключают флагом `enabled`.
+2. **Rule** — экземпляр шаблона, который создаёт специалист. У него есть код (`R03_PP1875`), объект проверки (`RuleObjectType`), серьёзность, норма (`legalRef`) и шаблон пояснения с `{плейсхолдерами}`. Поле «Включено» — перечисление [RuleEnabled](enums/RuleEnabled.md): «Да», «Нет», «Не задано». В проверках правило запускается только при «Да».
 3. **RuleVersion** — набор параметров с периодом действия `validFrom`–`validTo` и статусом DRAFT, ACTIVE или ARCHIVED. В проверках участвует ACTIVE-версия, действующая на дату объекта (размещения или заключения). Так исторические данные проверяются по нормам на ту дату. Периоды ACTIVE-версий одного правила не должны пересекаться; этот инвариант проверяет сервис, а не БД.
 4. **RuleParameter** — пара «ключ — значение» с типом `ParameterType`. Для типа `LIST` параметр ссылается на `ReferenceList`. Пример: R03 → `okpdList` = LIST `PP1875_ANNEX1`.
 5. **CheckRun** фиксирует каждый запуск: режим (ON_DEMAND, SCHEDULED, DRY_RUN), статус, период, статистику. Кто запустил, видно из `createdBy`.
@@ -306,7 +306,7 @@ sequenceDiagram
     CS->>M: создать CheckRun (ON_DEMAND, RUNNING)
     CS->>L: загрузить NoticeDto / ContractDto
     L-->>CS: DTO-агрегат
-    CS->>M: Rule (enabled) + ACTIVE RuleVersion на дату объекта + RuleParameter, ReferenceList
+    CS->>M: Rule (enabled = Да) + ACTIVE RuleVersion на дату объекта + RuleParameter, ReferenceList
     loop по каждому правилу
         CS->>T: evaluate(DTO, параметры, DeadlineSpec)
         T-->>CS: список CheckResultDto (fingerprint)
@@ -393,6 +393,7 @@ flowchart TD
 | Правила | [RuleVersionStatus](enums/RuleVersionStatus.md) | Жизненный цикл версии: черновик → действует → архив |
 | Правила | [ParameterType](enums/ParameterType.md) | Тип значения параметра правила (включая LIST — ссылку на список) |
 | Правила | [Severity](enums/Severity.md) | Серьёзность: ошибка, предупреждение, информация |
+| Правила | [RuleEnabled](enums/RuleEnabled.md) | Включено: Да, Нет, Не задано. В проверках участвует только Да |
 | Проверки | [CheckRunMode](enums/CheckRunMode.md) | Режим запуска: по запросу, по расписанию, dry-run |
 | Проверки | [CheckRunStatus](enums/CheckRunStatus.md) | Состояние запуска: выполняется, успешно, частично, ошибка |
 | Проверки | [ViolationStatus](enums/ViolationStatus.md) | Статус нарушения: новое, квитировано, ложное, устранено |
@@ -438,7 +439,7 @@ flowchart LR
 | **Трейты**: Versioned + Audit of creation/modification (трейты ядра, не add-on Jmix Audit). У `CalendarDay` и `CheckRun` — только аудит | Оптимистичная блокировка для данных, которые редактируют пользователи, и «кто/когда» из коробки. Например, `CheckRun.createdBy` — это тот, кто запустил проверку |
 | **Без add-on'ов Jmix Audit и Jmix Notifications** | Notifications платный. Audit не нужен: «кто/когда» дают трейты ядра, история правила — это RuleVersion, жизненный цикл нарушения — Violation.status (+ `acknowledgedBy/At`, `resolvedAt`). Оповещение в приложении — реестр нарушений и счётчик NEW в меню; отдельной сущности подписок нет |
 | **Email-уведомления не реализуем, только рассказываем** | Возможное расширение — бесплатный Email Sending add-on (`io.jmix.email`) поверх того же реестра; в курс и модель не входит |
-| **Без Soft delete** | У сущностей уникальные коды, а нарушения хранят историю. Вместо удаления выключают флагом `enabled` (Rule) или меняют статус (ARCHIVED, FIXED) |
+| **Без Soft delete** | У сущностей уникальные коды, а нарушения хранят историю. Вместо удаления у правила в поле «Включено» ставят «Нет» или «Не задано», либо меняют статус (ARCHIVED, FIXED) |
 | **Шаблоны правил — Java-код, а не DSL, DMN, Drools или SQL** | Пользователь только заполняет типизированные параметры и списки, без программирования. Версии с датами действия позволяют проверять историю по нормам на нужную дату |
 | **Собственный производственный календарь** (`CalendarDay` + `WorkingCalendar` + `DeadlineCalculator`) | Таблица `holidays` в legacy неполная: нет рабочих суббот после 2021 года. Хранятся только исключения из правила Сб/Вс, импорт идёт с xmlcalendar.ru. Интерфейс повторяет API аддона Jmix Business Calendar, но сам аддон не подключён (отказ от зависимости от Enterprise-аддона). Из аддона сознательно не взяты рабочие часы, CRON-праздники и несколько календарей |
 | **Правила ГК — в `DeadlineCalculator`, а не в календаре** | Календарь отвечает только на вопрос «рабочий ли день». Ст. 191/193 — это логика расчёта срока |
@@ -447,7 +448,7 @@ flowchart LR
 
 ## 10. Указатель сущностей и перечислений
 
-Всего 24 сущности (13 DTO, 10 JPA, 1 Embeddable) и 18 перечислений.
+Всего 24 сущности (13 DTO, 10 JPA, 1 Embeddable) и 19 перечислений.
 
 | Сущность | Тип | Хранилище / таблица | Урок | Кратко |
 |---|---|---|---|---|
@@ -477,4 +478,4 @@ flowchart LR
 | [ContractTerm](entities/ContractTerm.md) | JPA | main `MTR_CONTRACT_TERM` | 8 | Условие контракта (ручной ввод) |
 | [PlanScheduleEvent](entities/PlanScheduleEvent.md) | JPA | main `MTR_PLAN_SCHEDULE_EVENT` | 8 | Даты ЛБО и утверждения ПГ |
 
-Перечисления по урокам: [ExecutionKind](enums/ExecutionKind.md) (3) · [DayType](enums/DayType.md), [CalendarSource](enums/CalendarSource.md) (4) · [DayCountUnit](enums/DayCountUnit.md), [ShiftRule](enums/ShiftRule.md), [DeadlineAnchor](enums/DeadlineAnchor.md), [CompareOperator](enums/CompareOperator.md) (5) · [ReferenceListKind](enums/ReferenceListKind.md), [RuleTemplateType](enums/RuleTemplateType.md), [RuleObjectType](enums/RuleObjectType.md), [RuleVersionStatus](enums/RuleVersionStatus.md), [ParameterType](enums/ParameterType.md), [Severity](enums/Severity.md) (6) · [CheckRunMode](enums/CheckRunMode.md), [CheckRunStatus](enums/CheckRunStatus.md), [ViolationStatus](enums/ViolationStatus.md) (7) · [ContractTermType](enums/ContractTermType.md) (8) · [DryRunDiff](enums/DryRunDiff.md) (10)
+Перечисления по урокам: [ExecutionKind](enums/ExecutionKind.md) (3) · [DayType](enums/DayType.md), [CalendarSource](enums/CalendarSource.md) (4) · [DayCountUnit](enums/DayCountUnit.md), [ShiftRule](enums/ShiftRule.md), [DeadlineAnchor](enums/DeadlineAnchor.md), [CompareOperator](enums/CompareOperator.md) (5) · [ReferenceListKind](enums/ReferenceListKind.md), [RuleTemplateType](enums/RuleTemplateType.md), [RuleObjectType](enums/RuleObjectType.md), [RuleVersionStatus](enums/RuleVersionStatus.md), [ParameterType](enums/ParameterType.md), [Severity](enums/Severity.md), [RuleEnabled](enums/RuleEnabled.md) (6) · [CheckRunMode](enums/CheckRunMode.md), [CheckRunStatus](enums/CheckRunStatus.md), [ViolationStatus](enums/ViolationStatus.md) (7) · [ContractTermType](enums/ContractTermType.md) (8) · [DryRunDiff](enums/DryRunDiff.md) (10)

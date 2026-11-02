@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+        logicalFilePath="com/digitilius/multireestr/liquibase/changelog/070-rule-enabled.xml">
+
+    <!--
+        MTR_RULE.ENABLED was boolean (020/051/061 stay untouched so already applied checksums do not change).
+        Add a new varchar column, copy true→YES, false→NO, null→EMPTY, drop the boolean, rename back to ENABLED.
+        Column stays nullable. Default for new rows is YES.
+    -->
+
+    <changeSet id="1" author="multi-reestr">
+        <addColumn tableName="MTR_RULE">
+            <column name="ENABLED_STATE" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- Separate updates: a CASE of string literals is CHAR on HSQL and pads YES/NO with spaces. -->
+    <changeSet id="2" author="multi-reestr" dbms="postgresql,hsqldb,h2">
+        <update tableName="MTR_RULE">
+            <column name="ENABLED_STATE" value="YES"/>
+            <where>ENABLED = TRUE</where>
+        </update>
+        <update tableName="MTR_RULE">
+            <column name="ENABLED_STATE" value="NO"/>
+            <where>ENABLED = FALSE</where>
+        </update>
+        <update tableName="MTR_RULE">
+            <column name="ENABLED_STATE" value="EMPTY"/>
+            <where>ENABLED IS NULL</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="3" author="multi-reestr" dbms="mssql">
+        <update tableName="MTR_RULE">
+            <column name="ENABLED_STATE" value="YES"/>
+            <where>ENABLED = 1</where>
+        </update>
+        <update tableName="MTR_RULE">
+            <column name="ENABLED_STATE" value="NO"/>
+            <where>ENABLED = 0</where>
+        </update>
+        <update tableName="MTR_RULE">
+            <column name="ENABLED_STATE" value="EMPTY"/>
+            <where>ENABLED IS NULL</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="4" author="multi-reestr">
+        <dropColumn tableName="MTR_RULE" columnName="ENABLED"/>
+    </changeSet>
+
+    <changeSet id="5" author="multi-reestr">
+        <renameColumn tableName="MTR_RULE"
+                      oldColumnName="ENABLED_STATE"
+                      newColumnName="ENABLED"
+                      columnDataType="varchar(50)"/>
+    </changeSet>
+
+    <changeSet id="6" author="multi-reestr">
+        <addDefaultValue tableName="MTR_RULE"
+                         columnName="ENABLED"
+                         columnDataType="varchar(50)"
+                         defaultValue="YES"/>
+    </changeSet>
+
+</databaseChangeLog>

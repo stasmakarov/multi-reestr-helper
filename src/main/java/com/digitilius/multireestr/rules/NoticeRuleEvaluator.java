@@ -1,6 +1,7 @@
 package com.digitilius.multireestr.rules;
 
 import com.digitilius.multireestr.entity.Rule;
+import com.digitilius.multireestr.entity.RuleEnabled;
 import com.digitilius.multireestr.entity.RuleTemplateType;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.RuleVersionStatus;
@@ -123,7 +124,8 @@ public class NoticeRuleEvaluator {
                                         .add("items", FetchPlan.BASE))))
                 .build();
         return dataManager.load(Rule.class)
-                .query("select e from mtr_Rule e where e.enabled = true order by e.code")
+                .query("select e from mtr_Rule e where e.enabled = :enabled order by e.code")
+                .parameter("enabled", RuleEnabled.YES)
                 .fetchPlan(fetchPlan)
                 .list();
     }

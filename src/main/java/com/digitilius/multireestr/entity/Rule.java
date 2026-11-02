@@ -78,8 +78,8 @@ public class Rule {
     @Column(name = "EXPLANATION_TEMPLATE")
     private String explanationTemplate;
 
-    @Column(name = "ENABLED", nullable = false)
-    private Boolean enabled;
+    @Column(name = "ENABLED", length = 50)
+    private String enabled = RuleEnabled.YES.getId();
 
     @Lob
     @Column(name = "DESCRIPTION")
@@ -194,12 +194,12 @@ public class Rule {
         this.explanationTemplate = explanationTemplate;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
+    public RuleEnabled getEnabled() {
+        return enabled == null ? null : RuleEnabled.fromId(enabled);
     }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
+    public void setEnabled(RuleEnabled enabled) {
+        this.enabled = enabled == null ? null : enabled.getId();
     }
 
     public String getDescription() {

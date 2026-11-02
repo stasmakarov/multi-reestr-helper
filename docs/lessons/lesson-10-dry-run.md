@@ -9,7 +9,7 @@
 
 **Задача пользователя.** Администратор правил копирует версию в DRAFT, меняет параметры, гоняет её на периоде публикации и видит NEW / UNCHANGED / DISAPPEARED. В реестр ничего не попадает. Затем активирует версию, если картина приемлема.
 
-**В чём подвох.** Диспетчер `evaluateAll` берёт только `enabled` + ACTIVE. Черновик туда не попадает. Скан урока 9 сразу вызывает `ViolationRegistryService`. Dry-run должен пройти тот же путь до fingerprint и остановиться. `FALSE_POSITIVE` в реестре к сравнению не относится: сравнивают hits версий, не статусы нарушений.
+**В чём подвох.** Диспетчер `evaluateAll` берёт только правила с «Включено» = Да и ACTIVE-версию. «Нет» и «Не задано» не запускаются. Черновик туда не попадает. Скан урока 9 сразу вызывает `ViolationRegistryService`. Dry-run должен пройти тот же путь до fingerprint и остановиться. `FALSE_POSITIVE` в реестре к сравнению не относится: сравнивают hits версий, не статусы нарушений.
 
 **Что получится в конце.** Экран `mtr_DryRunView`, `DryRunService`, `CheckRun` `DRY_RUN` (статистика, без `Violation`), сравнение `CheckResultDto.diff`, право `mtr.check.dryrun` только у администратора правил. Новых JPA-сущностей, перечислений и DTO нет: `DryRunDiff`, `CheckResultDto.diff` и `CheckRunMode.DRY_RUN` уже в модели. Liquibase после 061 не нужен. Почту не подключаем, только упоминаем как возможное расширение. Финал курса: сквозной сценарий, jar, обновление Windows.
 
@@ -42,7 +42,7 @@
 - для CONTRACT (`R09_DELIVERY` / `R10_ACCEPTANCE`) использует `ContractTermDeadlineScan.assess`;
 - **не** вызывает `ViolationRegistryService`;
 - показывает `DryRunDiff` и выгрузку Excel (свой POI);
-- пускает прогон при `Rule.enabled = false`.
+- пускает прогон, даже если в поле «Включено» стоит «Нет» или «Не задано»: сравнивается выбранный черновик, а не отбор `evaluateAll`.
 
 Модель не меняем.
 
@@ -63,7 +63,7 @@ flowchart TD
 |---|---|---|
 | `DryRunService` | `rules` | Права, журнал, цикл, запрет реестра |
 | `DryRunDiffs` | `rules` | NEW / UNCHANGED / DISAPPEARED |
-| `NoticeRuleEvaluator.evaluateVersion` | `rules` | Одна версия, без фильтра ACTIVE/`enabled` |
+| `NoticeRuleEvaluator.evaluateVersion` | `rules` | Одна версия, без фильтра ACTIVE и без фильтра «Включено» |
 | `NoticeLookupService.findOriginalsPublishedBetween` | `legacy.notice` | Окно публикации, cap `max-notices` |
 | `ContractTermDeadlineScan` | `scan` | R09/R10 |
 | `DryRunView` | `view.dryrun` | Параметры, таблица, экспорт |
@@ -107,7 +107,7 @@ Legacy недоступна после создания журнала → `FAIL
 | **A** | Specific | `mtr.check.dryrun`, не `ondemand` |
 | **B** | Лимиты | 365 / 200 из `ScanProperties` |
 | **C** | PARTIAL | Да, плюс `errorMessage` |
-| **D** | `enabled=false` | Прогон разрешён |
+| **D** | «Включено» = Нет или Не задано | Прогон разрешён |
 | **E** | Реестр | Не вызывать merge |
 | **F** | Liquibase | Нет; 061 занят R09/R10 |
 | **G** | Экспорт | POI, не gridexport |
@@ -136,7 +136,7 @@ Legacy недоступна после создания журнала → `FAIL
 | `missingLegacyWritesFailedJournal` | `DRY_RUN` FAILED, без throw наружу |
 | `specialistCannotDryRun` | нет `mtr.check.dryrun` |
 | `noticeDraftDoesNotWriteRegistryAndMarksDisappeared` | пустой `okpdList` → DISAPPEARED на 17 и 38; реестр не растёт |
-| `enabledFalseStillRunsAndUnchangedWhenParamsSame` | выключенный R03, UNCHANGED на `0173100017026000001` |
+| `enabledFalseStillRunsAndUnchangedWhenParamsSame` | R03 с «Включено» = Нет, UNCHANGED на `0173100017026000001` |
 | `contractDraftDoesNotWriteRegistry` | R09, hit UNCHANGED, реестр не растёт |
 
 ## 11. Типичные ошибки
@@ -153,7 +153,7 @@ Legacy недоступна после создания журнала → `FAIL
 
 1. Чем `DRY_RUN` отличается от «Проверить» и от Quartz?
 2. Почему fingerprint, а не текст пояснения?
-3. Почему `enabled=false` не мешает dry-run?
+3. Почему «Нет» в поле «Включено» не мешает dry-run?
 4. Попадает ли FALSE_POSITIVE из реестра в таблицу сравнения?
 5. **Задание.** Скопируйте R03, очистите список ОКПД2, прогоните 2026 год. Что с извещением `0173100017026000001`?
 6. **Задание.** Нажмите «Запустить» и закройте экран. Что в журнале и в реестре?
@@ -188,7 +188,7 @@ Legacy недоступна после создания журнала → `FAIL
 - [ ] Модель не менялась.
 - [ ] Dry-run пишет `CheckRun` `DRY_RUN` и не пишет `Violation`.
 - [ ] Diff NEW / UNCHANGED / DISAPPEARED; NOTICE и R09/R10.
-- [ ] Лимиты 365 / 200; PARTIAL при частичных ошибках; `enabled=false` допускается.
+- [ ] Лимиты 365 / 200; PARTIAL при частичных ошибках; прогон допускается при «Нет» и «Не задано».
 - [ ] Роль: `mtr.check.dryrun` только у администратора правил.
 - [ ] Нет Liquibase после 061. Тексты — «тестовый набор (данных)», без ПДн.
 - [ ] Docker, `./gradlew test` зелёный.

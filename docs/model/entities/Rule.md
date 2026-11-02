@@ -25,7 +25,7 @@
 | `severity` | Enum | `Severity` | да |  |  |  | [Severity](../enums/Severity.md) | Серьёзность | `SEVERITY` |
 | `legalRef` | String | `String` |  |  | 1000 |  |  | Норма (текст) | `LEGAL_REF` |
 | `explanationTemplate` | String | `String` |  |  | unlimited |  |  | Шаблон пояснения с {плейсхолдерами} | `EXPLANATION_TEMPLATE` |
-| `enabled` | Boolean | `Boolean` | да |  |  |  |  | Включено | `ENABLED` |
+| `enabled` | Enum | `RuleEnabled` |  |  |  |  | [RuleEnabled](../enums/RuleEnabled.md) | Включено. В проверках участвует только «Да» (`YES`). «Нет», «Не задано» и пустое значение правило не запускают. У нового правила по умолчанию «Да». Колонка в БД необязательна | `ENABLED` |
 | `description` | String | `String` |  |  | unlimited |  |  | Описание | `DESCRIPTION` |
 | `versions` | Composition | List<[RuleVersion](RuleVersion.md)> |  |  |  | one-to-many |  | Версии | — |
 
@@ -41,5 +41,7 @@
 
 ## Примечания
 
-- Soft delete не используем (уникальный код + история нарушений) — отключение через `enabled`.
+- Soft delete не используем (уникальный код + история нарушений). Правило не удаляют: в поле «Включено» ставят «Нет» или «Не задано».
+- В проверку по запросу и в плановый скан правило попадает только при `YES`. Пробный прогон черновика поле не проверяет.
+- Миграция `070-rule-enabled.xml` (старые ченджсеты не меняются): добавляется колонка, `true` → `YES`, `false` → `NO`, `null` → `EMPTY`, старый boolean удаляется, новая колонка снова называется `ENABLED`. Она необязательна, значение по умолчанию для новых строк — `YES`.
 - Шаблоны — не сущность, а enum + Java-бины.
