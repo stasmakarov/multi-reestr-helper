@@ -13,7 +13,7 @@
 | Атрибуты | camelCase; колонки — UPPER_SNAKE; зарезервированные слова Studio дополняет `_` (DATE_, VALUE_, MODE_) |
 | Id JPA | UUID, `@JmixGeneratedValue` (по умолчанию в мастере) |
 | Id DTO | legacy-ключ `Integer` с `@JmixId` (вместо UUID из мастера); исключение — CheckResultDto (UUID) |
-| Трейты JPA | по умолчанию **Versioned + Audit of creation + Audit of modification** — это трейты ядра Jmix (`@CreatedBy`/`@LastModifiedBy` и т.п.), **не** add-on Jmix Audit (entity log), который в проекте не используется; **Soft delete не используем** (уникальные коды, история нарушений; отключение — флаг `enabled`/статус) |
+| Трейты JPA | по умолчанию **Versioned + Audit of creation + Audit of modification** — это трейты ядра Jmix (`@CreatedBy`/`@LastModifiedBy` и т.п.), **не** add-on Jmix Audit (entity log), который в проекте не используется; **Soft delete не используем** (уникальные коды, история нарушений; отключение правила — значение `enabled`: Да / Нет / Не задано, либо статус) |
 | Перечисления | Большинство — `EnumClass<String>`, id = имя константы (UPPER_SNAKE), в БД строка. **Исключение — три статуса с `EnumClass<Integer>`**: [ViolationStatus](enums/ViolationStatus.md) (NEW=10, ACKNOWLEDGED=20, FALSE_POSITIVE=30, FIXED=40), [CheckRunStatus](enums/CheckRunStatus.md) (RUNNING=10, SUCCESS=20, PARTIAL=30, FAILED=40), [RuleVersionStatus](enums/RuleVersionStatus.md) (DRAFT=10, ACTIVE=20, ARCHIVED=30); в БД число. Заголовки на русском — в `messages_ru.properties` |
 | Даты | дата без времени — `LocalDate`; момент события в приложении — `OffsetDateTime` (тип Studio *DateTime*); legacy timestamp без зоны (МСК) — `LocalDateTime` |
 | Деньги/количества | `BigDecimal` с точностью legacy (18,2; 21,2; 29,11) |
@@ -35,7 +35,7 @@
 | 3 | DTO протоколов, контракта и исполнения; карточка извещения и Excel | [ProtocolDto](entities/ProtocolDto.md), [ContractDto](entities/ContractDto.md), [ContractItemDto](entities/ContractItemDto.md), [ExecutionDto](entities/ExecutionDto.md) | [ExecutionKind](enums/ExecutionKind.md) |
 | 4 | Производственный календарь | [CalendarDay](entities/CalendarDay.md) | [DayType](enums/DayType.md), [CalendarSource](enums/CalendarSource.md) |
 | 5 | Движок сроков (ст.191–193 ГК) | [DeadlineSpec](entities/DeadlineSpec.md) | [DayCountUnit](enums/DayCountUnit.md), [ShiftRule](enums/ShiftRule.md), [DeadlineAnchor](enums/DeadlineAnchor.md), [CompareOperator](enums/CompareOperator.md) |
-| 6 | Справочники и правила (шаблоны, версии, параметры), редактор правил, роли | [ReferenceList](entities/ReferenceList.md), [ReferenceListItem](entities/ReferenceListItem.md), [Rule](entities/Rule.md), [RuleVersion](entities/RuleVersion.md), [RuleParameter](entities/RuleParameter.md) | [ReferenceListKind](enums/ReferenceListKind.md), [RuleTemplateType](enums/RuleTemplateType.md), [RuleObjectType](enums/RuleObjectType.md), [RuleVersionStatus](enums/RuleVersionStatus.md), [ParameterType](enums/ParameterType.md), [Severity](enums/Severity.md) |
+| 6 | Справочники и правила (шаблоны, версии, параметры), редактор правил, роли | [ReferenceList](entities/ReferenceList.md), [ReferenceListItem](entities/ReferenceListItem.md), [Rule](entities/Rule.md), [RuleVersion](entities/RuleVersion.md), [RuleParameter](entities/RuleParameter.md) | [ReferenceListKind](enums/ReferenceListKind.md), [RuleTemplateType](enums/RuleTemplateType.md), [RuleObjectType](enums/RuleObjectType.md), [RuleVersionStatus](enums/RuleVersionStatus.md), [ParameterType](enums/ParameterType.md), [Severity](enums/Severity.md), [RuleEnabled](enums/RuleEnabled.md) |
 | 7 | Проверка по запросу и реестр нарушений | [CheckResultDto](entities/CheckResultDto.md), [CheckRun](entities/CheckRun.md), [Violation](entities/Violation.md) | [CheckRunMode](enums/CheckRunMode.md), [CheckRunStatus](enums/CheckRunStatus.md), [ViolationStatus](enums/ViolationStatus.md) |
 | 8 | Ручные данные: условия контрактов, даты ЛБО/ПГ | [PlanScheduleDto](entities/PlanScheduleDto.md), [ContractTerm](entities/ContractTerm.md), [PlanScheduleEvent](entities/PlanScheduleEvent.md) | [ContractTermType](enums/ContractTermType.md) |
 | 9 | Плановое сканирование (Quartz); оповещение в приложении — реестр нарушений + счётчик NEW в меню | — | — |
@@ -91,6 +91,7 @@
 | [RuleVersionStatus](enums/RuleVersionStatus.md) | DRAFT, ACTIVE, ARCHIVED | 6 |
 | [ParameterType](enums/ParameterType.md) | STRING, INTEGER, DECIMAL, BOOLEAN, DATE, LIST | 6 |
 | [Severity](enums/Severity.md) | ERROR, WARNING, INFO | 6 |
+| [RuleEnabled](enums/RuleEnabled.md) | YES, NO, EMPTY | 6 |
 | [CheckRunMode](enums/CheckRunMode.md) | ON_DEMAND, SCHEDULED, DRY_RUN | 7 |
 | [CheckRunStatus](enums/CheckRunStatus.md) | RUNNING, SUCCESS, PARTIAL, FAILED | 7 |
 | [ViolationStatus](enums/ViolationStatus.md) | NEW, ACKNOWLEDGED, FALSE_POSITIVE, FIXED | 7 |

@@ -91,7 +91,7 @@ flowchart TD
 
 Повтор с тем же fingerprint: обновить `lastDetectedAt`, `lastCheckRun`, `ruleVersion`, текст; **не** сбрасывать ACKNOWLEDGED и FALSE_POSITIVE. Если было FIXED — снова NEW, очистить `resolvedAt` и квитирование.
 
-`FIXED`, если fingerprint пропал **и** `rule.id` входит в `evaluatedRuleIds` этого запуска **и** статус не `FALSE_POSITIVE`. ACKNOWLEDGED при исчезнувшем hit становится FIXED. Ложное срабатывание остаётся FP. В `evaluatedRuleIds` попадает правило, у которого `enabled`, есть ACTIVE-версия на дату извещения и есть бин шаблона. Выключенное правило, версия вне периода, шаблон без бина — запись не трогаем.
+`FIXED`, если fingerprint пропал **и** `rule.id` входит в `evaluatedRuleIds` этого запуска **и** статус не `FALSE_POSITIVE`. ACKNOWLEDGED при исчезнувшем hit становится FIXED. Ложное срабатывание остаётся FP. В `evaluatedRuleIds` попадает правило, у которого «Включено» = Да, есть ACTIVE-версия на дату извещения и есть бин шаблона. «Нет», «Не задано» и пустое значение, версия вне периода, шаблон без бина — запись не трогаем.
 
 Hits одного запуска перед записью схлопываются по `fingerprint` (первый оставляем): повтор в том же `CheckRun` не должен упираться в UNIQUE.
 
@@ -151,7 +151,7 @@ Hits одного запуска перед записью схлопывают�
 
 ### 9.2. Исход диспетчера
 
-`evaluateAll`: для каждого enabled-правила с ACTIVE на дату и бином добавить `rule.id` в `evaluatedRuleIds`, даже если hits пустые.
+`evaluateAll`: для каждого правила с «Включено» = Да, ACTIVE на дату и бином добавить `rule.id` в `evaluatedRuleIds`, даже если hits пустые. «Нет» и «Не задано» не запускаются.
 
 ### 9.3. Сервис
 
@@ -190,7 +190,7 @@ Hits одного запуска перед записью схлопывают�
 | Симптом | Причина | Что делать |
 |---|---|---|
 | Дубли в реестре | Не тот fingerprint или не UNIQUE | SHA-256 как в `CheckResults` |
-| Выключенное правило стало FIXED | В `evaluatedRuleIds` попали все enabled | Только ACTIVE + бин |
+| Выключенное правило стало FIXED | В `evaluatedRuleIds` попали правила не только с «Да» | Только «Включено» = Да, ACTIVE и бин |
 | 403 на «Сохранить» / квитирование | Entity UPDATE на Violation нет | Запись в реестр — `mtr.check.ondemand` + unconstrained; квитирование — `mtr.violation.triage` |
 | «Проверить» у rule-admin без стека | Specific только у specialist | Specific на обеих ролях |
 | Комментарий FP пропал | Reload из БД до копирования поля | Брать `comment` с формы |
