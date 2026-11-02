@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,7 +81,7 @@ public class ViolationRegistryService {
         for (Violation violation : existing) {
             byFingerprint.put(violation.getFingerprint(), violation);
         }
-        Map<String, CheckResultDto> uniqueHits = uniqueHitsByFingerprint(safe.hits());
+        Map<String, CheckResultDto> uniqueHits = CheckHitFingerprints.uniqueByFingerprint(safe.hits());
         uniqueHits.entrySet().removeIf(entry -> safe.bindings().get(entry.getKey()) == null);
         Set<String> currentFingerprints = uniqueHits.keySet();
         SaveContext saveContext = new SaveContext();
@@ -115,17 +114,6 @@ public class ViolationRegistryService {
             }
         }
         unconstrainedDataManager.save(saveContext);
-    }
-
-    private static Map<String, CheckResultDto> uniqueHitsByFingerprint(List<CheckResultDto> hits) {
-        Map<String, CheckResultDto> unique = new LinkedHashMap<>();
-        for (CheckResultDto hit : hits) {
-            if (hit.getFingerprint() == null || hit.getFingerprint().isBlank()) {
-                continue;
-            }
-            unique.putIfAbsent(hit.getFingerprint(), hit);
-        }
-        return unique;
     }
 
     private List<Violation> loadForObject(RuleObjectType objectType, String objectKey) {

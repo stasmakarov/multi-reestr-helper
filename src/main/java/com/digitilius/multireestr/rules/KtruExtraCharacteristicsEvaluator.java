@@ -10,8 +10,10 @@ import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class KtruExtraCharacteristicsEvaluator implements RuleTemplateEvaluator {
@@ -24,6 +26,7 @@ public class KtruExtraCharacteristicsEvaluator implements RuleTemplateEvaluator 
     @Override
     public List<CheckResultDto> evaluate(NoticeDto notice, Rule rule, RuleVersion version, RuleEvalParams params) {
         List<CheckResultDto> hits = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
         if (notice.getItems() == null) {
             return hits;
         }
@@ -39,12 +42,16 @@ public class KtruExtraCharacteristicsEvaluator implements RuleTemplateEvaluator 
                     continue;
                 }
                 String detail = Okpd2ForeignBanEvaluator.detail(item) + ";char=" + characteristic.getId();
-                hits.add(CheckResults.hit(rule, notice, detail, Map.of(
+                CheckResultDto hit = CheckResults.hit(rule, notice, detail, Map.of(
                         "pos", Okpd2ForeignBanEvaluator.pos(item),
                         "name", nullToEmpty(item.getName()),
                         "okpd2", nullToEmpty(item.getOkpd2()),
                         "ktru", nullToEmpty(item.getKtru())
-                )));
+                ));
+                if (hit.getFingerprint() != null && !seen.add(hit.getFingerprint())) {
+                    continue;
+                }
+                hits.add(hit);
             }
         }
         return hits;

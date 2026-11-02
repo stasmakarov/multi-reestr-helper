@@ -24,6 +24,22 @@
                 <column property="legalRef" flexGrow="1"/>
             </columns>
         </dataGrid>
+        <span id="selectHint" text="msg://checkResultDialog.hit.select" visible="false"/>
+        <formLayout id="hitDetails" width="100%" classNames="check-hit-details" visible="false">
+            <textField id="ruleField" readOnly="true" width="100%"
+                       label="msg://checkResultDialog.hit.rule"/>
+            <textField id="severityField" readOnly="true" width="100%"
+                       label="msg://checkResultDialog.hit.severity"/>
+            <textArea id="messageField" readOnly="true" width="100%" colspan="2" height="6em"
+                      classNames="check-hit-text"
+                      label="msg://checkResultDialog.hit.message"/>
+            <textArea id="detailField" readOnly="true" width="100%" colspan="2" height="5em"
+                      classNames="check-hit-text"
+                      label="msg://checkResultDialog.hit.detail"/>
+            <textArea id="legalRefField" readOnly="true" width="100%" colspan="2" height="4em"
+                      classNames="check-hit-text"
+                      label="msg://checkResultDialog.hit.legalRef"/>
+        </formLayout>
         <hbox id="buttonsPanel" classNames="buttons-panel">
             <button id="saveButton" text="msg://checkResultDialog.save"/>
             <button id="closeButton" action="closeAction"/>

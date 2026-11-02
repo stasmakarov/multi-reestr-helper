@@ -9,6 +9,7 @@ import com.digitilius.multireestr.entity.RuleTemplateType;
 import com.digitilius.multireestr.entity.RuleVersion;
 import com.digitilius.multireestr.entity.RuleVersionStatus;
 import com.digitilius.multireestr.entity.Severity;
+import com.digitilius.multireestr.entity.legacy.CheckResultDto;
 import com.digitilius.multireestr.entity.legacy.KtruCharacteristicDto;
 import com.digitilius.multireestr.entity.legacy.NoticeDto;
 import com.digitilius.multireestr.entity.legacy.SpecPositionDto;
@@ -41,10 +42,10 @@ class RuleEvaluatorsTest {
         okReason.setBanImpossibleReason("нет аналогов");
         SpecPositionDto other = position(4, 13, "Бумага", "17.12.14.110", null);
 
-        List<com.digitilius.multireestr.entity.legacy.CheckResultDto> results =
+        List<CheckResultDto> results =
                 new Okpd2ForeignBanEvaluator().evaluate(notice(hit, okBan, okReason, other), rule, new RuleVersion(), params);
 
-        assertThat(results).extracting(com.digitilius.multireestr.entity.legacy.CheckResultDto::getDetail)
+        assertThat(results).extracting(CheckResultDto::getDetail)
                 .containsExactly("pos=1;id=10");
         assertThat(results.get(0).getFingerprint()).hasSize(64);
         assertThat(results.get(0).getMessage()).contains("27.20.23.130");
@@ -65,6 +66,44 @@ class RuleEvaluatorsTest {
 
         assertThat(results).hasSize(1);
         assertThat(results.get(0).getDetail()).isEqualTo("pos=1;id=20;char=2");
+    }
+
+    @Test
+    void repeatedExtraCharacteristicIsOneHit() {
+        Rule rule = rule("R05_KTRU_CHARS", RuleTemplateType.KTRU_EXTRA_CHARACTERISTICS);
+        SpecPositionDto withKtru = position(1, 20, "Бумага", "17.12.14.110", "17.12.14.110-00000003");
+        KtruCharacteristicDto extra = characteristic(2, false);
+        KtruCharacteristicDto again = characteristic(2, false);
+        again.setName("Другое имя");
+        withKtru.setCharacteristics(List.of(extra, again));
+
+        var results = new KtruExtraCharacteristicsEvaluator()
+                .evaluate(notice(withKtru), rule, new RuleVersion(), new RuleEvalParams(List.of()));
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getDetail()).isEqualTo("pos=1;id=20;char=2");
+        assertThat(results.get(0).getFingerprint())
+                .isEqualTo(CheckResults.fingerprint(rule.getCode(), "0173100017025000020", "pos=1;id=20;char=2"));
+    }
+
+    @Test
+    void twoExtraCharacteristicsStayDistinct() {
+        Rule rule = rule("R05_KTRU_CHARS", RuleTemplateType.KTRU_EXTRA_CHARACTERISTICS);
+        SpecPositionDto item = position(1, 3, "Папка картонная", "17.23.13.193", "17.23.13.193-00000002");
+        KtruCharacteristicDto color = characteristic(6, false);
+        color.setName("Цвет");
+        color.setValue("белый");
+        KtruCharacteristicDto width = characteristic(7, false);
+        width.setName("Ширина корешка");
+        width.setValue("25");
+        item.setCharacteristics(List.of(color, width));
+
+        var results = new KtruExtraCharacteristicsEvaluator()
+                .evaluate(notice(item), rule, new RuleVersion(), new RuleEvalParams(List.of()));
+
+        assertThat(results).extracting(CheckResultDto::getDetail)
+                .containsExactly("pos=1;id=3;char=6", "pos=1;id=3;char=7");
+        assertThat(results).extracting(CheckResultDto::getFingerprint).doesNotHaveDuplicates();
     }
 
     @Test

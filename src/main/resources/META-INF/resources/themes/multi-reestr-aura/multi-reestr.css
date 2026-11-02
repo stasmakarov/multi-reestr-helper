@@ -1,1 +1,15 @@
 /* Define your styles here */
+
+.check-hit-details {
+    box-sizing: border-box;
+    margin-top: var(--lumo-space-s);
+    padding: var(--lumo-space-s) var(--lumo-space-m);
+    border: 1px solid var(--lumo-contrast-20pct);
+    border-radius: var(--lumo-border-radius-m);
+    background: var(--lumo-contrast-5pct);
+}
+
+vaadin-text-area.check-hit-text::part(input-field) {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
